@@ -1,0 +1,221 @@
+const express = require('express');
+const path = require('path');
+const Database = require('better-sqlite3');
+
+const db = new Database(path.join(__dirname, 'matjip.db'), { readonly: true });
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+const GRADE_ORDER = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
+const GRADE_CASE_SQL = `CASE grade ${GRADE_ORDER.map((g, i) => `WHEN '${g}' THEN ${i}`).join(' ')} ELSE 99 END`;
+
+// ---- 스마트 검색: "강남쪽 돼지고기 먹고싶어" 같은 자연어를 구/분류 필터로 추론 ----
+const GU_SET = new Set(db.prepare("SELECT DISTINCT gu FROM restaurants WHERE gu IS NOT NULL").all().map(r => r.gu));
+const DONG_SET = new Set(db.prepare("SELECT DISTINCT dong FROM restaurants WHERE dong IS NOT NULL").all().map(r => r.dong));
+const STATION_SET = new Set(db.prepare("SELECT DISTINCT subway FROM restaurants WHERE subway IS NOT NULL AND subway != ''").all().map(r => r.subway));
+const CATEGORY_LIST = db.prepare("SELECT DISTINCT category FROM restaurants WHERE category IS NOT NULL").all().map(r => r.category);
+
+// 흔한 동네 별칭 -> 실제 DB의 구 값. DB에 없는 별칭은 무시되도록 존재하는 것만 등록.
+const GU_ALIAS_RAW = {
+  '강남': '강남구', '역삼': '강남구', '삼성': '강남구', '청담': '강남구', '압구정': '강남구', '신사': '강남구', '논현': '강남구',
+  '홍대': '마포구', '합정': '마포구', '연남': '마포구', '망원': '마포구', '상수': '마포구',
+  '이태원': '용산구', '한남': '용산구', '용리단길': '용산구',
+  '여의도': '영등포구', '문래': '영등포구',
+  '건대': '광진구', '건대입구': '광진구',
+  '잠실': '송파구', '송리단길': '송파구', '석촌': '송파구',
+  '노량진': '동작구', '사당': '동작구',
+  '신촌': '서대문구', '연희': '서대문구',
+  '종로': '종로구', '익선동': '종로구', '삼청동': '종로구', '서촌': '종로구',
+  '명동': '중구', '을지로': '중구', '동대문': '중구',
+  '성수': '성동구', '왕십리': '성동구',
+  '북촌': '종로구',
+  '가로수길': '강남구',
+};
+const GU_ALIAS = {};
+for (const [k, v] of Object.entries(GU_ALIAS_RAW)) if (GU_SET.has(v)) GU_ALIAS[k] = v;
+
+const BADGE_SET = new Set();
+for (const r of db.prepare("SELECT DISTINCT badges FROM restaurants WHERE badges IS NOT NULL AND badges != '[]'").all()) {
+  try { JSON.parse(r.badges).forEach(b => BADGE_SET.add(b.name)); } catch {}
+}
+const BADGE_ALIAS_RAW = {
+  '신규': '최신', '새로운': '최신', '새로': '최신', '최근': '최신', '뉴': '최신', '따끈따끈한': '최신',
+};
+const BADGE_ALIAS = {};
+for (const [k, v] of Object.entries(BADGE_ALIAS_RAW)) if (BADGE_SET.has(v)) BADGE_ALIAS[k] = v;
+
+const BADGE_COUNTS = {};
+for (const name of BADGE_SET) {
+  BADGE_COUNTS[name] = db.prepare('SELECT COUNT(*) c FROM restaurants WHERE badges LIKE ?').get(`%"name":"${name}"%`).c;
+}
+
+// 검색어에서 걸러낼 조사/군더더기 표현 (뒤에서부터 반복적으로 제거)
+const FILLER_SUFFIX_RE = /(쪽에서|근처에서|주변에서|에서|근처|주변|쪽|의|에게|에|은|는|이|가|을|를)+$/;
+const FILLER_WORDS = new Set([
+  '먹고싶어', '먹고싶다', '먹고파', '먹고싶은데', '먹고 싶어', '먹고 싶다',
+  '땡긴다', '땡기는데', '땡김', '먹으러', '먹으로', '먹고', '가고싶어',
+  '갈만한', '갈만한곳', '먹을만한', '먹을만한곳', '괜찮은', '괜찮은곳', '있나요', '있을까', '있나',
+  '추천', '추천해줘', '추천좀', '해줘', '좀', '알려줘', '데', '곳', '집', '맛집',
+]);
+
+function stripFiller(token) {
+  let t = token;
+  for (let i = 0; i < 4; i++) {
+    if (FILLER_WORDS.has(t)) { t = ''; break; }
+    const stripped = t.replace(FILLER_SUFFIX_RE, '');
+    if (stripped === t) break;
+    t = stripped;
+  }
+  return t;
+}
+
+function parseSmartQuery(q) {
+  const raw = String(q || '').trim();
+  const result = { gu: null, dong: null, station: null, categoryTerms: [], badge: null, leftoverTokens: [] };
+  if (!raw) return result;
+
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  for (const tok of tokens) {
+    const stripped = stripFiller(tok);
+    if (!stripped) continue; // 순수 군더더기 표현이면 버림
+
+    if (!result.badge && BADGE_SET.has(stripped)) { result.badge = stripped; continue; }
+    if (!result.badge && BADGE_ALIAS[stripped]) { result.badge = BADGE_ALIAS[stripped]; continue; }
+    // "신논현역" 처럼 역 이름 뒤에 "역"이 붙어오는 경우가 흔해서 먼저 떼고 확인
+    const stationCandidate = stripped.endsWith('역') && stripped.length > 1 ? stripped.slice(0, -1) : stripped;
+    if (!result.station && STATION_SET.has(stationCandidate)) { result.station = stationCandidate; continue; }
+    if (!result.station && STATION_SET.has(stripped)) { result.station = stripped; continue; }
+    if (!result.gu && GU_SET.has(stripped)) { result.gu = stripped; continue; }
+    if (!result.gu && GU_ALIAS[stripped]) { result.gu = GU_ALIAS[stripped]; continue; }
+    if (!result.dong && DONG_SET.has(stripped)) { result.dong = stripped; continue; }
+
+    if (stripped.length >= 2 && CATEGORY_LIST.some(c => c.includes(stripped))) {
+      result.categoryTerms.push(stripped);
+      continue;
+    }
+
+    result.leftoverTokens.push(stripped);
+  }
+  return result;
+}
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+
+app.get('/api/meta', (req, res) => {
+  const categories = db.prepare(`
+    SELECT category, COUNT(*) c FROM restaurants
+    WHERE category IS NOT NULL GROUP BY category ORDER BY c DESC
+  `).all();
+  const regions = db.prepare(`
+    SELECT region, COUNT(*) c FROM restaurants GROUP BY region ORDER BY c DESC
+  `).all();
+  const total = db.prepare('SELECT COUNT(*) c FROM restaurants').get().c;
+  const activeTotal = db.prepare("SELECT COUNT(*) c FROM restaurants WHERE status='영업'").get().c;
+  const badges = Object.entries(BADGE_COUNTS).map(([name, c]) => ({ name, c })).sort((a, b) => b.c - a.c);
+  const stations = db.prepare(`
+    SELECT subway, COUNT(*) c FROM restaurants
+    WHERE subway IS NOT NULL AND subway != '' GROUP BY subway ORDER BY c DESC
+  `).all();
+  res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal });
+});
+
+app.get('/api/gu', (req, res) => {
+  const { region } = req.query;
+  let rows;
+  if (region) {
+    rows = db.prepare(`
+      SELECT gu, COUNT(*) c FROM restaurants WHERE region = ? AND gu IS NOT NULL
+      GROUP BY gu ORDER BY c DESC
+    `).all(region);
+  } else {
+    rows = db.prepare(`
+      SELECT gu, COUNT(*) c FROM restaurants WHERE gu IS NOT NULL
+      GROUP BY gu ORDER BY c DESC
+    `).all();
+  }
+  res.json(rows);
+});
+
+app.get('/api/restaurants', (req, res) => {
+  const {
+    q = '', region = '', gu = '', category = '', grade = '', badge = '', station = '',
+    status = '영업', sort = 'avg_desc', page = '1', pageSize = '30',
+  } = req.query;
+
+  const where = [];
+  const params = {};
+  let inferred = null;
+
+  const trimmedQ = q.trim();
+  if (trimmedQ) {
+    const smart = parseSmartQuery(trimmedQ);
+    const usedInference = (!gu && smart.gu) || (!gu && smart.dong) || (!station && smart.station) || (!category && smart.categoryTerms.length) || (!badge && smart.badge);
+
+    if (usedInference) {
+      inferred = { gu: smart.gu, dong: smart.dong, station: station ? null : smart.station, categoryTerms: smart.categoryTerms, badge: badge ? null : smart.badge };
+      if (!gu && smart.gu) { where.push('gu = @sgu'); params.sgu = smart.gu; }
+      if (!gu && !smart.gu && smart.dong) { where.push('dong = @sdong'); params.sdong = smart.dong; }
+      if (!station && smart.station) { where.push('subway = @sstation'); params.sstation = smart.station; }
+      if (!category && smart.categoryTerms.length) {
+        const catClauses = smart.categoryTerms.map((t, i) => {
+          params[`scat${i}`] = `%${t}%`;
+          return `category LIKE @scat${i}`;
+        });
+        where.push(`(${catClauses.join(' OR ')})`);
+      }
+      if (!badge && smart.badge) { where.push('badges LIKE @sbadge'); params.sbadge = `%"name":"${smart.badge}"%`; }
+      const leftover = smart.leftoverTokens.join(' ').trim();
+      if (leftover) {
+        where.push('(name LIKE @q OR category LIKE @q OR address LIKE @q)');
+        params.q = `%${leftover}%`;
+      }
+    } else {
+      where.push('(name LIKE @q OR category LIKE @q OR address LIKE @q)');
+      params.q = `%${trimmedQ}%`;
+    }
+  }
+  if (region) { where.push('region = @region'); params.region = region; }
+  if (gu) { where.push('gu = @gu'); params.gu = gu; }
+  if (category) { where.push('category = @category'); params.category = category; }
+  if (grade) { where.push('grade = @grade'); params.grade = grade; }
+  if (badge) { where.push('badges LIKE @badge'); params.badge = `%"name":"${badge}"%`; }
+  if (station) { where.push('subway = @station'); params.station = station; }
+  if (status && status !== '전체') { where.push('status = @status'); params.status = status; }
+
+  const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
+
+  let orderSql = 'avg DESC';
+  if (sort === 'avg_asc') orderSql = 'avg ASC';
+  else if (sort === 'avg_desc') orderSql = 'avg DESC';
+  else if (sort === 'grade') orderSql = `${GRADE_CASE_SQL} ASC, avg DESC`;
+  else if (sort === 'name') orderSql = 'name COLLATE NOCASE ASC';
+  else if (sort === 'new_first') orderSql = `(CASE WHEN badges LIKE '%"name":"최신"%' THEN 0 ELSE 1 END) ASC, avg DESC`;
+  orderSql += ', id ASC';
+
+  const pageNum = Math.max(1, parseInt(page, 10) || 1);
+  const size = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 30));
+  const offset = (pageNum - 1) * size;
+
+  const total = db.prepare(`SELECT COUNT(*) c FROM restaurants ${whereSql}`).get(params).c;
+
+  const rows = db.prepare(`
+    SELECT id, name, category, address, gu, dong, subway, price_range,
+           source_raw, sources, badges, naver, google, daum, avg, note,
+           grade, region, status
+    FROM restaurants
+    ${whereSql}
+    ORDER BY ${orderSql}
+    LIMIT @limit OFFSET @offset
+  `).all({ ...params, limit: size, offset }).map(r => ({
+    ...r,
+    sources: JSON.parse(r.sources || '[]'),
+    badges: JSON.parse(r.badges || '[]'),
+  }));
+
+  res.json({ total, page: pageNum, pageSize: size, rows, inferred });
+});
+
+app.listen(PORT, () => {
+  console.log(`미식장부 서버 실행 중: http://localhost:${PORT}`);
+});

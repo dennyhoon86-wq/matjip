@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미식장부 · 나의 맛집 아카이브</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="cover">
+  <div class="cover-inner">
+    <div class="seal">味</div>
+    <div class="eyebrow">RESTAURANT LEDGER · 私의 미식 기록</div>
+    <h1>미식장부</h1>
+    <p class="cover-desc">직접 다녀보고 골라 담은 맛집 아카이브. 네이버·구글·다음·망고플레이트·블루리본·뽈레의 평점을 한데 모으고, 등급을 매겨 도장을 찍었다.</p>
+    <div class="cover-tally">
+      <div><b id="tallyShown">-</b><span>표시 중</span></div>
+      <div><b id="tallyTotal">-</b><span>전체 등재</span></div>
+      <div><b id="tallyActive">-</b><span>영업중</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="drawer-wrap">
+  <div class="drawer">
+    <div class="field wide">
+      <label for="q">통합 검색 (상호명 · 분류 · 주소 · 자연어 가능)</label>
+      <input id="q" type="text" placeholder="예) 갈비탕, 라피노, 강남쪽 돼지고기 먹고싶어, 신논현역 돼지고기 ...">
+      <div id="smartHint" class="smart-hint"></div>
+    </div>
+    <div class="field">
+      <label for="region">지역</label>
+      <select id="region"><option value="">전체</option></select>
+    </div>
+    <div class="field">
+      <label for="gu">시/도 · 구</label>
+      <select id="gu"><option value="">전체</option></select>
+    </div>
+    <div class="field">
+      <label for="cat">분류</label>
+      <input id="cat" list="catList" placeholder="전체" autocomplete="off">
+      <datalist id="catList"></datalist>
+    </div>
+    <div class="field">
+      <label for="grade">등급</label>
+      <select id="grade">
+        <option value="">전체</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="badge">태그</label>
+      <select id="badge">
+        <option value="">전체</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sort">정렬</label>
+      <select id="sort">
+        <option value="avg_desc">평균 평점 높은순</option>
+        <option value="avg_asc">평균 평점 낮은순</option>
+        <option value="grade">등급순 (A++→E)</option>
+        <option value="name">가나다순</option>
+        <option value="new_first">최신 등록순</option>
+      </select>
+    </div>
+    <div class="field checkbox-field">
+      <label><input type="checkbox" id="includeClosed"> 폐업 포함</label>
+    </div>
+  </div>
+</div>
+
+<div class="meta-row">
+  <span id="metaCount">불러오는 중...</span>
+  <button class="legend-btn" id="rubricToggle">등급 기준 보기 ▾</button>
+</div>
+
+<div class="rubric-panel" id="rubricPanel">
+  <div class="rubric-inner">
+    <div class="rubric-col">
+      <h4>서울</h4>
+      <table>
+        <tr><td>E</td><td>리뷰 50개 미만</td><td>4.90 ~ 5.00</td></tr>
+        <tr><td>D</td><td>리뷰 200개 미만</td><td>4.80 ~ 4.90</td></tr>
+        <tr><td>C</td><td>리뷰 200 ~ 500개</td><td>4.70 ~ 4.80</td></tr>
+        <tr><td>B</td><td>리뷰 500 ~ 1,000개</td><td>4.60 ~ 4.75</td></tr>
+        <tr><td>A</td><td>리뷰 1,000 ~ 2,000개</td><td>4.55 ~ 4.70</td></tr>
+        <tr><td>A+</td><td>리뷰 2,000개 이상</td><td>4.50 ~ 4.65</td></tr>
+      </table>
+    </div>
+    <div class="rubric-col">
+      <h4>서울 외</h4>
+      <table>
+        <tr><td>D</td><td>리뷰 50개 미만</td><td>-</td></tr>
+        <tr><td>C</td><td>리뷰 50 ~ 100개</td><td>-</td></tr>
+        <tr><td>B</td><td>리뷰 100 ~ 500개</td><td>-</td></tr>
+        <tr><td>A</td><td>리뷰 500 ~ 1,000개</td><td>-</td></tr>
+        <tr><td>A+</td><td>리뷰 1,000 ~ 3,000개</td><td>-</td></tr>
+        <tr><td>A++</td><td>리뷰 3,000개 이상</td><td>-</td></tr>
+      </table>
+    </div>
+    <div class="rubric-note">
+      네이버 리뷰 수를 기준으로 삼되, 리뷰가 많을수록 요구되는 평점 기준을 낮춰 "많은 사람이 꾸준히 인정한 맛"에 더 높은 등급을 준다.
+      예컨대 서울 A+는 리뷰 2,000개 이상에 평점 4.50이면 충분하지만, E는 리뷰 50개 미만에 평점 4.90 이상이어야 한다.
+      등급은 원본 장부에 이미 계산되어 있으며, 리뷰 수 원본 값은 별도로 보존되어 있지 않다.
+    </div>
+  </div>
+</div>
+
+<div class="list" id="list"></div>
+<div class="empty" id="emptyState" style="display:none;">검색 조건에 맞는 맛집이 없다.<br>다른 이름이나 분류로 다시 찾아보길.</div>
+
+<div class="pager" id="pager" style="display:none;">
+  <button id="prevPage">← 이전</button>
+  <span id="pageInfo"></span>
+  <button id="nextPage">다음 →</button>
+</div>
+
+<footer class="note">
+  전체 <span id="footTotal">-</span>건 중 검색 조건에 맞는 항목이 서버(Node.js + SQLite)에서 실시간으로 걸러져 표시된다.
+  데이터는 <code>맛집 정리(ver.6).xlsx</code>에서 가져왔다.
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

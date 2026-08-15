@@ -1,0 +1,17 @@
+node_modules/
+matjip.db-shm
+matjip.db-wal
+server.log
+*.log
+
+# 리서치용 원본 데이터(구별 다이닝코드 파싱/구글 조회 결과) - 배포에는 불필요, 로컬에만 보관
+diningcode_parsed_*.json
+diningcode_parsed.json
+google_lookup_results_*.json
+google_lookup_results.json
+final_check_candidates.json
+final_dedupe_results.json
+gangnam_web_round9_final.json
+dobong_lookup_list.txt
+build_new_sheet2.js
+parse_diningcode.js
