@@ -89,7 +89,7 @@ function ratingLine(d) {
 function badgeClass(name) {
   if (name === '미슐랭') return 'badge-michelin';
   if (name === '블루리본') return 'badge-blueribbon';
-  if (name === '최신') return 'badge-new';
+  if (name === '신규' || name === '최신') return 'badge-new';
   return 'badge-other';
 }
 

@@ -28,7 +28,7 @@ function toNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-const BADGE_RE = /^(미슐랭|블루리본|더들리|수요미식회|맛있는\s*녀석들|최신)(★*)$/;
+const BADGE_RE = /^(미슐랭|블루리본|더들리|수요미식회|맛있는\s*녀석들|최신|신규)(★*)$/;
 
 function parseSource(raw) {
   if (!raw) return { sources: [], badges: [] };
@@ -137,7 +137,10 @@ async function main() {
       const sourceRaw = get(row, '출처');
       const { sources, badges } = parseSource(sourceRaw);
       const newFlag = get(row, '최신여부');
-      if (newFlag && !badges.some(b => b.name === '최신')) badges.push({ name: '최신', stars: 0 });
+      const isDiningCodeOnly = sources.length === 1 && sources[0].replace(/\s+/g, '') === '다이닝코드';
+      if ((newFlag || isDiningCodeOnly) && !badges.some(b => b.name === '신규')) {
+        badges.push({ name: '신규', stars: 0 });
+      }
       const gradeRaw = cellText(row.getCell(lastCol).value);
       const grade = (gradeRaw && /^(A\+{0,2}|B|C|D|E|F)$/.test(gradeRaw)) ? gradeRaw : null;
       const priceRaw = get(row, '2인기준 디너 가격 (원)');

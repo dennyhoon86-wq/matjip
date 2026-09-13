@@ -39,7 +39,7 @@ for (const r of db.prepare("SELECT DISTINCT badges FROM restaurants WHERE badges
   try { JSON.parse(r.badges).forEach(b => BADGE_SET.add(b.name)); } catch {}
 }
 const BADGE_ALIAS_RAW = {
-  '신규': '최신', '새로운': '최신', '새로': '최신', '최근': '최신', '뉴': '최신', '따끈따끈한': '최신',
+  '최신': '신규', '새로운': '신규', '새로': '신규', '최근': '신규', '뉴': '신규', '따끈따끈한': '신규',
 };
 const BADGE_ALIAS = {};
 for (const [k, v] of Object.entries(BADGE_ALIAS_RAW)) if (BADGE_SET.has(v)) BADGE_ALIAS[k] = v;
@@ -190,7 +190,7 @@ app.get('/api/restaurants', (req, res) => {
   else if (sort === 'avg_desc') orderSql = 'avg DESC';
   else if (sort === 'grade') orderSql = `${GRADE_CASE_SQL} ASC, avg DESC`;
   else if (sort === 'name') orderSql = 'name COLLATE NOCASE ASC';
-  else if (sort === 'new_first') orderSql = `(CASE WHEN badges LIKE '%"name":"최신"%' THEN 0 ELSE 1 END) ASC, avg DESC`;
+  else if (sort === 'new_first') orderSql = `(CASE WHEN badges LIKE '%"name":"신규"%' THEN 0 ELSE 1 END) ASC, avg DESC`;
   orderSql += ', id ASC';
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
