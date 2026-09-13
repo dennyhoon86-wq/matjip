@@ -37,11 +37,25 @@ const selectionCountEl = document.getElementById('selectionCount');
 const copySelectedBtn = document.getElementById('copySelected');
 const clearSelectedBtn = document.getElementById('clearSelected');
 const copyWantBtn = document.getElementById('copyWant');
+const authGateEl = document.getElementById('authGate');
+const authTitleEl = document.getElementById('authTitle');
+const authMessageEl = document.getElementById('authMessage');
+const googleLoginBtn = document.getElementById('googleLogin');
+const signOutBtn = document.getElementById('signOut');
+const accountNameEl = document.getElementById('accountName');
+const logoutButton = document.getElementById('logoutButton');
+const adminButton = document.getElementById('adminButton');
+const adminPanel = document.getElementById('adminPanel');
+const adminUsersEl = document.getElementById('adminUsers');
 
 let state = { page: 1, pageSize: 30, total: 0 };
 const PERSONAL_STORAGE_KEY = 'misik-jangbu-personal-v1';
 const PERSONAL_STATES = ['가고싶음', '가봄', '재방문', '별로였음'];
 const selectedKeys = new Set();
+let personal = {};
+let authConfig = { enabled: false };
+let supabaseClient = null;
+let currentProfile = null;
 
 function restaurantKey(d) {
   return `${d.name}\u001f${d.address || ''}`;
@@ -58,25 +72,34 @@ function savePersonal(personal) {
 }
 
 function personalStateFor(d) {
-  return loadPersonal()[restaurantKey(d)]?.state || '';
+  return personal[restaurantKey(d)]?.state || '';
 }
 
-function setPersonalState(d, nextState) {
-  const personal = loadPersonal();
+async function setPersonalState(d, nextState) {
   const key = restaurantKey(d);
-  if (personal[key]?.state === nextState) delete personal[key];
+  const previous = personal[key];
+  if (previous?.state === nextState) delete personal[key];
   else personal[key] = { state: nextState, updatedAt: Date.now() };
   savePersonal(personal);
+  if (!authConfig.enabled) return;
+  try {
+    if (previous?.state === nextState) await apiFetch('/api/personal-states', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ restaurant_key: key }) });
+    else await apiFetch('/api/personal-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ states: [{ restaurant_key: key, status: nextState }] }) });
+  } catch (error) {
+    if (previous) personal[key] = previous; else delete personal[key];
+    savePersonal(personal);
+    throw error;
+  }
 }
 
 function keysForPersonalState(filter = '') {
-  return Object.entries(loadPersonal())
+  return Object.entries(personal)
     .filter(([, value]) => !filter || value.state === filter)
     .map(([key]) => key);
 }
 
 function updatePersonalSummary() {
-  const entries = Object.values(loadPersonal());
+  const entries = Object.values(personal);
   const wanted = entries.filter(x => x.state === '가고싶음').length;
   personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳`;
 }
@@ -109,9 +132,110 @@ async function copyText(text, successMessage) {
   metaEl.textContent = successMessage;
 }
 
+async function apiFetch(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  if (authConfig.enabled && supabaseClient) {
+    const { data } = await supabaseClient.auth.getSession();
+    if (data.session?.access_token) headers.set('Authorization', `Bearer ${data.session.access_token}`);
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || '요청을 처리하지 못했습니다.');
+  }
+  return response;
+}
+
+function showAuthGate(title, message, { login = false, signout = false } = {}) {
+  document.body.classList.add('auth-pending');
+  authTitleEl.textContent = title;
+  authMessageEl.textContent = message;
+  googleLoginBtn.style.display = login ? '' : 'none';
+  signOutBtn.style.display = signout ? '' : 'none';
+}
+
+async function loadSupabaseClient() {
+  if (window.supabase) return window.supabase.createClient(authConfig.supabaseUrl, authConfig.supabaseAnonKey);
+  await new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = resolve; script.onerror = () => reject(new Error('로그인 모듈을 불러오지 못했습니다.'));
+    document.head.appendChild(script);
+  });
+  return window.supabase.createClient(authConfig.supabaseUrl, authConfig.supabaseAnonKey);
+}
+
+async function signInWithGoogle() {
+  const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+  if (error) showAuthGate('로그인을 시작하지 못했습니다', error.message, { login: true });
+}
+
+async function signOut() {
+  if (supabaseClient) await supabaseClient.auth.signOut();
+  window.location.reload();
+}
+
+async function syncPersonalRecords() {
+  const local = loadPersonal();
+  const response = await apiFetch('/api/personal-states');
+  const remote = await response.json();
+  const merged = {};
+  (remote.states || []).forEach(s => { merged[s.restaurant_key] = { state: s.status, updatedAt: Date.parse(s.updated_at) || Date.now() }; });
+  const missing = Object.entries(local).filter(([key]) => !merged[key]).map(([restaurant_key, value]) => ({ restaurant_key, status: value.state }));
+  if (missing.length) await apiFetch('/api/personal-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ states: missing }) });
+  Object.assign(merged, local);
+  personal = merged;
+  savePersonal(personal);
+}
+
+async function loadAdminUsers() {
+  const response = await apiFetch('/api/admin/users');
+  const { users } = await response.json();
+  adminUsersEl.innerHTML = '';
+  if (!users.length) { adminUsersEl.textContent = '승인 요청이 아직 없습니다.'; return; }
+  users.forEach(user => {
+    const row = document.createElement('div'); row.className = 'admin-user';
+    const info = document.createElement('div');
+    const name = document.createElement('b'); name.textContent = user.full_name || '(이름 없음)';
+    const email = document.createElement('span'); email.textContent = user.email;
+    const status = document.createElement('small'); status.textContent = user.role === 'pending' ? '승인 대기' : user.role === 'member' ? '열람 허용' : user.role === 'owner' ? '관리자' : '차단됨';
+    info.append(name, email, status); row.appendChild(info);
+    if (user.role !== 'owner') {
+      const actions = document.createElement('div');
+      [['member', '허용', ''], ['blocked', '차단', 'block']].forEach(([role, label, className]) => {
+        const button = document.createElement('button'); button.dataset.user = user.id; button.dataset.role = role; button.textContent = label; button.className = className; actions.appendChild(button);
+      });
+      row.appendChild(actions);
+    }
+    adminUsersEl.appendChild(row);
+  });
+}
+
+async function initAuthentication() {
+  const response = await fetch('/api/auth/config');
+  authConfig = await response.json();
+  if (!authConfig.enabled) { document.body.classList.remove('auth-pending'); return true; }
+  if (!authConfig.configured) { showAuthGate('로그인 설정 중', '관리자가 로그인 연결을 마무리하고 있습니다. 잠시 후 다시 시도해 주세요.'); return false; }
+  try {
+    supabaseClient = await loadSupabaseClient();
+    const { data } = await supabaseClient.auth.getSession();
+    if (!data.session) { showAuthGate('미식장부에 들어오려면', 'Google 계정으로 로그인한 뒤 관리자의 열람 승인을 받아야 합니다.', { login: true }); return false; }
+    const me = await apiFetch('/api/auth/me');
+    const { profile } = await me.json();
+    currentProfile = profile;
+    if (!profile.allowed) { showAuthGate('열람 승인 대기 중', `${profile.fullName} · ${profile.email} 계정으로 요청되었습니다. 관리자가 승인하면 이용할 수 있습니다.`, { signout: true }); return false; }
+    document.body.classList.remove('auth-pending');
+    accountNameEl.textContent = profile.fullName;
+    logoutButton.style.display = '';
+    if (profile.role === 'owner') adminButton.style.display = '';
+    await syncPersonalRecords();
+    return true;
+  } catch (error) { showAuthGate('로그인을 확인하지 못했습니다', error.message, { login: true, signout: true }); return false; }
+}
+
 async function fetchPersonalRows(keys) {
   if (!keys.length) return [];
-  const res = await fetch('/api/personal-list', {
+  const res = await apiFetch('/api/personal-list', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ keys }),
@@ -122,7 +246,7 @@ async function fetchPersonalRows(keys) {
 }
 
 async function loadMeta() {
-  const res = await fetch('/api/meta');
+  const res = await apiFetch('/api/meta');
   const meta = await res.json();
 
   meta.regions.forEach(r => {
@@ -156,7 +280,7 @@ async function loadMeta() {
 
 async function loadGuOptions(region) {
   const url = region ? `/api/gu?region=${encodeURIComponent(region)}` : '/api/gu';
-  const res = await fetch(url);
+  const res = await apiFetch(url);
   const rows = await res.json();
   guEl.innerHTML = '<option value="">전체</option>';
   rows.forEach(r => {
@@ -256,7 +380,7 @@ async function search() {
   metaEl.textContent = '검색 중...';
   if (personalFilterEl.value) return searchPersonal();
   const params = buildParams();
-  const res = await fetch('/api/restaurants?' + params.toString());
+  const res = await apiFetch('/api/restaurants?' + params.toString());
   const data = await res.json();
   state.total = data.total;
 
@@ -343,9 +467,11 @@ listEl.addEventListener('click', async (event) => {
   const d = card?.__restaurant;
   if (!d) return;
   if (button.dataset.action === 'personal') {
-    setPersonalState(d, button.dataset.state);
-    if (personalFilterEl.value && personalFilterEl.value !== personalStateFor(d)) triggerSearch(false);
-    else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+    try {
+      await setPersonalState(d, button.dataset.state);
+      if (personalFilterEl.value && personalFilterEl.value !== personalStateFor(d)) triggerSearch(false);
+      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+    } catch (error) { metaEl.textContent = error.message; }
   }
   if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 네이버지도용 정보 복사됨`);
 });
@@ -382,7 +508,24 @@ rubricToggle.addEventListener('click', () => {
   rubricToggle.textContent = open ? '등급 기준 닫기 ▴' : '등급 기준 보기 ▾';
 });
 
+googleLoginBtn.addEventListener('click', signInWithGoogle);
+signOutBtn.addEventListener('click', signOut);
+logoutButton.addEventListener('click', signOut);
+adminButton.addEventListener('click', async () => {
+  const opening = adminPanel.style.display === 'none';
+  adminPanel.style.display = opening ? '' : 'none';
+  if (opening) await loadAdminUsers();
+});
+adminUsersEl.addEventListener('click', async (event) => {
+  const button = event.target.closest('button[data-user]');
+  if (!button) return;
+  await apiFetch(`/api/admin/users/${encodeURIComponent(button.dataset.user)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: button.dataset.role }) });
+  await loadAdminUsers();
+});
+
 (async function init() {
+  if (!(await initAuthentication())) return;
+  personal = loadPersonal();
   await loadMeta();
   await loadGuOptions('');
   updatePersonalSummary();

@@ -1,10 +1,12 @@
 const express = require('express');
 const path = require('path');
 const Database = require('better-sqlite3');
+const { createAuth } = require('./auth');
 
 const db = new Database(path.join(__dirname, 'matjip.db'), { readonly: true });
 const app = express();
 const PORT = process.env.PORT || 4000;
+const auth = createAuth();
 
 const GRADE_ORDER = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
 const GRADE_CASE_SQL = `CASE grade ${GRADE_ORDER.map((g, i) => `WHEN '${g}' THEN ${i}`).join(' ')} ELSE 99 END`;
@@ -102,7 +104,40 @@ function parseSmartQuery(q) {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '1mb' }));
 
-app.get('/api/meta', (req, res) => {
+app.get('/api/auth/config', (req, res) => res.json(auth.config()));
+app.get('/api/auth/me', async (req, res) => {
+  try { res.json({ profile: await auth.identityFromRequest(req) }); }
+  catch (error) { res.status(error.status || 500).json({ error: error.message || '인증 처리에 실패했습니다.' }); }
+});
+
+app.get('/api/personal-states', auth.requireApproved, async (req, res) => {
+  try { res.json({ states: auth.required ? await auth.personalStates(req.identity.id) : [] }); }
+  catch (error) { res.status(500).json({ error: '개인 기록을 불러오지 못했습니다.' }); }
+});
+app.post('/api/personal-states', auth.requireApproved, async (req, res) => {
+  try { res.json({ states: auth.required ? await auth.setPersonalStates(req.identity.id, Array.isArray(req.body?.states) ? req.body.states : []) : [] }); }
+  catch (error) { res.status(500).json({ error: '개인 기록을 저장하지 못했습니다.' }); }
+});
+app.delete('/api/personal-states', auth.requireApproved, async (req, res) => {
+  try {
+    if (auth.required) await auth.deletePersonalState(req.identity.id, String(req.body?.restaurant_key || ''));
+    res.status(204).end();
+  } catch (error) { res.status(500).json({ error: '개인 기록을 삭제하지 못했습니다.' }); }
+});
+app.get('/api/admin/users', auth.requireOwner, async (req, res) => {
+  try { res.json({ users: auth.required ? await auth.supabase('/rest/v1/profiles?select=id,email,full_name,role,created_at&order=created_at.desc') : [] }); }
+  catch (error) { res.status(500).json({ error: '승인 목록을 불러오지 못했습니다.' }); }
+});
+app.patch('/api/admin/users/:id', auth.requireOwner, async (req, res) => {
+  const role = String(req.body?.role || '');
+  if (!['member', 'blocked'].includes(role)) return res.status(400).json({ error: '허용 또는 차단만 가능합니다.' });
+  try {
+    const users = await auth.supabase(`/rest/v1/profiles?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify({ role }) });
+    res.json({ user: users[0] });
+  } catch (error) { res.status(500).json({ error: '권한을 변경하지 못했습니다.' }); }
+});
+
+app.get('/api/meta', auth.requireApproved, (req, res) => {
   const categories = db.prepare(`
     SELECT category, COUNT(*) c FROM restaurants
     WHERE category IS NOT NULL GROUP BY category ORDER BY c DESC
@@ -120,7 +155,7 @@ app.get('/api/meta', (req, res) => {
   res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal });
 });
 
-app.get('/api/gu', (req, res) => {
+app.get('/api/gu', auth.requireApproved, (req, res) => {
   const { region } = req.query;
   let rows;
   if (region) {
@@ -137,7 +172,7 @@ app.get('/api/gu', (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/restaurants', (req, res) => {
+app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const {
     q = '', region = '', gu = '', category = '', grade = '', badge = '', station = '',
     status = '영업', sort = 'avg_desc', page = '1', pageSize = '30',
@@ -216,7 +251,7 @@ app.get('/api/restaurants', (req, res) => {
   res.json({ total, page: pageNum, pageSize: size, rows, inferred });
 });
 
-app.post('/api/personal-list', (req, res) => {
+app.post('/api/personal-list', auth.requireApproved, (req, res) => {
   const keys = Array.isArray(req.body?.keys) ? req.body.keys.filter(x => typeof x === 'string').slice(0, 10000) : [];
   if (!keys.length) return res.json({ rows: [] });
   const wanted = new Set(keys);
