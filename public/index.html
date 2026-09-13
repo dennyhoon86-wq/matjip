@@ -66,6 +66,16 @@
         <option value="new_first">신규 우선</option>
       </select>
     </div>
+    <div class="field">
+      <label for="personalFilter">내 기록</label>
+      <select id="personalFilter">
+        <option value="">전체 검색</option>
+        <option value="가고싶음">가고싶음</option>
+        <option value="가봄">가봄</option>
+        <option value="재방문">재방문</option>
+        <option value="별로였음">별로였음</option>
+      </select>
+    </div>
     <div class="field checkbox-field">
       <label><input type="checkbox" id="includeClosed"> 폐업 포함</label>
     </div>
@@ -74,7 +84,17 @@
 
 <div class="meta-row">
   <span id="metaCount">불러오는 중...</span>
-  <button class="legend-btn" id="rubricToggle">등급 기준 보기 ▾</button>
+  <div class="meta-actions">
+    <span id="personalSummary">내 기록 0곳</span>
+    <button class="legend-btn" id="copyWant">가고싶음 복사</button>
+    <button class="legend-btn" id="rubricToggle">등급 기준 보기 ▾</button>
+  </div>
+</div>
+
+<div class="selection-bar" id="selectionBar" style="display:none;">
+  <span id="selectionCount">0곳 선택</span>
+  <button id="copySelected">선택한 곳 복사</button>
+  <button id="clearSelected" class="subtle">선택 해제</button>
 </div>
 
 <div class="rubric-panel" id="rubricPanel">

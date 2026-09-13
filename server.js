@@ -100,7 +100,7 @@ function parseSmartQuery(q) {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/meta', (req, res) => {
   const categories = db.prepare(`
@@ -214,6 +214,23 @@ app.get('/api/restaurants', (req, res) => {
   }));
 
   res.json({ total, page: pageNum, pageSize: size, rows, inferred });
+});
+
+app.post('/api/personal-list', (req, res) => {
+  const keys = Array.isArray(req.body?.keys) ? req.body.keys.filter(x => typeof x === 'string').slice(0, 10000) : [];
+  if (!keys.length) return res.json({ rows: [] });
+  const wanted = new Set(keys);
+  const rows = db.prepare(`
+    SELECT id, name, category, address, gu, dong, subway, price_range,
+           source_raw, sources, badges, naver, google, daum, avg, note,
+           grade, region, status
+    FROM restaurants
+  `).all().filter(r => wanted.has(`${r.name}\u001f${r.address || ''}`)).map(r => ({
+    ...r,
+    sources: JSON.parse(r.sources || '[]'),
+    badges: JSON.parse(r.badges || '[]'),
+  }));
+  res.json({ rows });
 });
 
 app.listen(PORT, () => {

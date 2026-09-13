@@ -198,6 +198,19 @@ h1{
   display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
   font-family:var(--sans); font-size:12.5px; color:var(--ink-soft);
 }
+.meta-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+#personalSummary{font-size:11.5px; color:var(--ink-soft); font-weight:600;}
+.selection-bar{
+  max-width:960px; margin:8px auto 0; padding:10px 14px;
+  background:var(--cover); color:#F6EEDA; border-radius:var(--radius);
+  align-items:center; gap:9px; flex-wrap:wrap;
+  font-family:var(--sans); font-size:12px; font-weight:600;
+}
+.selection-bar button{
+  border:1px solid #C9B77E; background:#F6EEDA; color:var(--cover); border-radius:2px;
+  padding:6px 9px; font-family:var(--sans); font-size:11.5px; font-weight:700; cursor:pointer;
+}
+.selection-bar button.subtle{background:transparent; color:#F6EEDA; border-color:rgba(246,238,218,0.5);}
 #metaCount{font-weight:600; color:var(--ink);}
 .legend-btn{
   background:none; border:1px solid #C9B896; color:var(--ink-soft);
@@ -302,6 +315,21 @@ h1{
 .tag.badge-new{background:var(--badge-new);}
 .info .addr{font-size:12.5px; color:var(--ink-soft); line-height:1.6;}
 .info .addr .dot{margin:0 6px; opacity:0.5;}
+.tag.personal-tag{border-color:transparent; color:#fff; font-weight:700;}
+.tag.state-가고싶음{background:#3C6E5A;}
+.tag.state-가봄{background:#2C4A7C;}
+.tag.state-재방문{background:#A9822F;}
+.tag.state-별로였음{background:#6B5C3E;}
+.card-actions{display:flex; gap:5px; flex-wrap:wrap; align-items:center; margin-top:10px;}
+.personal-action, .map-action, .select-action{
+  border:1px solid #C9B896; background:rgba(255,255,255,0.5); color:var(--ink-soft);
+  border-radius:2px; padding:5px 7px; font-family:var(--sans); font-size:10.5px; font-weight:700;
+  line-height:1.2; text-decoration:none; cursor:pointer;
+}
+.personal-action:hover, .map-action:hover{border-color:var(--cover); color:var(--cover); background:#fff;}
+.personal-action.active{background:var(--cover); border-color:var(--cover); color:#fff;}
+.select-action{display:flex; align-items:center; gap:4px; cursor:pointer;}
+.select-action input{accent-color:var(--cover);}
 
 .ratings{
   text-align:right;
