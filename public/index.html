@@ -67,6 +67,10 @@
       </select>
     </div>
     <div class="field">
+      <label for="gradeMin">최소 등급</label>
+      <select id="gradeMin"><option value="">전체</option><option value="A++">A++ 이상</option><option value="A+">A+ 이상</option><option value="A">A 이상</option><option value="B">B 이상</option><option value="C">C 이상</option><option value="D">D 이상</option><option value="E">E 이상</option></select>
+    </div>
+    <div class="field">
       <label for="badge">태그</label>
       <select id="badge">
         <option value="">전체</option>
@@ -90,7 +94,11 @@
         <option value="가봄">가봄</option>
         <option value="재방문">재방문</option>
         <option value="별로였음">별로였음</option>
+        <option value="지도 저장 대상">지도 저장 대상</option>
       </select>
+    </div>
+    <div class="field checkbox-field">
+      <label><input type="checkbox" id="excludeNew"> 신규 제외</label>
     </div>
     <div class="field checkbox-field">
       <label><input type="checkbox" id="includeClosed"> 폐업 포함</label>
@@ -103,6 +111,7 @@
   <div class="meta-actions">
     <span id="personalSummary">내 기록 0곳</span>
     <button class="legend-btn" id="copyWant">가고싶음 복사</button>
+    <button class="legend-btn" id="copyMapTargets">지도 저장 대상 복사</button>
     <button class="legend-btn" id="rubricToggle">등급 기준 보기 ▾</button>
   </div>
 </div>

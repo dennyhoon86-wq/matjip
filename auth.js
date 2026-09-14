@@ -97,7 +97,26 @@ function createAuth() {
     return supabase(`/rest/v1/personal_states?user_id=eq.${encodeURIComponent(userId)}&restaurant_key=eq.${encodeURIComponent(restaurantKey)}`, { method: 'DELETE' });
   }
 
-  return { config, required, identityFromRequest, requireApproved, requireOwner, personalStates, setPersonalStates, deletePersonalState, supabase };
+  async function personalRecords(userId) {
+    return supabase(`/rest/v1/personal_records?user_id=eq.${encodeURIComponent(userId)}&select=restaurant_key,map_target,memo,personal_rating,updated_at`);
+  }
+
+  async function setPersonalRecords(userId, records) {
+    const rows = records.filter(r => typeof r?.restaurant_key === 'string' && r.restaurant_key.length <= 1000)
+      .slice(0, 10000).map(r => ({
+        user_id: userId,
+        restaurant_key: r.restaurant_key,
+        map_target: Boolean(r.map_target),
+        memo: String(r.memo || '').slice(0, 2000),
+        personal_rating: r.personal_rating == null || r.personal_rating === '' ? null : Number(r.personal_rating),
+      })).filter(r => r.personal_rating == null || (Number.isFinite(r.personal_rating) && r.personal_rating >= 0 && r.personal_rating <= 5));
+    if (!rows.length) return [];
+    return supabase('/rest/v1/personal_records?on_conflict=user_id,restaurant_key', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify(rows),
+    });
+  }
+
+  return { config, required, identityFromRequest, requireApproved, requireOwner, personalStates, setPersonalStates, deletePersonalState, personalRecords, setPersonalRecords, supabase };
 }
 
 module.exports = { createAuth };

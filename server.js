@@ -124,6 +124,14 @@ app.delete('/api/personal-states', auth.requireApproved, async (req, res) => {
     res.status(204).end();
   } catch (error) { res.status(500).json({ error: '개인 기록을 삭제하지 못했습니다.' }); }
 });
+app.get('/api/personal-records', auth.requireApproved, async (req, res) => {
+  try { res.json({ records: auth.required ? await auth.personalRecords(req.identity.id) : [] }); }
+  catch (error) { res.status(500).json({ error: '개인 메모를 불러오지 못했습니다.' }); }
+});
+app.post('/api/personal-records', auth.requireApproved, async (req, res) => {
+  try { res.json({ records: auth.required ? await auth.setPersonalRecords(req.identity.id, Array.isArray(req.body?.records) ? req.body.records : []) : [] }); }
+  catch (error) { res.status(500).json({ error: '개인 메모를 저장하지 못했습니다.' }); }
+});
 app.get('/api/admin/users', auth.requireOwner, async (req, res) => {
   try { res.json({ users: auth.required ? await auth.supabase('/rest/v1/profiles?select=id,email,full_name,role,created_at&order=created_at.desc') : [] }); }
   catch (error) { res.status(500).json({ error: '승인 목록을 불러오지 못했습니다.' }); }
@@ -174,7 +182,7 @@ app.get('/api/gu', auth.requireApproved, (req, res) => {
 
 app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const {
-    q = '', region = '', gu = '', category = '', grade = '', badge = '', station = '',
+    q = '', region = '', gu = '', category = '', grade = '', gradeMin = '', badge = '', station = '', excludeNew = '',
     status = '영업', sort = 'avg_desc', page = '1', pageSize = '30',
   } = req.query;
 
@@ -214,7 +222,12 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   if (gu) { where.push('gu = @gu'); params.gu = gu; }
   if (category) { where.push('category = @category'); params.category = category; }
   if (grade) { where.push('grade = @grade'); params.grade = grade; }
+  if (gradeMin && GRADE_ORDER.includes(gradeMin)) {
+    const eligible = GRADE_ORDER.slice(0, GRADE_ORDER.indexOf(gradeMin) + 1);
+    where.push(`grade IN (${eligible.map((g, i) => { params[`gmin${i}`] = g; return `@gmin${i}`; }).join(', ')})`);
+  }
   if (badge) { where.push('badges LIKE @badge'); params.badge = `%"name":"${badge}"%`; }
+  if (excludeNew === 'true') where.push(`badges NOT LIKE '%"name":"신규"%'`);
   if (station) { where.push('subway = @station'); params.station = station; }
   if (status && status !== '전체') { where.push('status = @status'); params.status = status; }
 

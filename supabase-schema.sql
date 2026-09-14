@@ -19,3 +19,16 @@ create table if not exists public.personal_states (
 
 alter table public.profiles enable row level security;
 alter table public.personal_states enable row level security;
+
+-- 지도 저장 큐와 개인 감상 기록은 기존 상태 기록과 별도로 보관합니다.
+create table if not exists public.personal_records (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  restaurant_key text not null,
+  map_target boolean not null default false,
+  memo text not null default '',
+  personal_rating numeric(2,1) check (personal_rating is null or (personal_rating >= 0 and personal_rating <= 5)),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, restaurant_key)
+);
+
+alter table public.personal_records enable row level security;

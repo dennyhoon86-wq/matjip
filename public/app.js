@@ -15,10 +15,12 @@ const guEl = document.getElementById('gu');
 const catEl = document.getElementById('cat');
 const catList = document.getElementById('catList');
 const gradeEl = document.getElementById('grade');
+const gradeMinEl = document.getElementById('gradeMin');
 const badgeEl = document.getElementById('badge');
 const sortEl = document.getElementById('sort');
 const includeClosedEl = document.getElementById('includeClosed');
 const personalFilterEl = document.getElementById('personalFilter');
+const excludeNewEl = document.getElementById('excludeNew');
 
 const listEl = document.getElementById('list');
 const emptyEl = document.getElementById('emptyState');
@@ -37,6 +39,7 @@ const selectionCountEl = document.getElementById('selectionCount');
 const copySelectedBtn = document.getElementById('copySelected');
 const clearSelectedBtn = document.getElementById('clearSelected');
 const copyWantBtn = document.getElementById('copyWant');
+const copyMapTargetsBtn = document.getElementById('copyMapTargets');
 const authGateEl = document.getElementById('authGate');
 const authTitleEl = document.getElementById('authTitle');
 const authMessageEl = document.getElementById('authMessage');
@@ -50,9 +53,11 @@ const adminUsersEl = document.getElementById('adminUsers');
 
 let state = { page: 1, pageSize: 30, total: 0 };
 const PERSONAL_STORAGE_KEY = 'misik-jangbu-personal-v1';
+const PERSONAL_RECORD_STORAGE_KEY = 'misik-jangbu-personal-records-v1';
 const PERSONAL_STATES = ['가고싶음', '가봄', '재방문', '별로였음'];
 const selectedKeys = new Set();
 let personal = {};
+let personalRecords = {};
 let authConfig = { enabled: false };
 let supabaseClient = null;
 let currentProfile = null;
@@ -73,6 +78,37 @@ function savePersonal(personal) {
 
 function personalStateFor(d) {
   return personal[restaurantKey(d)]?.state || '';
+}
+
+function personalRecordFor(d) {
+  return personalRecords[restaurantKey(d)] || { mapTarget: false, memo: '', personalRating: '' };
+}
+
+function loadPersonalRecords() {
+  try { return JSON.parse(localStorage.getItem(PERSONAL_RECORD_STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function savePersonalRecords(records) {
+  personalRecords = records;
+  localStorage.setItem(PERSONAL_RECORD_STORAGE_KEY, JSON.stringify(records));
+  updatePersonalSummary();
+}
+
+async function setPersonalRecord(d, patch) {
+  const key = restaurantKey(d);
+  const before = personalRecordFor(d);
+  const next = { ...before, ...patch };
+  personalRecords[key] = next;
+  savePersonalRecords(personalRecords);
+  if (!authConfig.enabled) return;
+  try {
+    await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, map_target: next.mapTarget, memo: next.memo, personal_rating: next.personalRating }] }) });
+  } catch (error) {
+    personalRecords[key] = before;
+    savePersonalRecords(personalRecords);
+    throw error;
+  }
 }
 
 async function setPersonalState(d, nextState) {
@@ -101,7 +137,8 @@ function keysForPersonalState(filter = '') {
 function updatePersonalSummary() {
   const entries = Object.values(personal);
   const wanted = entries.filter(x => x.state === '가고싶음').length;
-  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳`;
+  const mapTargets = Object.values(personalRecords).filter(x => x.mapTarget).length;
+  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 지도 저장 ${mapTargets.toLocaleString()}곳`;
 }
 
 function updateSelectionBar() {
@@ -186,6 +223,16 @@ async function syncPersonalRecords() {
   Object.assign(merged, local);
   personal = merged;
   savePersonal(personal);
+
+  const localRecords = loadPersonalRecords();
+  const recordResponse = await apiFetch('/api/personal-records');
+  const remoteRecords = await recordResponse.json();
+  const mergedRecords = {};
+  (remoteRecords.records || []).forEach(r => { mergedRecords[r.restaurant_key] = { mapTarget: Boolean(r.map_target), memo: r.memo || '', personalRating: r.personal_rating ?? '' }; });
+  const missingRecords = Object.entries(localRecords).filter(([key]) => !mergedRecords[key]).map(([restaurant_key, value]) => ({ restaurant_key, map_target: value.mapTarget, memo: value.memo || '', personal_rating: value.personalRating || null }));
+  if (missingRecords.length) await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: missingRecords }) });
+  Object.assign(mergedRecords, localRecords);
+  savePersonalRecords(mergedRecords);
 }
 
 async function loadAdminUsers() {
@@ -329,6 +376,7 @@ function renderRows(rows) {
       : `<span class="none">평점 없음</span>`;
     const addrParts = [d.address, d.subway ? d.subway + '역' : null].filter(Boolean);
     const currentState = personalStateFor(d);
+    const record = personalRecordFor(d);
     const key = restaurantKey(d);
     const actions = PERSONAL_STATES.map(stateName => `
       <button class="personal-action ${currentState === stateName ? 'active' : ''}" data-action="personal" data-state="${stateName}">${stateName}</button>
@@ -341,13 +389,20 @@ function renderRows(rows) {
           ${d.status === '폐업' ? '<span class="tag closed-tag">폐업</span>' : ''}
           ${badgeTags(d)}
           ${personalTag(currentState)}
+          ${record.mapTarget ? '<span class="tag map-target-tag">지도 저장</span>' : ''}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
         <div class="card-actions">
           ${actions}
           <button class="map-action" data-action="copy">복사</button>
           <a class="map-action" href="${naverSearchUrl(d)}" target="_blank" rel="noopener">네이버지도</a>
+          <button class="map-action ${record.mapTarget ? 'active' : ''}" data-action="map-target">${record.mapTarget ? '지도 저장 해제' : '지도 저장 대상'}</button>
           <label class="select-action"><input type="checkbox" data-action="select" ${selectedKeys.has(key) ? 'checked' : ''}> 선택</label>
+        </div>
+        <div class="record-editor">
+          <textarea data-record="memo" placeholder="나만의 메모">${record.memo || ''}</textarea>
+          <input data-record="rating" type="number" min="0" max="5" step="0.5" placeholder="내 평점" value="${record.personalRating ?? ''}">
+          <button data-action="save-record">메모 저장</button>
         </div>
       </div>
       <div class="ratings">
@@ -368,9 +423,11 @@ function buildParams() {
   if (guEl.value) p.set('gu', guEl.value);
   if (catEl.value.trim()) p.set('category', catEl.value.trim());
   if (gradeEl.value) p.set('grade', gradeEl.value);
+  if (gradeMinEl.value) p.set('gradeMin', gradeMinEl.value);
   if (badgeEl.value) p.set('badge', badgeEl.value);
   p.set('sort', sortEl.value);
   p.set('status', includeClosedEl.checked ? '전체' : '영업');
+  if (excludeNewEl.checked) p.set('excludeNew', 'true');
   p.set('page', state.page);
   p.set('pageSize', state.pageSize);
   return p;
@@ -414,8 +471,10 @@ async function search() {
 
 async function searchPersonal() {
   const filter = personalFilterEl.value;
-  const keys = keysForPersonalState(filter);
-  const rows = await fetchPersonalRows(keys);
+  const keys = filter === '지도 저장 대상'
+    ? Object.entries(personalRecords).filter(([, value]) => value.mapTarget).map(([key]) => key)
+    : keysForPersonalState(filter);
+  const rows = filterPersonalRows(await fetchPersonalRows(keys));
   state.total = rows.length;
   const startIdx = (state.page - 1) * state.pageSize;
   const pageRows = rows.slice(startIdx, startIdx + state.pageSize);
@@ -432,6 +491,24 @@ async function searchPersonal() {
   nextBtn.disabled = state.page >= totalPages;
 }
 
+function filterPersonalRows(rows) {
+  const gradeOrder = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
+  const q = qEl.value.trim().toLowerCase();
+  return rows.filter(d => {
+    const haystack = `${d.name || ''} ${d.category || ''} ${d.address || ''}`.toLowerCase();
+    if (q && !haystack.includes(q)) return false;
+    if (regionEl.value && d.region !== regionEl.value) return false;
+    if (guEl.value && d.gu !== guEl.value) return false;
+    if (catEl.value.trim() && d.category !== catEl.value.trim()) return false;
+    if (gradeEl.value && d.grade !== gradeEl.value) return false;
+    if (gradeMinEl.value && (!d.grade || gradeOrder.indexOf(d.grade) > gradeOrder.indexOf(gradeMinEl.value))) return false;
+    if (badgeEl.value && !(d.badges || []).some(b => b.name === badgeEl.value)) return false;
+    if (excludeNewEl.checked && (d.badges || []).some(b => b.name === '신규')) return false;
+    if (!includeClosedEl.checked && d.status !== '영업') return false;
+    return true;
+  });
+}
+
 let debounceTimer;
 function triggerSearch(resetPage = true) {
   if (resetPage) state.page = 1;
@@ -442,9 +519,11 @@ function triggerSearch(resetPage = true) {
 qEl.addEventListener('input', () => triggerSearch());
 catEl.addEventListener('input', () => triggerSearch());
 gradeEl.addEventListener('change', () => triggerSearch());
+gradeMinEl.addEventListener('change', () => triggerSearch());
 badgeEl.addEventListener('change', () => triggerSearch());
 sortEl.addEventListener('change', () => triggerSearch());
 includeClosedEl.addEventListener('change', () => triggerSearch());
+excludeNewEl.addEventListener('change', () => triggerSearch());
 personalFilterEl.addEventListener('change', () => triggerSearch());
 regionEl.addEventListener('change', () => {
   loadGuOptions(regionEl.value);
@@ -471,6 +550,21 @@ listEl.addEventListener('click', async (event) => {
       await setPersonalState(d, button.dataset.state);
       if (personalFilterEl.value && personalFilterEl.value !== personalStateFor(d)) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+    } catch (error) { metaEl.textContent = error.message; }
+  }
+  if (button.dataset.action === 'map-target') {
+    try {
+      await setPersonalRecord(d, { mapTarget: !personalRecordFor(d).mapTarget });
+      if (personalFilterEl.value === '지도 저장 대상' && !personalRecordFor(d).mapTarget) triggerSearch(false);
+      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+    } catch (error) { metaEl.textContent = error.message; }
+  }
+  if (button.dataset.action === 'save-record') {
+    try {
+      const memo = card.querySelector('[data-record="memo"]').value.trim();
+      const rating = card.querySelector('[data-record="rating"]').value;
+      await setPersonalRecord(d, { memo, personalRating: rating === '' ? '' : Number(rating) });
+      metaEl.textContent = `${d.name}의 개인 기록을 저장했습니다.`;
     } catch (error) { metaEl.textContent = error.message; }
   }
   if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 네이버지도용 정보 복사됨`);
@@ -501,6 +595,12 @@ copyWantBtn.addEventListener('click', async () => {
   await copyText(rows.map(copyLine).join('\n'), `가고싶음 ${rows.length.toLocaleString()}곳 네이버지도용 정보 복사됨`);
 });
 
+copyMapTargetsBtn.addEventListener('click', async () => {
+  const keys = Object.entries(personalRecords).filter(([, value]) => value.mapTarget).map(([key]) => key);
+  const rows = await fetchPersonalRows(keys);
+  await copyText(rows.map(copyLine).join('\n'), `지도 저장 대상 ${rows.length.toLocaleString()}곳 네이버지도용 정보 복사됨`);
+});
+
 const rubricToggle = document.getElementById('rubricToggle');
 const rubricPanel = document.getElementById('rubricPanel');
 rubricToggle.addEventListener('click', () => {
@@ -526,6 +626,7 @@ adminUsersEl.addEventListener('click', async (event) => {
 (async function init() {
   if (!(await initAuthentication())) return;
   personal = loadPersonal();
+  personalRecords = loadPersonalRecords();
   await loadMeta();
   await loadGuOptions('');
   updatePersonalSummary();
