@@ -25,6 +25,8 @@ create table if not exists public.personal_records (
   user_id uuid not null references public.profiles(id) on delete cascade,
   restaurant_key text not null,
   map_target boolean not null default false,
+  map_saved boolean not null default false,
+  map_saved_at timestamptz,
   memo text not null default '',
   personal_rating numeric(2,1) check (personal_rating is null or (personal_rating >= 0 and personal_rating <= 5)),
   updated_at timestamptz not null default now(),
@@ -32,3 +34,7 @@ create table if not exists public.personal_records (
 );
 
 alter table public.personal_records enable row level security;
+
+-- 기존에 생성된 테이블에도 저장 작업 상태를 안전하게 추가합니다.
+alter table public.personal_records add column if not exists map_saved boolean not null default false;
+alter table public.personal_records add column if not exists map_saved_at timestamptz;
