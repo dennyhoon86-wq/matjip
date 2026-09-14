@@ -366,6 +366,16 @@ function personalTag(stateName) {
   return stateName ? `<span class="tag personal-tag state-${stateName}">${stateName}</span>` : '';
 }
 
+function personalRatingOptions(value) {
+  const current = value === '' || value == null ? '' : String(value);
+  const options = ['<option value="">내 평점</option>'];
+  for (let rating = 0.5; rating <= 5; rating += 0.5) {
+    const label = rating.toFixed(1);
+    options.push(`<option value="${label}" ${current === label ? 'selected' : ''}>내 평점 ${label}</option>`);
+  }
+  return options.join('');
+}
+
 function renderRows(rows) {
   listEl.innerHTML = '';
   rows.forEach(d => {
@@ -402,12 +412,8 @@ function renderRows(rows) {
           <a class="map-action" href="${naverSearchUrl(d)}" target="_blank" rel="noopener">네이버지도</a>
           <button class="map-action ${record.mapTarget ? 'active' : ''}" data-action="map-target">${record.mapTarget ? '지도 저장 해제' : '지도 저장 대상'}</button>
           ${record.mapTarget ? `<button class="map-action ${record.mapSaved ? 'active' : ''}" data-action="map-saved">${record.mapSaved ? '저장 완료 취소' : '네이버 저장 완료'}</button>` : ''}
+          <select class="personal-rating-select" data-action="rating">${personalRatingOptions(record.personalRating)}</select>
           <label class="select-action"><input type="checkbox" data-action="select" ${selectedKeys.has(key) ? 'checked' : ''}> 선택</label>
-        </div>
-        <div class="record-editor">
-          <textarea data-record="memo" placeholder="나만의 메모">${record.memo || ''}</textarea>
-          <input data-record="rating" type="number" min="0" max="5" step="0.5" placeholder="내 평점" value="${record.personalRating ?? ''}">
-          <button data-action="save-record">메모 저장</button>
         </div>
       </div>
       <div class="ratings">
@@ -581,18 +587,18 @@ listEl.addEventListener('click', async (event) => {
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
-  if (button.dataset.action === 'save-record') {
-    try {
-      const memo = card.querySelector('[data-record="memo"]').value.trim();
-      const rating = card.querySelector('[data-record="rating"]').value;
-      await setPersonalRecord(d, { memo, personalRating: rating === '' ? '' : Number(rating) });
-      metaEl.textContent = `${d.name}의 개인 기록을 저장했습니다.`;
-    } catch (error) { metaEl.textContent = error.message; }
-  }
   if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 네이버지도용 정보 복사됨`);
 });
 
 listEl.addEventListener('change', (event) => {
+  if (event.target.dataset.action === 'rating') {
+    const d = event.target.closest('.card')?.__restaurant;
+    if (!d) return;
+    setPersonalRecord(d, { personalRating: event.target.value === '' ? '' : Number(event.target.value) })
+      .then(() => { metaEl.textContent = `${d.name}의 내 평점을 저장했습니다.`; })
+      .catch(error => { metaEl.textContent = error.message; });
+    return;
+  }
   if (event.target.dataset.action !== 'select') return;
   const d = event.target.closest('.card')?.__restaurant;
   if (!d) return;

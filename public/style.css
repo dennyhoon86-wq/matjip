@@ -354,11 +354,7 @@ body.auth-pending .auth-gate{display:flex;}
 .personal-action:hover, .map-action:hover{border-color:var(--cover); color:var(--cover); background:#fff;}
 .personal-action.active{background:var(--cover); border-color:var(--cover); color:#fff;}
 .map-action.active{background:#6F1B39; border-color:#6F1B39; color:#fff;}
-.record-editor{margin-top:10px; display:grid; grid-template-columns:1fr 105px auto; gap:6px; align-items:center;}
-.record-editor input,.record-editor textarea{width:100%; border:1px solid #C9B896; background:#fff; border-radius:2px; padding:6px 8px; font:12px var(--sans); color:var(--ink);}
-.record-editor textarea{resize:vertical; min-height:34px;}
-.record-editor button{border:1px solid var(--cover); background:var(--cover); color:#fff; border-radius:2px; padding:7px 9px; font:700 11px var(--sans); cursor:pointer;}
-@media (max-width:640px){.record-editor{grid-template-columns:1fr 82px;}.record-editor button{grid-column:1/-1;}}
+.personal-rating-select{border:1px solid #C9B896; background:rgba(255,255,255,.5); color:var(--ink-soft); border-radius:2px; padding:5px 6px; font:700 10.5px var(--sans); cursor:pointer;}
 .select-action{display:flex; align-items:center; gap:4px; cursor:pointer;}
 .select-action input{accent-color:var(--cover);}
 
