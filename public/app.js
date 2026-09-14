@@ -446,13 +446,21 @@ async function search() {
   const data = await res.json();
   state.total = data.total;
 
-  if (data.inferred && (data.inferred.gu || data.inferred.dong || data.inferred.station || data.inferred.categoryTerms.length || data.inferred.badge)) {
+  if (data.inferred && (data.inferred.gu || data.inferred.dong || data.inferred.station || data.inferred.categoryTerms.length || data.inferred.badge || data.inferred.gradeMin || data.inferred.avgMin != null || data.inferred.avgMax != null || data.inferred.priceMin != null || data.inferred.priceMax != null || data.inferred.excludeNew)) {
     const parts = [];
     if (data.inferred.gu) parts.push(data.inferred.gu);
     if (data.inferred.dong) parts.push(data.inferred.dong);
     if (data.inferred.station) parts.push(data.inferred.station + '역');
     if (data.inferred.categoryTerms.length) parts.push(data.inferred.categoryTerms.join(', '));
     if (data.inferred.badge) parts.push(data.inferred.badge + ' 태그');
+    if (data.inferred.gradeMin) parts.push(`${data.inferred.gradeMin} 이상`);
+    if (data.inferred.avgMin != null) parts.push(`평점 ${data.inferred.avgMin} 이상`);
+    if (data.inferred.avgMax != null) parts.push(`평점 ${data.inferred.avgMax} 이하`);
+    if (data.inferred.priceMin != null || data.inferred.priceMax != null) {
+      const won = value => `${(value / 10000).toLocaleString()}만원`;
+      parts.push(data.inferred.priceMin != null && data.inferred.priceMax != null ? `${won(data.inferred.priceMin)}~${won(data.inferred.priceMax)}` : data.inferred.priceMin != null ? `${won(data.inferred.priceMin)} 이상` : `${won(data.inferred.priceMax)} 이하`);
+    }
+    if (data.inferred.excludeNew) parts.push('신규 제외');
     smartHintEl.textContent = `🔎 "${parts.join(' · ')}"(으)로 해석해서 검색 중`;
     smartHintEl.style.display = 'block';
   } else {

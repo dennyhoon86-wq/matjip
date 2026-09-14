@@ -46,6 +46,15 @@ const BADGE_ALIAS_RAW = {
 const BADGE_ALIAS = {};
 for (const [k, v] of Object.entries(BADGE_ALIAS_RAW)) if (BADGE_SET.has(v)) BADGE_ALIAS[k] = v;
 
+// 문장형 검색에서 자주 쓰는 업종 표현을 장부 분류로 연결합니다.
+const CATEGORY_ALIAS = {
+  '한식': ['한식'], '일식': ['일식'], '스시': ['스시', '일식'], '오마카세': ['오마카세'],
+  '중식': ['중식'], '중국집': ['중식'], '양식': ['양식', '이탈리아'], '파스타': ['파스타', '이탈리아'],
+  '피자': ['피자'], '고기': ['육류'], '소고기': ['소고기'], '돼지고기': ['돼지고기'],
+  '곱창': ['곱창'], '치킨': ['치킨'], '국밥': ['국밥'], '카페': ['카페'], '브런치': ['브런치'],
+  '술': ['이자카야', '요리주점', '호프', '와인'], '술집': ['이자카야', '요리주점', '호프', '와인'],
+};
+
 const BADGE_COUNTS = {};
 for (const name of BADGE_SET) {
   BADGE_COUNTS[name] = db.prepare('SELECT COUNT(*) c FROM restaurants WHERE badges LIKE ?').get(`%"name":"${name}"%`).c;
@@ -59,6 +68,11 @@ const FILLER_WORDS = new Set([
   '갈만한', '갈만한곳', '먹을만한', '먹을만한곳', '괜찮은', '괜찮은곳', '있나요', '있을까', '있나',
   '추천', '추천해줘', '추천좀', '해줘', '좀', '알려줘', '데', '곳', '집', '맛집',
 ]);
+const CONTEXT_WORDS = new Set([
+  '근처', '주변', '쪽', '에서', '조용한', '조용히', '저녁', '점심', '아침', '밤', '식사', '식사로',
+  '데이트', '회식', '모임', '부모님', '아이와', '혼밥', '혼자', '여럿', '명', '인', '인당', '위주', '곳', '집',
+  '이상', '이하', '미만', '부터', '빼고', '제외', '제외하고', '신규', '평점', '등급',
+]);
 
 function stripFiller(token) {
   let t = token;
@@ -71,15 +85,46 @@ function stripFiller(token) {
   return t;
 }
 
+function parsePriceWon(raw) {
+  const amount = Number(raw.replace(/,/g, ''));
+  if (!Number.isFinite(amount)) return null;
+  if (/만/.test(raw)) return amount * 10000;
+  if (/천/.test(raw)) return amount * 1000;
+  return amount >= 1000 ? amount : amount * 10000;
+}
+
 function parseSmartQuery(q) {
   const raw = String(q || '').trim();
-  const result = { gu: null, dong: null, station: null, categoryTerms: [], badge: null, leftoverTokens: [] };
+  const result = { gu: null, dong: null, station: null, categoryTerms: [], badge: null, gradeMin: null, avgMin: null, avgMax: null, priceMin: null, priceMax: null, excludeNew: false, leftoverTokens: [] };
   if (!raw) return result;
 
-  const tokens = raw.split(/\s+/).filter(Boolean);
+  const compact = raw.replace(/[，,\/]/g, ' ').replace(/\s+/g, ' ');
+  const gradeMatch = compact.match(/(?:^|\s)(A\+\+|A\+|A|B|C|D|E)\s*(?:등급\s*)?(이상|부터)(?=\s|$)/i);
+  if (gradeMatch && GRADE_ORDER.includes(gradeMatch[1].toUpperCase())) result.gradeMin = gradeMatch[1].toUpperCase();
+  const ratingMatch = compact.match(/(\d(?:\.\d+)?)\s*(?:점|평점)?\s*(이상|부터|이하|미만)/);
+  if (ratingMatch) {
+    const rating = Number(ratingMatch[1]);
+    if (rating >= 0 && rating <= 5) {
+      if (['이상', '부터'].includes(ratingMatch[2])) result.avgMin = rating;
+      else result.avgMax = rating;
+    }
+  }
+  const rangePrice = compact.match(/(?:1인|인당)?\s*(\d+(?:\.\d+)?\s*(?:만|천)?원?)\s*(?:~|[-–])\s*(\d+(?:\.\d+)?\s*(?:만|천)?원?)/);
+  if (rangePrice) { result.priceMin = parsePriceWon(rangePrice[1]); result.priceMax = parsePriceWon(rangePrice[2]); }
+  const onePrice = compact.match(/(?:1인|인당)?\s*(\d+(?:\.\d+)?\s*(?:만|천)?원?)\s*(이하|미만|이상|부터)/);
+  if (onePrice) {
+    const price = parsePriceWon(onePrice[1]);
+    if (['이하', '미만'].includes(onePrice[2])) result.priceMax = price;
+    else result.priceMin = price;
+  }
+  if (/신규\s*(?:제외|빼고|빼|제외하고)/.test(compact)) result.excludeNew = true;
+
+  const tokens = compact.split(/\s+/).filter(Boolean);
   for (const tok of tokens) {
-    const stripped = stripFiller(tok);
+    const stripped = stripFiller(tok.replace(/[()]/g, ''));
     if (!stripped) continue; // 순수 군더더기 표현이면 버림
+
+    if (CONTEXT_WORDS.has(stripped) || /^\d+명?$/.test(stripped) || /^\d+(?:\.\d+)?(?:만|천)?원?$/.test(stripped) || /^(A\+\+|A\+|A|B|C|D|E)$/.test(stripped)) continue;
 
     if (!result.badge && BADGE_SET.has(stripped)) { result.badge = stripped; continue; }
     if (!result.badge && BADGE_ALIAS[stripped]) { result.badge = BADGE_ALIAS[stripped]; continue; }
@@ -91,8 +136,9 @@ function parseSmartQuery(q) {
     if (!result.gu && GU_ALIAS[stripped]) { result.gu = GU_ALIAS[stripped]; continue; }
     if (!result.dong && DONG_SET.has(stripped)) { result.dong = stripped; continue; }
 
-    if (stripped.length >= 2 && CATEGORY_LIST.some(c => c.includes(stripped))) {
-      result.categoryTerms.push(stripped);
+    const categoryTerms = CATEGORY_ALIAS[stripped] || (stripped.length >= 2 && CATEGORY_LIST.some(c => c.includes(stripped)) ? [stripped] : []);
+    if (categoryTerms.length) {
+      result.categoryTerms.push(...categoryTerms);
       continue;
     }
 
@@ -193,10 +239,10 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const trimmedQ = q.trim();
   if (trimmedQ) {
     const smart = parseSmartQuery(trimmedQ);
-    const usedInference = (!gu && smart.gu) || (!gu && smart.dong) || (!station && smart.station) || (!category && smart.categoryTerms.length) || (!badge && smart.badge);
+    const usedInference = (!gu && smart.gu) || (!gu && smart.dong) || (!station && smart.station) || (!category && smart.categoryTerms.length) || (!badge && smart.badge) || smart.gradeMin || smart.avgMin != null || smart.avgMax != null || smart.priceMin != null || smart.priceMax != null || smart.excludeNew;
 
     if (usedInference) {
-      inferred = { gu: smart.gu, dong: smart.dong, station: station ? null : smart.station, categoryTerms: smart.categoryTerms, badge: badge ? null : smart.badge };
+      inferred = { gu: smart.gu, dong: smart.dong, station: station ? null : smart.station, categoryTerms: smart.categoryTerms, badge: badge ? null : smart.badge, gradeMin: smart.gradeMin, avgMin: smart.avgMin, avgMax: smart.avgMax, priceMin: smart.priceMin, priceMax: smart.priceMax, excludeNew: smart.excludeNew };
       if (!gu && smart.gu) { where.push('gu = @sgu'); params.sgu = smart.gu; }
       if (!gu && !smart.gu && smart.dong) { where.push('dong = @sdong'); params.sdong = smart.dong; }
       if (!station && smart.station) { where.push('subway = @sstation'); params.sstation = smart.station; }
@@ -208,6 +254,17 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
         where.push(`(${catClauses.join(' OR ')})`);
       }
       if (!badge && smart.badge) { where.push('badges LIKE @sbadge'); params.sbadge = `%"name":"${smart.badge}"%`; }
+      if (smart.gradeMin) {
+        const eligible = GRADE_ORDER.slice(0, GRADE_ORDER.indexOf(smart.gradeMin) + 1);
+        where.push(`grade IN (${eligible.map((g, i) => { params[`sgrade${i}`] = g; return `@sgrade${i}`; }).join(', ')})`);
+      }
+      if (smart.avgMin != null) { where.push('avg >= @savgMin'); params.savgMin = smart.avgMin; }
+      if (smart.avgMax != null) { where.push('avg <= @savgMax'); params.savgMax = smart.avgMax; }
+      const priceLowSql = "CAST(REPLACE(SUBSTR(price_range, 1, INSTR(price_range, ' ~ ') - 1), ',', '') AS INTEGER)";
+      const priceHighSql = "CAST(REPLACE(SUBSTR(price_range, INSTR(price_range, ' ~ ') + 3), ',', '') AS INTEGER)";
+      if (smart.priceMin != null) { where.push(`price_range IS NOT NULL AND ${priceHighSql} >= @spriceMin`); params.spriceMin = smart.priceMin; }
+      if (smart.priceMax != null) { where.push(`price_range IS NOT NULL AND ${priceLowSql} <= @spriceMax`); params.spriceMax = smart.priceMax; }
+      if (smart.excludeNew) where.push(`badges NOT LIKE '%"name":"신규"%'`);
       const leftover = smart.leftoverTokens.join(' ').trim();
       if (leftover) {
         where.push('(name LIKE @q OR category LIKE @q OR address LIKE @q)');
