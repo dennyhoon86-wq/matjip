@@ -41,6 +41,12 @@ const clearSelectedBtn = document.getElementById('clearSelected');
 const copyWantBtn = document.getElementById('copyWant');
 const copyMapTargetsBtn = document.getElementById('copyMapTargets');
 const openMapQueueBtn = document.getElementById('openMapQueue');
+const openLedgerBtn = document.getElementById('openLedger');
+const closeLedgerBtn = document.getElementById('closeLedger');
+const ledgerDashboardEl = document.getElementById('ledgerDashboard');
+const ledgerStatsEl = document.getElementById('ledgerStats');
+const ledgerMapRecentEl = document.getElementById('ledgerMapRecent');
+const ledgerPersonalRecentEl = document.getElementById('ledgerPersonalRecent');
 const authGateEl = document.getElementById('authGate');
 const authTitleEl = document.getElementById('authTitle');
 const authMessageEl = document.getElementById('authMessage');
@@ -62,6 +68,7 @@ let personalRecords = {};
 let authConfig = { enabled: false };
 let supabaseClient = null;
 let currentProfile = null;
+let ledgerLoadVersion = 0;
 
 function restaurantKey(d) {
   return `${d.name}\u001f${d.address || ''}`;
@@ -142,6 +149,98 @@ function updatePersonalSummary() {
   const saved = Object.values(personalRecords).filter(x => x.mapTarget && x.mapSaved).length;
   const pending = mapTargets - saved;
   personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 지도 저장 대기 ${pending.toLocaleString()}곳 / 완료 ${saved.toLocaleString()}곳`;
+  renderLedgerStats();
+}
+
+function personalStateCount(stateName) {
+  return Object.values(personal).filter(value => value.state === stateName).length;
+}
+
+function renderLedgerStats() {
+  if (!ledgerStatsEl) return;
+  const mapTargets = Object.values(personalRecords).filter(value => value.mapTarget).length;
+  const mapSaved = Object.values(personalRecords).filter(value => value.mapTarget && value.mapSaved).length;
+  const pending = mapTargets - mapSaved;
+  const stat = (label, count, filter, detail) => `
+    <button class="ledger-stat" data-ledger-filter="${filter || ''}" ${filter ? '' : 'disabled'}>
+      <strong>${count.toLocaleString()}</strong><span>${label}</span>${detail ? `<small>${detail}</small>` : ''}
+    </button>`;
+  ledgerStatsEl.innerHTML = [
+    stat('지도 저장 대기', pending, '지도 저장 대기', '지금 네이버에 옮길 곳'),
+    stat('가고싶음', personalStateCount('가고싶음'), '가고싶음', '다음 약속 후보'),
+    stat('가봄', personalStateCount('가봄'), '가봄', '방문 기록'),
+    stat('재방문', personalStateCount('재방문'), '재방문', '또 갈 곳'),
+    stat('별로였음', personalStateCount('별로였음'), '별로였음', '추천에서 제외'),
+    stat('지도 저장 완료', mapSaved, '지도 저장 완료', '네이버에 보관됨'),
+  ].join('');
+}
+
+function recentKeys(source, limit = 5) {
+  const updatedAt = value => typeof value === 'number' ? value : (Date.parse(value || '') || 0);
+  return Object.entries(source)
+    .sort((a, b) => updatedAt(b[1].mapSavedAt || b[1].updatedAt) - updatedAt(a[1].mapSavedAt || a[1].updatedAt))
+    .slice(0, limit)
+    .map(([key]) => key);
+}
+
+function renderLedgerMiniList(target, rows, emptyMessage) {
+  target.innerHTML = '';
+  if (!rows.length) {
+    const empty = document.createElement('p');
+    empty.className = 'ledger-empty';
+    empty.textContent = emptyMessage;
+    target.appendChild(empty);
+    return;
+  }
+  rows.forEach(d => {
+    const row = document.createElement('button');
+    row.className = 'ledger-mini-row';
+    const stateName = personalStateFor(d);
+    const record = personalRecordFor(d);
+    const meta = [d.category, d.gu || d.region, d.avg != null ? `평점 ${d.avg.toFixed(2)}` : null].filter(Boolean).join(' · ');
+    row.innerHTML = '<span class="ledger-mini-name"></span><span class="ledger-mini-meta"></span>';
+    row.querySelector('.ledger-mini-name').textContent = d.name;
+    row.querySelector('.ledger-mini-meta').textContent = `${stateName ? stateName + ' · ' : ''}${record.mapSaved ? '지도 저장 완료 · ' : ''}${meta}`;
+    row.addEventListener('click', () => {
+      ledgerDashboardEl.style.display = 'none';
+      openLedgerBtn.classList.remove('active');
+      qEl.value = d.name;
+      personalFilterEl.value = '';
+      triggerSearch();
+      window.setTimeout(() => listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 280);
+    });
+    target.appendChild(row);
+  });
+}
+
+async function loadLedgerDashboard() {
+  renderLedgerStats();
+  const version = ++ledgerLoadVersion;
+  ledgerMapRecentEl.innerHTML = '<p class="ledger-empty">최근 저장 완료를 불러오는 중...</p>';
+  ledgerPersonalRecentEl.innerHTML = '<p class="ledger-empty">최근 기록을 불러오는 중...</p>';
+  const mapKeys = recentKeys(Object.fromEntries(Object.entries(personalRecords).filter(([, value]) => value.mapTarget && value.mapSaved)));
+  const personalKeys = recentKeys(personal);
+  try {
+    const [mapRows, personalRows] = await Promise.all([fetchPersonalRows(mapKeys), fetchPersonalRows(personalKeys)]);
+    if (version !== ledgerLoadVersion) return;
+    const orderRows = (rows, keys) => {
+      const byKey = new Map(rows.map(row => [restaurantKey(row), row]));
+      return keys.map(key => byKey.get(key)).filter(Boolean);
+    };
+    renderLedgerMiniList(ledgerMapRecentEl, orderRows(mapRows, mapKeys), '아직 네이버 저장 완료한 맛집이 없어요.');
+    renderLedgerMiniList(ledgerPersonalRecentEl, orderRows(personalRows, personalKeys), '카드에서 가고싶음·가봄 등을 눌러 기록을 시작해보세요.');
+  } catch (error) {
+    if (version !== ledgerLoadVersion) return;
+    renderLedgerMiniList(ledgerMapRecentEl, [], '최근 저장 완료 목록을 불러오지 못했습니다.');
+    renderLedgerMiniList(ledgerPersonalRecentEl, [], '최근 개인 기록을 불러오지 못했습니다.');
+  }
+}
+
+function openLedgerDashboard() {
+  const opening = ledgerDashboardEl.style.display === 'none';
+  ledgerDashboardEl.style.display = opening ? '' : 'none';
+  openLedgerBtn.classList.toggle('active', opening);
+  if (opening) loadLedgerDashboard();
 }
 
 function updateSelectionBar() {
@@ -632,6 +731,16 @@ copyMapTargetsBtn.addEventListener('click', async () => {
 openMapQueueBtn.addEventListener('click', () => {
   personalFilterEl.value = '지도 저장 대기';
   triggerSearch();
+});
+
+openLedgerBtn.addEventListener('click', openLedgerDashboard);
+closeLedgerBtn.addEventListener('click', openLedgerDashboard);
+ledgerStatsEl.addEventListener('click', event => {
+  const button = event.target.closest('[data-ledger-filter]');
+  if (!button?.dataset.ledgerFilter) return;
+  personalFilterEl.value = button.dataset.ledgerFilter;
+  triggerSearch();
+  window.setTimeout(() => listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 280);
 });
 
 const rubricToggle = document.getElementById('rubricToggle');
