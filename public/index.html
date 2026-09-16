@@ -117,11 +117,6 @@
   <div class="meta-actions">
     <span id="personalSummary">내 기록 0곳</span>
     <button class="legend-btn ledger-btn" id="openLedger">내 장부</button>
-    <button class="legend-btn" id="copyWant">가고싶음 복사</button>
-    <button class="legend-btn" id="openMapQueue">지도 저장 작업함</button>
-    <button class="legend-btn" id="copyMapTargets">저장 대기 복사</button>
-    <button class="legend-btn" id="openKakaoQueue">카카오 저장 작업함</button>
-    <button class="legend-btn" id="copyKakaoTargets">카카오 대기 복사</button>
     <button class="legend-btn" id="rubricToggle">등급 기준 보기 ▾</button>
   </div>
 </div>
@@ -139,6 +134,14 @@
     </div>
   </div>
   <div id="ledgerStats" class="ledger-stats"></div>
+  <div id="ledgerTools" class="ledger-tools">
+    <span>저장 작업은 위 카드를 눌러 목록으로 보고, 필요하면 여기서 한 번에 복사한다.</span>
+    <div>
+      <button data-ledger-copy="want">가고싶음 복사</button>
+      <button data-ledger-copy="naver">네이버 대기 복사</button>
+      <button data-ledger-copy="kakao">카카오 대기 복사</button>
+    </div>
+  </div>
   <div class="ledger-lists">
     <div class="ledger-list-block">
       <div class="ledger-list-title"><h3>최근 지도 저장 완료</h3><span>네이버에 옮긴 곳</span></div>

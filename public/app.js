@@ -38,16 +38,12 @@ const selectionBarEl = document.getElementById('selectionBar');
 const selectionCountEl = document.getElementById('selectionCount');
 const copySelectedBtn = document.getElementById('copySelected');
 const clearSelectedBtn = document.getElementById('clearSelected');
-const copyWantBtn = document.getElementById('copyWant');
-const copyMapTargetsBtn = document.getElementById('copyMapTargets');
-const openMapQueueBtn = document.getElementById('openMapQueue');
-const copyKakaoTargetsBtn = document.getElementById('copyKakaoTargets');
-const openKakaoQueueBtn = document.getElementById('openKakaoQueue');
 const openLedgerBtn = document.getElementById('openLedger');
 const closeLedgerBtn = document.getElementById('closeLedger');
 const ledgerAllBtn = document.getElementById('ledgerAll');
 const ledgerDashboardEl = document.getElementById('ledgerDashboard');
 const ledgerStatsEl = document.getElementById('ledgerStats');
+const ledgerToolsEl = document.getElementById('ledgerTools');
 const ledgerMapRecentEl = document.getElementById('ledgerMapRecent');
 const ledgerPersonalRecentEl = document.getElementById('ledgerPersonalRecent');
 const authGateEl = document.getElementById('authGate');
@@ -809,33 +805,6 @@ clearSelectedBtn.addEventListener('click', () => {
   renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
 });
 
-copyWantBtn.addEventListener('click', async () => {
-  const rows = await fetchPersonalRows(keysForPersonalState('가고싶음'));
-  await copyText(rows.map(copyLine).join('\n'), `가고싶음 ${rows.length.toLocaleString()}곳 네이버지도용 정보 복사됨`);
-});
-
-copyMapTargetsBtn.addEventListener('click', async () => {
-  const keys = Object.entries(personalRecords).filter(([, value]) => value.mapTarget && !value.mapSaved).map(([key]) => key);
-  const rows = await fetchPersonalRows(keys);
-  await copyText(rows.map(copyLine).join('\n'), `지도 저장 대기 ${rows.length.toLocaleString()}곳 네이버지도용 정보 복사됨`);
-});
-
-openMapQueueBtn.addEventListener('click', () => {
-  personalFilterEl.value = '지도 저장 대기';
-  triggerSearch();
-});
-
-copyKakaoTargetsBtn.addEventListener('click', async () => {
-  const keys = Object.entries(personalRecords).filter(([, value]) => value.kakaoTarget && !value.kakaoSaved).map(([key]) => key);
-  const rows = await fetchPersonalRows(keys);
-  await copyText(rows.map(kakaoCopyLine).join('\n'), `카카오 저장 대기 ${rows.length.toLocaleString()}곳 정보 복사됨`);
-});
-
-openKakaoQueueBtn.addEventListener('click', () => {
-  personalFilterEl.value = '카카오 저장 대기';
-  triggerSearch();
-});
-
 openLedgerBtn.addEventListener('click', openLedgerDashboard);
 closeLedgerBtn.addEventListener('click', closeLedgerDashboard);
 ledgerAllBtn.addEventListener('click', () => {
@@ -850,6 +819,20 @@ ledgerStatsEl.addEventListener('click', event => {
   personalFilterEl.value = button.dataset.ledgerFilter;
   triggerSearch();
   window.setTimeout(() => listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 280);
+});
+ledgerToolsEl.addEventListener('click', async event => {
+  const button = event.target.closest('[data-ledger-copy]');
+  if (!button) return;
+  const kind = button.dataset.ledgerCopy;
+  const isKakao = kind === 'kakao';
+  const keys = kind === 'want'
+    ? keysForPersonalState('가고싶음')
+    : Object.entries(personalRecords)
+      .filter(([, value]) => isKakao ? value.kakaoTarget && !value.kakaoSaved : value.mapTarget && !value.mapSaved)
+      .map(([key]) => key);
+  const rows = await fetchPersonalRows(keys);
+  const label = kind === 'want' ? '가고싶음' : isKakao ? '카카오 저장 대기' : '네이버 저장 대기';
+  await copyText(rows.map(isKakao ? kakaoCopyLine : copyLine).join('\n'), `${label} ${rows.length.toLocaleString()}곳 정보 복사됨`);
 });
 
 const rubricToggle = document.getElementById('rubricToggle');
