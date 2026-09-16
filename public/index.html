@@ -96,11 +96,9 @@
         <option value="재방문">재방문</option>
         <option value="별로였음">별로였음</option>
         <option value="지도 저장 대상">지도 저장 대상</option>
-        <option value="지도 저장 대기">지도 저장 대기</option>
-        <option value="지도 저장 완료">지도 저장 완료</option>
         <option value="카카오 저장 대상">카카오 저장 대상</option>
-        <option value="카카오 저장 대기">카카오 저장 대기</option>
-        <option value="카카오 저장 완료">카카오 저장 완료</option>
+        <option value="저장 대기">저장 대기</option>
+        <option value="저장 완료">저장 완료</option>
       </select>
     </div>
     <div class="field checkbox-field">
@@ -138,13 +136,12 @@
     <span>저장 작업은 위 카드를 눌러 목록으로 보고, 필요하면 여기서 한 번에 복사한다.</span>
     <div>
       <button data-ledger-copy="want">가고싶음 복사</button>
-      <button data-ledger-copy="naver">네이버 대기 복사</button>
-      <button data-ledger-copy="kakao">카카오 대기 복사</button>
+      <button data-ledger-copy="pending">저장 대기 복사</button>
     </div>
   </div>
   <div class="ledger-lists">
     <div class="ledger-list-block">
-      <div class="ledger-list-title"><h3>최근 지도 저장 완료</h3><span>네이버에 옮긴 곳</span></div>
+      <div class="ledger-list-title"><h3>최근 지도 저장 완료</h3><span>네이버·카카오에 옮긴 곳</span></div>
       <div id="ledgerMapRecent" class="ledger-mini-list"></div>
     </div>
     <div class="ledger-list-block">

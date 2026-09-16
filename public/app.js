@@ -165,7 +165,9 @@ function updatePersonalSummary() {
   const pending = mapTargets - saved;
   const kakaoTargets = Object.values(personalRecords).filter(x => x.kakaoTarget).length;
   const kakaoSaved = Object.values(personalRecords).filter(x => x.kakaoTarget && x.kakaoSaved).length;
-  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 네이버 대기 ${pending.toLocaleString()} / 완료 ${saved.toLocaleString()} · 카카오 대기 ${(kakaoTargets - kakaoSaved).toLocaleString()} / 완료 ${kakaoSaved.toLocaleString()}`;
+  const mapPending = Object.values(personalRecords).filter(value => (value.mapTarget && !value.mapSaved) || (value.kakaoTarget && !value.kakaoSaved)).length;
+  const mapComplete = Object.values(personalRecords).filter(value => (value.mapTarget && value.mapSaved) || (value.kakaoTarget && value.kakaoSaved)).length;
+  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 지도 대기 ${mapPending.toLocaleString()} / 완료 ${mapComplete.toLocaleString()}`;
   renderLedgerStats();
 }
 
@@ -179,20 +181,19 @@ function renderLedgerStats() {
   const mapSaved = Object.values(personalRecords).filter(value => value.mapTarget && value.mapSaved).length;
   const kakaoTargets = Object.values(personalRecords).filter(value => value.kakaoTarget).length;
   const kakaoSaved = Object.values(personalRecords).filter(value => value.kakaoTarget && value.kakaoSaved).length;
-  const pending = mapTargets - mapSaved;
+  const pending = Object.values(personalRecords).filter(value => (value.mapTarget && !value.mapSaved) || (value.kakaoTarget && !value.kakaoSaved)).length;
+  const completed = Object.values(personalRecords).filter(value => (value.mapTarget && value.mapSaved) || (value.kakaoTarget && value.kakaoSaved)).length;
   const stat = (label, count, filter, detail) => `
     <button class="ledger-stat" data-ledger-filter="${filter || ''}" ${filter ? '' : 'disabled'}>
       <strong>${count.toLocaleString()}</strong><span>${label}</span>${detail ? `<small>${detail}</small>` : ''}
     </button>`;
   ledgerStatsEl.innerHTML = [
-    stat('네이버 저장 대기', pending, '지도 저장 대기', '지금 네이버에 옮길 곳'),
-    stat('카카오 저장 대기', kakaoTargets - kakaoSaved, '카카오 저장 대기', '지금 카카오에 옮길 곳'),
+    stat('저장 대기', pending, '저장 대기', '네이버·카카오에 옮길 곳'),
     stat('가고싶음', personalStateCount('가고싶음'), '가고싶음', '다음 약속 후보'),
     stat('가봄', personalStateCount('가봄'), '가봄', '방문 기록'),
     stat('재방문', personalStateCount('재방문'), '재방문', '또 갈 곳'),
     stat('별로였음', personalStateCount('별로였음'), '별로였음', '추천에서 제외'),
-    stat('네이버 저장 완료', mapSaved, '지도 저장 완료', '네이버에 보관됨'),
-    stat('카카오 저장 완료', kakaoSaved, '카카오 저장 완료', '카카오에 보관됨'),
+    stat('저장 완료', completed, '저장 완료', '지도에 보관됨'),
   ].join('');
 }
 
@@ -221,7 +222,8 @@ function renderLedgerMiniList(target, rows, emptyMessage) {
     const meta = [d.category, d.gu || d.region, d.avg != null ? `평점 ${d.avg.toFixed(2)}` : null].filter(Boolean).join(' · ');
     row.innerHTML = '<span class="ledger-mini-name"></span><span class="ledger-mini-meta"></span>';
     row.querySelector('.ledger-mini-name').textContent = d.name;
-    row.querySelector('.ledger-mini-meta').textContent = `${stateName ? stateName + ' · ' : ''}${record.mapSaved ? '지도 저장 완료 · ' : ''}${meta}`;
+    const savedMaps = [record.mapTarget && record.mapSaved ? '네이버 완료' : '', record.kakaoTarget && record.kakaoSaved ? '카카오 완료' : ''].filter(Boolean).join(' · ');
+    row.querySelector('.ledger-mini-meta').textContent = `${stateName ? stateName + ' · ' : ''}${savedMaps ? savedMaps + ' · ' : ''}${meta}`;
     row.addEventListener('click', () => {
       qEl.value = d.name;
       personalFilterEl.value = '내 장부 전체';
@@ -237,7 +239,7 @@ async function loadLedgerDashboard() {
   const version = ++ledgerLoadVersion;
   ledgerMapRecentEl.innerHTML = '<p class="ledger-empty">최근 저장 완료를 불러오는 중...</p>';
   ledgerPersonalRecentEl.innerHTML = '<p class="ledger-empty">최근 기록을 불러오는 중...</p>';
-  const mapKeys = recentKeys(Object.fromEntries(Object.entries(personalRecords).filter(([, value]) => value.mapTarget && value.mapSaved)));
+  const mapKeys = recentKeys(Object.fromEntries(Object.entries(personalRecords).filter(([, value]) => (value.mapTarget && value.mapSaved) || (value.kakaoTarget && value.kakaoSaved))));
   const personalKeys = recentKeys(personal);
   try {
     const [mapRows, personalRows] = await Promise.all([fetchPersonalRows(mapKeys), fetchPersonalRows(personalKeys)]);
@@ -512,6 +514,17 @@ function personalTag(stateName) {
   return stateName ? `<span class="tag personal-tag state-${stateName}">${stateName}</span>` : '';
 }
 
+function visibleMapTags(record) {
+  const filter = personalFilterEl.value;
+  if (filter === '저장 대기') {
+    return `${record.mapTarget && !record.mapSaved ? '<span class="tag map-target-tag">네이버 대기</span>' : ''}${record.kakaoTarget && !record.kakaoSaved ? '<span class="tag kakao-target-tag">카카오 대기</span>' : ''}`;
+  }
+  if (filter === '저장 완료') {
+    return `${record.mapTarget && record.mapSaved ? '<span class="tag map-saved-tag">네이버 완료</span>' : ''}${record.kakaoTarget && record.kakaoSaved ? '<span class="tag kakao-saved-tag">카카오 완료</span>' : ''}`;
+  }
+  return '';
+}
+
 function personalRatingOptions(value) {
   const current = value === '' || value == null ? '' : String(value);
   const options = ['<option value="">내 평점</option>'];
@@ -548,10 +561,7 @@ function renderRows(rows) {
           ${d.status === '폐업' ? '<span class="tag closed-tag">폐업</span>' : ''}
           ${badgeTags(d)}
           ${personalTag(currentState)}
-          ${record.mapTarget ? '<span class="tag map-target-tag">네이버 저장</span>' : ''}
-          ${record.mapTarget && record.mapSaved ? '<span class="tag map-saved-tag">네이버 완료</span>' : ''}
-          ${record.kakaoTarget ? '<span class="tag kakao-target-tag">카카오 저장</span>' : ''}
-          ${record.kakaoTarget && record.kakaoSaved ? '<span class="tag kakao-saved-tag">카카오 완료</span>' : ''}
+          ${visibleMapTags(record)}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
         <div class="card-actions">
@@ -641,13 +651,14 @@ async function search() {
 
 async function searchPersonal() {
   const filter = personalFilterEl.value;
-  const keys = filter === '내 장부 전체'
-    ? keysForLedger()
-    : ['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(filter)
-    ? Object.entries(personalRecords).filter(([, value]) => value.mapTarget && (filter === '지도 저장 대상' || (filter === '지도 저장 대기' ? !value.mapSaved : value.mapSaved))).map(([key]) => key)
-    : ['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(filter)
-      ? Object.entries(personalRecords).filter(([, value]) => value.kakaoTarget && (filter === '카카오 저장 대상' || (filter === '카카오 저장 대기' ? !value.kakaoSaved : value.kakaoSaved))).map(([key]) => key)
-    : keysForPersonalState(filter);
+  const entries = Object.entries(personalRecords);
+  let keys;
+  if (filter === '내 장부 전체') keys = keysForLedger();
+  else if (filter === '저장 대기') keys = entries.filter(([, value]) => (value.mapTarget && !value.mapSaved) || (value.kakaoTarget && !value.kakaoSaved)).map(([key]) => key);
+  else if (filter === '저장 완료') keys = entries.filter(([, value]) => (value.mapTarget && value.mapSaved) || (value.kakaoTarget && value.kakaoSaved)).map(([key]) => key);
+  else if (filter === '지도 저장 대상') keys = entries.filter(([, value]) => value.mapTarget).map(([key]) => key);
+  else if (filter === '카카오 저장 대상') keys = entries.filter(([, value]) => value.kakaoTarget).map(([key]) => key);
+  else keys = keysForPersonalState(filter);
   const rows = filterPersonalRows(await fetchPersonalRows(keys));
   state.total = rows.length;
   const startIdx = (state.page - 1) * state.pageSize;
@@ -746,7 +757,7 @@ listEl.addEventListener('click', async (event) => {
     try {
       const nextTarget = !personalRecordFor(d).mapTarget;
       await setPersonalRecord(d, { mapTarget: nextTarget, mapSaved: nextTarget ? personalRecordFor(d).mapSaved : false, mapSavedAt: nextTarget ? personalRecordFor(d).mapSavedAt : '' });
-      if ((['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).mapTarget) triggerSearch(false);
+      if ((['지도 저장 대상', '저장 대기', '저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).mapTarget) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
@@ -754,7 +765,7 @@ listEl.addEventListener('click', async (event) => {
     try {
       const nextSaved = !personalRecordFor(d).mapSaved;
       await setPersonalRecord(d, { mapSaved: nextSaved, mapSavedAt: nextSaved ? new Date().toISOString() : '' });
-      if ((personalFilterEl.value === '지도 저장 대기' && nextSaved) || (personalFilterEl.value === '지도 저장 완료' && !nextSaved)) triggerSearch(false);
+      if ((personalFilterEl.value === '저장 대기' && nextSaved) || (personalFilterEl.value === '저장 완료' && !nextSaved)) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
@@ -762,7 +773,7 @@ listEl.addEventListener('click', async (event) => {
     try {
       const nextTarget = !personalRecordFor(d).kakaoTarget;
       await setPersonalRecord(d, { kakaoTarget: nextTarget, kakaoSaved: nextTarget ? personalRecordFor(d).kakaoSaved : false, kakaoSavedAt: nextTarget ? personalRecordFor(d).kakaoSavedAt : '' });
-      if ((['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).kakaoTarget) triggerSearch(false);
+      if ((['카카오 저장 대상', '저장 대기', '저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).kakaoTarget) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
@@ -770,7 +781,7 @@ listEl.addEventListener('click', async (event) => {
     try {
       const nextSaved = !personalRecordFor(d).kakaoSaved;
       await setPersonalRecord(d, { kakaoSaved: nextSaved, kakaoSavedAt: nextSaved ? new Date().toISOString() : '' });
-      if ((personalFilterEl.value === '카카오 저장 대기' && nextSaved) || (personalFilterEl.value === '카카오 저장 완료' && !nextSaved)) triggerSearch(false);
+      if ((personalFilterEl.value === '저장 대기' && nextSaved) || (personalFilterEl.value === '저장 완료' && !nextSaved)) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
@@ -824,15 +835,14 @@ ledgerToolsEl.addEventListener('click', async event => {
   const button = event.target.closest('[data-ledger-copy]');
   if (!button) return;
   const kind = button.dataset.ledgerCopy;
-  const isKakao = kind === 'kakao';
   const keys = kind === 'want'
     ? keysForPersonalState('가고싶음')
     : Object.entries(personalRecords)
-      .filter(([, value]) => isKakao ? value.kakaoTarget && !value.kakaoSaved : value.mapTarget && !value.mapSaved)
+      .filter(([, value]) => (value.mapTarget && !value.mapSaved) || (value.kakaoTarget && !value.kakaoSaved))
       .map(([key]) => key);
   const rows = await fetchPersonalRows(keys);
-  const label = kind === 'want' ? '가고싶음' : isKakao ? '카카오 저장 대기' : '네이버 저장 대기';
-  await copyText(rows.map(isKakao ? kakaoCopyLine : copyLine).join('\n'), `${label} ${rows.length.toLocaleString()}곳 지도 검색어 복사됨`);
+  const label = kind === 'want' ? '가고싶음' : '저장 대기';
+  await copyText(rows.map(copyLine).join('\n'), `${label} ${rows.length.toLocaleString()}곳 지도 검색어 복사됨`);
 });
 
 const rubricToggle = document.getElementById('rubricToggle');
