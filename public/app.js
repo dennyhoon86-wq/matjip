@@ -691,8 +691,17 @@ listEl.addEventListener('click', async (event) => {
   if (button.dataset.action === 'personal') {
     try {
       await setPersonalState(d, button.dataset.state);
-      if (personalFilterEl.value && personalFilterEl.value !== personalStateFor(d)) triggerSearch(false);
-      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+      const savedState = personalStateFor(d);
+      if (savedState) {
+        // 개인 상태를 찍은 직후에는 해당 개인 목록으로 전환한다.
+        // 같은 상호의 다른 지점이 일반 검색 결과에 남아 혼동되는 것을 막는다.
+        personalFilterEl.value = savedState;
+        triggerSearch();
+      } else if (personalFilterEl.value) {
+        triggerSearch(false);
+      } else {
+        renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+      }
     } catch (error) { metaEl.textContent = error.message; }
   }
   if (button.dataset.action === 'map-target') {
