@@ -38,3 +38,6 @@ alter table public.personal_records enable row level security;
 -- 기존에 생성된 테이블에도 저장 작업 상태를 안전하게 추가합니다.
 alter table public.personal_records add column if not exists map_saved boolean not null default false;
 alter table public.personal_records add column if not exists map_saved_at timestamptz;
+alter table public.personal_records add column if not exists kakao_target boolean not null default false;
+alter table public.personal_records add column if not exists kakao_saved boolean not null default false;
+alter table public.personal_records add column if not exists kakao_saved_at timestamptz;

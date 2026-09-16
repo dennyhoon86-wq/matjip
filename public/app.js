@@ -41,6 +41,8 @@ const clearSelectedBtn = document.getElementById('clearSelected');
 const copyWantBtn = document.getElementById('copyWant');
 const copyMapTargetsBtn = document.getElementById('copyMapTargets');
 const openMapQueueBtn = document.getElementById('openMapQueue');
+const copyKakaoTargetsBtn = document.getElementById('copyKakaoTargets');
+const openKakaoQueueBtn = document.getElementById('openKakaoQueue');
 const openLedgerBtn = document.getElementById('openLedger');
 const closeLedgerBtn = document.getElementById('closeLedger');
 const ledgerDashboardEl = document.getElementById('ledgerDashboard');
@@ -89,7 +91,7 @@ function personalStateFor(d) {
 }
 
 function personalRecordFor(d) {
-  return personalRecords[restaurantKey(d)] || { mapTarget: false, mapSaved: false, mapSavedAt: '', memo: '', personalRating: '' };
+  return personalRecords[restaurantKey(d)] || { mapTarget: false, mapSaved: false, mapSavedAt: '', kakaoTarget: false, kakaoSaved: false, kakaoSavedAt: '', memo: '', personalRating: '' };
 }
 
 function loadPersonalRecords() {
@@ -111,7 +113,7 @@ async function setPersonalRecord(d, patch) {
   savePersonalRecords(personalRecords);
   if (!authConfig.enabled) return;
   try {
-    await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, map_target: next.mapTarget, map_saved: next.mapSaved, map_saved_at: next.mapSavedAt || null, memo: next.memo, personal_rating: next.personalRating }] }) });
+    await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, map_target: next.mapTarget, map_saved: next.mapSaved, map_saved_at: next.mapSavedAt || null, kakao_target: next.kakaoTarget, kakao_saved: next.kakaoSaved, kakao_saved_at: next.kakaoSavedAt || null, memo: next.memo, personal_rating: next.personalRating }] }) });
   } catch (error) {
     personalRecords[key] = before;
     savePersonalRecords(personalRecords);
@@ -148,7 +150,9 @@ function updatePersonalSummary() {
   const mapTargets = Object.values(personalRecords).filter(x => x.mapTarget).length;
   const saved = Object.values(personalRecords).filter(x => x.mapTarget && x.mapSaved).length;
   const pending = mapTargets - saved;
-  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 지도 저장 대기 ${pending.toLocaleString()}곳 / 완료 ${saved.toLocaleString()}곳`;
+  const kakaoTargets = Object.values(personalRecords).filter(x => x.kakaoTarget).length;
+  const kakaoSaved = Object.values(personalRecords).filter(x => x.kakaoTarget && x.kakaoSaved).length;
+  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 네이버 대기 ${pending.toLocaleString()} / 완료 ${saved.toLocaleString()} · 카카오 대기 ${(kakaoTargets - kakaoSaved).toLocaleString()} / 완료 ${kakaoSaved.toLocaleString()}`;
   renderLedgerStats();
 }
 
@@ -160,18 +164,22 @@ function renderLedgerStats() {
   if (!ledgerStatsEl) return;
   const mapTargets = Object.values(personalRecords).filter(value => value.mapTarget).length;
   const mapSaved = Object.values(personalRecords).filter(value => value.mapTarget && value.mapSaved).length;
+  const kakaoTargets = Object.values(personalRecords).filter(value => value.kakaoTarget).length;
+  const kakaoSaved = Object.values(personalRecords).filter(value => value.kakaoTarget && value.kakaoSaved).length;
   const pending = mapTargets - mapSaved;
   const stat = (label, count, filter, detail) => `
     <button class="ledger-stat" data-ledger-filter="${filter || ''}" ${filter ? '' : 'disabled'}>
       <strong>${count.toLocaleString()}</strong><span>${label}</span>${detail ? `<small>${detail}</small>` : ''}
     </button>`;
   ledgerStatsEl.innerHTML = [
-    stat('지도 저장 대기', pending, '지도 저장 대기', '지금 네이버에 옮길 곳'),
+    stat('네이버 저장 대기', pending, '지도 저장 대기', '지금 네이버에 옮길 곳'),
+    stat('카카오 저장 대기', kakaoTargets - kakaoSaved, '카카오 저장 대기', '지금 카카오에 옮길 곳'),
     stat('가고싶음', personalStateCount('가고싶음'), '가고싶음', '다음 약속 후보'),
     stat('가봄', personalStateCount('가봄'), '가봄', '방문 기록'),
     stat('재방문', personalStateCount('재방문'), '재방문', '또 갈 곳'),
     stat('별로였음', personalStateCount('별로였음'), '별로였음', '추천에서 제외'),
-    stat('지도 저장 완료', mapSaved, '지도 저장 완료', '네이버에 보관됨'),
+    stat('네이버 저장 완료', mapSaved, '지도 저장 완료', '네이버에 보관됨'),
+    stat('카카오 저장 완료', kakaoSaved, '카카오 저장 완료', '카카오에 보관됨'),
   ].join('');
 }
 
@@ -253,8 +261,16 @@ function naverSearchUrl(d) {
   return `https://map.naver.com/p/search/${encodeURIComponent(`${d.name} ${d.address || ''}`.trim())}`;
 }
 
+function kakaoSearchUrl(d) {
+  return `https://map.kakao.com/?q=${encodeURIComponent(`${d.name} ${d.address || ''}`.trim())}`;
+}
+
 function copyLine(d) {
   return `${d.name} | ${d.address || '-'} | ${naverSearchUrl(d)}`;
+}
+
+function kakaoCopyLine(d) {
+  return `${d.name} | ${d.address || '-'} | ${kakaoSearchUrl(d)}`;
 }
 
 async function copyText(text, successMessage) {
@@ -330,10 +346,12 @@ async function syncPersonalRecords() {
   const recordResponse = await apiFetch('/api/personal-records');
   const remoteRecords = await recordResponse.json();
   const mergedRecords = {};
-  (remoteRecords.records || []).forEach(r => { mergedRecords[r.restaurant_key] = { mapTarget: Boolean(r.map_target), mapSaved: Boolean(r.map_saved), mapSavedAt: r.map_saved_at || '', memo: r.memo || '', personalRating: r.personal_rating ?? '' }; });
-  const missingRecords = Object.entries(localRecords).filter(([key]) => !mergedRecords[key]).map(([restaurant_key, value]) => ({ restaurant_key, map_target: value.mapTarget, map_saved: value.mapSaved, map_saved_at: value.mapSavedAt || null, memo: value.memo || '', personal_rating: value.personalRating || null }));
+  (remoteRecords.records || []).forEach(r => { mergedRecords[r.restaurant_key] = { mapTarget: Boolean(r.map_target), mapSaved: Boolean(r.map_saved), mapSavedAt: r.map_saved_at || '', kakaoTarget: Boolean(r.kakao_target), kakaoSaved: Boolean(r.kakao_saved), kakaoSavedAt: r.kakao_saved_at || '', memo: r.memo || '', personalRating: r.personal_rating ?? '' }; });
+  const missingRecords = Object.entries(localRecords).filter(([key]) => !mergedRecords[key]).map(([restaurant_key, value]) => ({ restaurant_key, map_target: value.mapTarget, map_saved: value.mapSaved, map_saved_at: value.mapSavedAt || null, kakao_target: value.kakaoTarget || false, kakao_saved: value.kakaoSaved || false, kakao_saved_at: value.kakaoSavedAt || null, memo: value.memo || '', personal_rating: value.personalRating || null }));
   if (missingRecords.length) await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: missingRecords }) });
-  Object.assign(mergedRecords, localRecords);
+  Object.entries(localRecords).forEach(([key, value]) => {
+    mergedRecords[key] = { ...(mergedRecords[key] || {}), ...value };
+  });
   savePersonalRecords(mergedRecords);
 }
 
@@ -501,16 +519,21 @@ function renderRows(rows) {
           ${d.status === '폐업' ? '<span class="tag closed-tag">폐업</span>' : ''}
           ${badgeTags(d)}
           ${personalTag(currentState)}
-          ${record.mapTarget ? '<span class="tag map-target-tag">지도 저장</span>' : ''}
-          ${record.mapTarget && record.mapSaved ? '<span class="tag map-saved-tag">저장 완료</span>' : ''}
+          ${record.mapTarget ? '<span class="tag map-target-tag">네이버 저장</span>' : ''}
+          ${record.mapTarget && record.mapSaved ? '<span class="tag map-saved-tag">네이버 완료</span>' : ''}
+          ${record.kakaoTarget ? '<span class="tag kakao-target-tag">카카오 저장</span>' : ''}
+          ${record.kakaoTarget && record.kakaoSaved ? '<span class="tag kakao-saved-tag">카카오 완료</span>' : ''}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
         <div class="card-actions">
           ${actions}
           <button class="map-action" data-action="copy">복사</button>
           <a class="map-action" href="${naverSearchUrl(d)}" target="_blank" rel="noopener">네이버지도</a>
-          <button class="map-action ${record.mapTarget ? 'active' : ''}" data-action="map-target">${record.mapTarget ? '지도 저장 해제' : '지도 저장 대상'}</button>
-          ${record.mapTarget ? `<button class="map-action ${record.mapSaved ? 'active' : ''}" data-action="map-saved">${record.mapSaved ? '저장 완료 취소' : '네이버 저장 완료'}</button>` : ''}
+          <button class="map-action ${record.mapTarget ? 'active' : ''}" data-action="map-target">${record.mapTarget ? '네이버 저장 해제' : '네이버 저장 대상'}</button>
+          ${record.mapTarget ? `<button class="map-action ${record.mapSaved ? 'active' : ''}" data-action="map-saved">${record.mapSaved ? '네이버 완료 취소' : '네이버 저장 완료'}</button>` : ''}
+          <a class="kakao-action" href="${kakaoSearchUrl(d)}" target="_blank" rel="noopener">카카오맵</a>
+          <button class="kakao-action ${record.kakaoTarget ? 'active' : ''}" data-action="kakao-target">${record.kakaoTarget ? '카카오 저장 해제' : '카카오 저장 대상'}</button>
+          ${record.kakaoTarget ? `<button class="kakao-action ${record.kakaoSaved ? 'active' : ''}" data-action="kakao-saved">${record.kakaoSaved ? '카카오 완료 취소' : '카카오 저장 완료'}</button>` : ''}
           <select class="personal-rating-select" data-action="rating">${personalRatingOptions(record.personalRating)}</select>
           <label class="select-action"><input type="checkbox" data-action="select" ${selectedKeys.has(key) ? 'checked' : ''}> 선택</label>
         </div>
@@ -591,6 +614,8 @@ async function searchPersonal() {
   const filter = personalFilterEl.value;
   const keys = ['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(filter)
     ? Object.entries(personalRecords).filter(([, value]) => value.mapTarget && (filter === '지도 저장 대상' || (filter === '지도 저장 대기' ? !value.mapSaved : value.mapSaved))).map(([key]) => key)
+    : ['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(filter)
+      ? Object.entries(personalRecords).filter(([, value]) => value.kakaoTarget && (filter === '카카오 저장 대상' || (filter === '카카오 저장 대기' ? !value.kakaoSaved : value.kakaoSaved))).map(([key]) => key)
     : keysForPersonalState(filter);
   const rows = filterPersonalRows(await fetchPersonalRows(keys));
   state.total = rows.length;
@@ -686,6 +711,22 @@ listEl.addEventListener('click', async (event) => {
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
+  if (button.dataset.action === 'kakao-target') {
+    try {
+      const nextTarget = !personalRecordFor(d).kakaoTarget;
+      await setPersonalRecord(d, { kakaoTarget: nextTarget, kakaoSaved: nextTarget ? personalRecordFor(d).kakaoSaved : false, kakaoSavedAt: nextTarget ? personalRecordFor(d).kakaoSavedAt : '' });
+      if (['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(personalFilterEl.value) && !personalRecordFor(d).kakaoTarget) triggerSearch(false);
+      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+    } catch (error) { metaEl.textContent = error.message; }
+  }
+  if (button.dataset.action === 'kakao-saved') {
+    try {
+      const nextSaved = !personalRecordFor(d).kakaoSaved;
+      await setPersonalRecord(d, { kakaoSaved: nextSaved, kakaoSavedAt: nextSaved ? new Date().toISOString() : '' });
+      if ((personalFilterEl.value === '카카오 저장 대기' && nextSaved) || (personalFilterEl.value === '카카오 저장 완료' && !nextSaved)) triggerSearch(false);
+      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+    } catch (error) { metaEl.textContent = error.message; }
+  }
   if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 네이버지도용 정보 복사됨`);
 });
 
@@ -730,6 +771,17 @@ copyMapTargetsBtn.addEventListener('click', async () => {
 
 openMapQueueBtn.addEventListener('click', () => {
   personalFilterEl.value = '지도 저장 대기';
+  triggerSearch();
+});
+
+copyKakaoTargetsBtn.addEventListener('click', async () => {
+  const keys = Object.entries(personalRecords).filter(([, value]) => value.kakaoTarget && !value.kakaoSaved).map(([key]) => key);
+  const rows = await fetchPersonalRows(keys);
+  await copyText(rows.map(kakaoCopyLine).join('\n'), `카카오 저장 대기 ${rows.length.toLocaleString()}곳 정보 복사됨`);
+});
+
+openKakaoQueueBtn.addEventListener('click', () => {
+  personalFilterEl.value = '카카오 저장 대기';
   triggerSearch();
 });
 

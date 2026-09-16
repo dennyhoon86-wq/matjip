@@ -98,7 +98,7 @@ function createAuth() {
   }
 
   async function personalRecords(userId) {
-    return supabase(`/rest/v1/personal_records?user_id=eq.${encodeURIComponent(userId)}&select=restaurant_key,map_target,map_saved,map_saved_at,memo,personal_rating,updated_at`);
+    return supabase(`/rest/v1/personal_records?user_id=eq.${encodeURIComponent(userId)}&select=restaurant_key,map_target,map_saved,map_saved_at,kakao_target,kakao_saved,kakao_saved_at,memo,personal_rating,updated_at`);
   }
 
   async function setPersonalRecords(userId, records) {
@@ -109,6 +109,9 @@ function createAuth() {
         map_target: Boolean(r.map_target),
         map_saved: Boolean(r.map_saved),
         map_saved_at: r.map_saved ? (r.map_saved_at || new Date().toISOString()) : null,
+        kakao_target: Boolean(r.kakao_target),
+        kakao_saved: Boolean(r.kakao_saved),
+        kakao_saved_at: r.kakao_saved ? (r.kakao_saved_at || new Date().toISOString()) : null,
         memo: String(r.memo || '').slice(0, 2000),
         personal_rating: r.personal_rating == null || r.personal_rating === '' ? null : Number(r.personal_rating),
       })).filter(r => r.personal_rating == null || (Number.isFinite(r.personal_rating) && r.personal_rating >= 0 && r.personal_rating <= 5));
