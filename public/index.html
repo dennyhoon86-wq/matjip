@@ -90,6 +90,7 @@
       <label for="personalFilter">내 기록</label>
       <select id="personalFilter">
         <option value="">전체 검색</option>
+        <option value="내 장부 전체">내 장부 전체</option>
         <option value="가고싶음">가고싶음</option>
         <option value="가봄">가봄</option>
         <option value="재방문">재방문</option>
@@ -132,7 +133,10 @@
       <h2>내 장부</h2>
       <p>저장한 맛집과 다음에 할 일을 한곳에서 관리한다.</p>
     </div>
-    <button id="closeLedger" class="ledger-close">장부 닫기</button>
+    <div class="ledger-heading-actions">
+      <button id="ledgerAll" class="ledger-all">내 장부 전체</button>
+      <button id="closeLedger" class="ledger-close">장부 닫기</button>
+    </div>
   </div>
   <div id="ledgerStats" class="ledger-stats"></div>
   <div class="ledger-lists">
@@ -210,6 +214,6 @@
   데이터는 <code>맛집 정리(ver.6).xlsx</code>에서 가져왔다.
 </footer>
 
-<script src="app.js"></script>
+<script src="app.js?v=ledger-separated-1"></script>
 </body>
 </html>

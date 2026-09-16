@@ -45,6 +45,7 @@ const copyKakaoTargetsBtn = document.getElementById('copyKakaoTargets');
 const openKakaoQueueBtn = document.getElementById('openKakaoQueue');
 const openLedgerBtn = document.getElementById('openLedger');
 const closeLedgerBtn = document.getElementById('closeLedger');
+const ledgerAllBtn = document.getElementById('ledgerAll');
 const ledgerDashboardEl = document.getElementById('ledgerDashboard');
 const ledgerStatsEl = document.getElementById('ledgerStats');
 const ledgerMapRecentEl = document.getElementById('ledgerMapRecent');
@@ -71,6 +72,7 @@ let authConfig = { enabled: false };
 let supabaseClient = null;
 let currentProfile = null;
 let ledgerLoadVersion = 0;
+let ledgerPreviousView = null;
 
 function restaurantKey(d) {
   return `${d.name}\u001f${d.address || ''}`;
@@ -144,6 +146,21 @@ function keysForPersonalState(filter = '') {
     .map(([key]) => key);
 }
 
+function isLedgerRecord(value) {
+  return Boolean(value && (
+    value.mapTarget || value.mapSaved || value.kakaoTarget || value.kakaoSaved ||
+    value.personalRating !== '' && value.personalRating != null ||
+    (value.memo || '').trim()
+  ));
+}
+
+function keysForLedger() {
+  return Array.from(new Set([
+    ...Object.keys(personal),
+    ...Object.entries(personalRecords).filter(([, value]) => isLedgerRecord(value)).map(([key]) => key),
+  ]));
+}
+
 function updatePersonalSummary() {
   const entries = Object.values(personal);
   const wanted = entries.filter(x => x.state === '가고싶음').length;
@@ -210,10 +227,8 @@ function renderLedgerMiniList(target, rows, emptyMessage) {
     row.querySelector('.ledger-mini-name').textContent = d.name;
     row.querySelector('.ledger-mini-meta').textContent = `${stateName ? stateName + ' · ' : ''}${record.mapSaved ? '지도 저장 완료 · ' : ''}${meta}`;
     row.addEventListener('click', () => {
-      ledgerDashboardEl.style.display = 'none';
-      openLedgerBtn.classList.remove('active');
       qEl.value = d.name;
-      personalFilterEl.value = '';
+      personalFilterEl.value = '내 장부 전체';
       triggerSearch();
       window.setTimeout(() => listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 280);
     });
@@ -245,10 +260,28 @@ async function loadLedgerDashboard() {
 }
 
 function openLedgerDashboard() {
-  const opening = ledgerDashboardEl.style.display === 'none';
-  ledgerDashboardEl.style.display = opening ? '' : 'none';
-  openLedgerBtn.classList.toggle('active', opening);
-  if (opening) loadLedgerDashboard();
+  if (ledgerDashboardEl.style.display !== 'none') return closeLedgerDashboard();
+  ledgerPreviousView = { q: qEl.value, personalFilter: personalFilterEl.value };
+  ledgerDashboardEl.style.display = '';
+  openLedgerBtn.classList.add('active');
+  qEl.value = '';
+  personalFilterEl.value = '내 장부 전체';
+  triggerSearch();
+  loadLedgerDashboard();
+}
+
+function closeLedgerDashboard() {
+  ledgerDashboardEl.style.display = 'none';
+  openLedgerBtn.classList.remove('active');
+  if (ledgerPreviousView) {
+    qEl.value = ledgerPreviousView.q;
+    personalFilterEl.value = ledgerPreviousView.personalFilter;
+    ledgerPreviousView = null;
+  } else {
+    qEl.value = '';
+    personalFilterEl.value = '';
+  }
+  triggerSearch();
 }
 
 function updateSelectionBar() {
@@ -612,7 +645,9 @@ async function search() {
 
 async function searchPersonal() {
   const filter = personalFilterEl.value;
-  const keys = ['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(filter)
+  const keys = filter === '내 장부 전체'
+    ? keysForLedger()
+    : ['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(filter)
     ? Object.entries(personalRecords).filter(([, value]) => value.mapTarget && (filter === '지도 저장 대상' || (filter === '지도 저장 대기' ? !value.mapSaved : value.mapSaved))).map(([key]) => key)
     : ['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(filter)
       ? Object.entries(personalRecords).filter(([, value]) => value.kakaoTarget && (filter === '카카오 저장 대상' || (filter === '카카오 저장 대기' ? !value.kakaoSaved : value.kakaoSaved))).map(([key]) => key)
@@ -625,7 +660,8 @@ async function searchPersonal() {
   emptyEl.style.display = pageRows.length ? 'none' : 'block';
   const shownStart = pageRows.length ? startIdx + 1 : 0;
   const shownEnd = startIdx + pageRows.length;
-  metaEl.textContent = `내 ${filter} ${rows.length.toLocaleString()}건 중 ${pageRows.length ? `${shownStart.toLocaleString()}-${shownEnd.toLocaleString()}` : '0'}건 표시`;
+  const filterLabel = filter === '내 장부 전체' ? '내 장부' : `내 ${filter}`;
+  metaEl.textContent = `${filterLabel} ${rows.length.toLocaleString()}건 중 ${pageRows.length ? `${shownStart.toLocaleString()}-${shownEnd.toLocaleString()}` : '0'}건 표시`;
   tallyShownEl.textContent = rows.length.toLocaleString();
   const totalPages = Math.max(1, Math.ceil(rows.length / state.pageSize));
   pagerEl.style.display = rows.length > state.pageSize ? 'flex' : 'none';
@@ -667,7 +703,13 @@ badgeEl.addEventListener('change', () => triggerSearch());
 sortEl.addEventListener('change', () => triggerSearch());
 includeClosedEl.addEventListener('change', () => triggerSearch());
 excludeNewEl.addEventListener('change', () => triggerSearch());
-personalFilterEl.addEventListener('change', () => triggerSearch());
+personalFilterEl.addEventListener('change', () => {
+  // 장부를 연 상태에서는 일반 전체 검색으로 빠지지 않게 한다.
+  if (ledgerDashboardEl.style.display !== 'none' && !personalFilterEl.value) {
+    personalFilterEl.value = '내 장부 전체';
+  }
+  triggerSearch();
+});
 regionEl.addEventListener('change', () => {
   loadGuOptions(regionEl.value);
   guEl.value = '';
@@ -708,7 +750,7 @@ listEl.addEventListener('click', async (event) => {
     try {
       const nextTarget = !personalRecordFor(d).mapTarget;
       await setPersonalRecord(d, { mapTarget: nextTarget, mapSaved: nextTarget ? personalRecordFor(d).mapSaved : false, mapSavedAt: nextTarget ? personalRecordFor(d).mapSavedAt : '' });
-      if (['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(personalFilterEl.value) && !personalRecordFor(d).mapTarget) triggerSearch(false);
+      if ((['지도 저장 대상', '지도 저장 대기', '지도 저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).mapTarget) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
@@ -724,7 +766,7 @@ listEl.addEventListener('click', async (event) => {
     try {
       const nextTarget = !personalRecordFor(d).kakaoTarget;
       await setPersonalRecord(d, { kakaoTarget: nextTarget, kakaoSaved: nextTarget ? personalRecordFor(d).kakaoSaved : false, kakaoSavedAt: nextTarget ? personalRecordFor(d).kakaoSavedAt : '' });
-      if (['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(personalFilterEl.value) && !personalRecordFor(d).kakaoTarget) triggerSearch(false);
+      if ((['카카오 저장 대상', '카카오 저장 대기', '카카오 저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).kakaoTarget) triggerSearch(false);
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
@@ -795,7 +837,13 @@ openKakaoQueueBtn.addEventListener('click', () => {
 });
 
 openLedgerBtn.addEventListener('click', openLedgerDashboard);
-closeLedgerBtn.addEventListener('click', openLedgerDashboard);
+closeLedgerBtn.addEventListener('click', closeLedgerDashboard);
+ledgerAllBtn.addEventListener('click', () => {
+  qEl.value = '';
+  personalFilterEl.value = '내 장부 전체';
+  triggerSearch();
+  window.setTimeout(() => listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 280);
+});
 ledgerStatsEl.addEventListener('click', event => {
   const button = event.target.closest('[data-ledger-filter]');
   if (!button?.dataset.ledgerFilter) return;
