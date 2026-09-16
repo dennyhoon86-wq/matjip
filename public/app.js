@@ -34,10 +34,6 @@ const pageInfoEl = document.getElementById('pageInfo');
 const prevBtn = document.getElementById('prevPage');
 const nextBtn = document.getElementById('nextPage');
 const personalSummaryEl = document.getElementById('personalSummary');
-const selectionBarEl = document.getElementById('selectionBar');
-const selectionCountEl = document.getElementById('selectionCount');
-const copySelectedBtn = document.getElementById('copySelected');
-const clearSelectedBtn = document.getElementById('clearSelected');
 const openLedgerBtn = document.getElementById('openLedger');
 const closeLedgerBtn = document.getElementById('closeLedger');
 const ledgerAllBtn = document.getElementById('ledgerAll');
@@ -60,8 +56,7 @@ const adminUsersEl = document.getElementById('adminUsers');
 let state = { page: 1, pageSize: 30, total: 0 };
 const PERSONAL_STORAGE_KEY = 'misik-jangbu-personal-v1';
 const PERSONAL_RECORD_STORAGE_KEY = 'misik-jangbu-personal-records-v1';
-const PERSONAL_STATES = ['가고싶음', '가봄', '재방문', '별로였음'];
-const selectedKeys = new Set();
+const PERSONAL_STATES = ['가고싶음', '가봄', '별로였음'];
 let personal = {};
 let personalRecords = {};
 let authConfig = { enabled: false };
@@ -191,7 +186,6 @@ function renderLedgerStats() {
     stat('저장 대기', pending, '저장 대기', '네이버·카카오에 옮길 곳'),
     stat('가고싶음', personalStateCount('가고싶음'), '가고싶음', '다음 약속 후보'),
     stat('가봄', personalStateCount('가봄'), '가봄', '방문 기록'),
-    stat('재방문', personalStateCount('재방문'), '재방문', '또 갈 곳'),
     stat('별로였음', personalStateCount('별로였음'), '별로였음', '추천에서 제외'),
     stat('저장 완료', completed, '저장 완료', '지도에 보관됨'),
   ].join('');
@@ -282,12 +276,6 @@ function closeLedgerDashboard() {
   triggerSearch();
 }
 
-function updateSelectionBar() {
-  const count = selectedKeys.size;
-  selectionBarEl.style.display = count ? 'flex' : 'none';
-  selectionCountEl.textContent = `${count.toLocaleString()}곳 선택`;
-}
-
 function naverSearchUrl(d) {
   return `https://map.naver.com/p/search/${encodeURIComponent(`${d.name} ${d.address || ''}`.trim())}`;
 }
@@ -365,8 +353,18 @@ async function syncPersonalRecords() {
   const local = loadPersonal();
   const response = await apiFetch('/api/personal-states');
   const remote = await response.json();
+  const retiredKeys = new Set([
+    ...Object.entries(local).filter(([, value]) => value.state === '재방문').map(([key]) => key),
+    ...(remote.states || []).filter(state => state.status === '재방문').map(state => state.restaurant_key),
+  ]);
+  if (retiredKeys.size) {
+    await Promise.all(Array.from(retiredKeys).map(restaurant_key => apiFetch('/api/personal-states', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ restaurant_key }),
+    })));
+    retiredKeys.forEach(key => delete local[key]);
+  }
   const merged = {};
-  (remote.states || []).forEach(s => { merged[s.restaurant_key] = { state: s.status, updatedAt: Date.parse(s.updated_at) || Date.now() }; });
+  (remote.states || []).filter(s => s.status !== '재방문').forEach(s => { merged[s.restaurant_key] = { state: s.status, updatedAt: Date.parse(s.updated_at) || Date.now() }; });
   const missing = Object.entries(local).filter(([key]) => !merged[key]).map(([restaurant_key, value]) => ({ restaurant_key, status: value.state }));
   if (missing.length) await apiFetch('/api/personal-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ states: missing }) });
   Object.assign(merged, local);
@@ -549,7 +547,6 @@ function renderRows(rows) {
     const addrParts = [d.address, d.subway ? d.subway + '역' : null].filter(Boolean);
     const currentState = personalStateFor(d);
     const record = personalRecordFor(d);
-    const key = restaurantKey(d);
     const actions = PERSONAL_STATES.map(stateName => `
       <button class="personal-action ${currentState === stateName ? 'active' : ''}" data-action="personal" data-state="${stateName}">${stateName}</button>
     `).join('');
@@ -575,7 +572,6 @@ function renderRows(rows) {
           <button class="kakao-action ${record.kakaoTarget ? 'active' : ''}" data-action="kakao-target">${record.kakaoTarget ? '카카오 저장 해제' : '카카오 저장 대상'}</button>
           ${record.kakaoTarget ? `<button class="kakao-action ${record.kakaoSaved ? 'active' : ''}" data-action="kakao-saved">${record.kakaoSaved ? '카카오 완료 취소' : '카카오 저장 완료'}</button>` : ''}
           <select class="personal-rating-select" data-action="rating">${personalRatingOptions(record.personalRating)}</select>
-          <label class="select-action"><input type="checkbox" data-action="select" ${selectedKeys.has(key) ? 'checked' : ''}> 선택</label>
         </div>
       </div>
       <div class="ratings">
@@ -801,23 +797,6 @@ listEl.addEventListener('change', (event) => {
       .catch(error => { metaEl.textContent = error.message; });
     return;
   }
-  if (event.target.dataset.action !== 'select') return;
-  const d = event.target.closest('.card')?.__restaurant;
-  if (!d) return;
-  const key = restaurantKey(d);
-  if (event.target.checked) selectedKeys.add(key);
-  else selectedKeys.delete(key);
-  updateSelectionBar();
-});
-
-copySelectedBtn.addEventListener('click', async () => {
-  const rows = await fetchPersonalRows(Array.from(selectedKeys));
-  await copyText(rows.map(copyLine).join('\n'), `${rows.length.toLocaleString()}곳 지도 검색어 복사됨`);
-});
-
-clearSelectedBtn.addEventListener('click', () => {
-  selectedKeys.clear();
-  renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
 });
 
 openLedgerBtn.addEventListener('click', openLedgerDashboard);
