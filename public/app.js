@@ -526,7 +526,7 @@ function visibleMapTags(record) {
 }
 
 function personalRatingOptions(value) {
-  const current = value === '' || value == null ? '' : String(value);
+  const current = value === '' || value == null || Number.isNaN(Number(value)) ? '' : Number(value).toFixed(1);
   const options = ['<option value="">내 평점</option>'];
   for (let rating = 0.5; rating <= 5; rating += 0.5) {
     const label = rating.toFixed(1);
@@ -561,6 +561,7 @@ function renderRows(rows) {
           ${d.status === '폐업' ? '<span class="tag closed-tag">폐업</span>' : ''}
           ${badgeTags(d)}
           ${personalTag(currentState)}
+          ${record.personalRating !== '' && record.personalRating != null ? `<span class="tag personal-rating-tag">내 평점 ${Number(record.personalRating).toFixed(1)}</span>` : ''}
           ${visibleMapTags(record)}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
@@ -793,7 +794,10 @@ listEl.addEventListener('change', (event) => {
     const d = event.target.closest('.card')?.__restaurant;
     if (!d) return;
     setPersonalRecord(d, { personalRating: event.target.value === '' ? '' : Number(event.target.value) })
-      .then(() => { metaEl.textContent = `${d.name}의 내 평점을 저장했습니다.`; })
+      .then(() => {
+        metaEl.textContent = `${d.name}의 내 평점 ${event.target.value}을 저장했습니다.`;
+        triggerSearch(false);
+      })
       .catch(error => { metaEl.textContent = error.message; });
     return;
   }
