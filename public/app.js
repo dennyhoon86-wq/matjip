@@ -295,11 +295,11 @@ function kakaoSearchUrl(d) {
 }
 
 function copyLine(d) {
-  return `${d.name} | ${d.address || '-'} | ${naverSearchUrl(d)}`;
+  return `${d.name} ${d.address || ''}`.trim();
 }
 
 function kakaoCopyLine(d) {
-  return `${d.name} | ${d.address || '-'} | ${kakaoSearchUrl(d)}`;
+  return `${d.name} ${d.address || ''}`.trim();
 }
 
 async function copyText(text, successMessage) {
@@ -774,7 +774,7 @@ listEl.addEventListener('click', async (event) => {
       else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
     } catch (error) { metaEl.textContent = error.message; }
   }
-  if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 네이버지도용 정보 복사됨`);
+  if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 지도 검색어 복사됨`);
 });
 
 listEl.addEventListener('change', (event) => {
@@ -797,7 +797,7 @@ listEl.addEventListener('change', (event) => {
 
 copySelectedBtn.addEventListener('click', async () => {
   const rows = await fetchPersonalRows(Array.from(selectedKeys));
-  await copyText(rows.map(copyLine).join('\n'), `${rows.length.toLocaleString()}곳 네이버지도용 정보 복사됨`);
+  await copyText(rows.map(copyLine).join('\n'), `${rows.length.toLocaleString()}곳 지도 검색어 복사됨`);
 });
 
 clearSelectedBtn.addEventListener('click', () => {
@@ -832,7 +832,7 @@ ledgerToolsEl.addEventListener('click', async event => {
       .map(([key]) => key);
   const rows = await fetchPersonalRows(keys);
   const label = kind === 'want' ? '가고싶음' : isKakao ? '카카오 저장 대기' : '네이버 저장 대기';
-  await copyText(rows.map(isKakao ? kakaoCopyLine : copyLine).join('\n'), `${label} ${rows.length.toLocaleString()}곳 정보 복사됨`);
+  await copyText(rows.map(isKakao ? kakaoCopyLine : copyLine).join('\n'), `${label} ${rows.length.toLocaleString()}곳 지도 검색어 복사됨`);
 });
 
 const rubricToggle = document.getElementById('rubricToggle');
