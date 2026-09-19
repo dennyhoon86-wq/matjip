@@ -370,6 +370,8 @@ body.auth-pending .auth-gate{display:flex;}
 .kakao-action.active{background:#F4C300; border-color:#D3A800; color:#342900;}
 .personal-rating-select{border:1px solid #C9B896; background:rgba(255,255,255,.5); color:var(--ink-soft); border-radius:2px; padding:5px 6px; font:700 10.5px var(--sans); cursor:pointer;}
 .personal-rating-tag{background:#E8D7A8; color:#594116; border-color:#C9AA5A;}
+.visited-at-tag{background:#DDE8E1; color:#315844; border-color:#9FC1AA;}
+.visited-at-input{display:flex; align-items:center; gap:4px; color:var(--ink-soft); font:700 10.5px var(--sans);}.visited-at-input input{width:117px; border:1px solid #C9B896; background:rgba(255,255,255,.5); color:var(--ink-soft); border-radius:2px; padding:4px 5px; font:700 10.5px var(--sans);}
 
 .ratings{
   text-align:right;

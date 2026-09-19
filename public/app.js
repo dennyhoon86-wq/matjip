@@ -84,7 +84,7 @@ function personalStateFor(d) {
 }
 
 function personalRecordFor(d) {
-  return personalRecords[restaurantKey(d)] || { mapTarget: false, mapSaved: false, mapSavedAt: '', kakaoTarget: false, kakaoSaved: false, kakaoSavedAt: '', memo: '', personalRating: '' };
+  return personalRecords[restaurantKey(d)] || { mapTarget: false, mapSaved: false, mapSavedAt: '', kakaoTarget: false, kakaoSaved: false, kakaoSavedAt: '', memo: '', personalRating: '', visitedAt: '' };
 }
 
 function loadPersonalRecords() {
@@ -106,7 +106,7 @@ async function setPersonalRecord(d, patch) {
   savePersonalRecords(personalRecords);
   if (!authConfig.enabled) return;
   try {
-    await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, map_target: next.mapTarget, map_saved: next.mapSaved, map_saved_at: next.mapSavedAt || null, kakao_target: next.kakaoTarget, kakao_saved: next.kakaoSaved, kakao_saved_at: next.kakaoSavedAt || null, memo: next.memo, personal_rating: next.personalRating }] }) });
+    await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, map_target: next.mapTarget, map_saved: next.mapSaved, map_saved_at: next.mapSavedAt || null, kakao_target: next.kakaoTarget, kakao_saved: next.kakaoSaved, kakao_saved_at: next.kakaoSavedAt || null, memo: next.memo, personal_rating: next.personalRating, visited_at: next.visitedAt || null }] }) });
   } catch (error) {
     personalRecords[key] = before;
     savePersonalRecords(personalRecords);
@@ -141,6 +141,7 @@ function isLedgerRecord(value) {
   return Boolean(value && (
     value.mapTarget || value.mapSaved || value.kakaoTarget || value.kakaoSaved ||
     value.personalRating !== '' && value.personalRating != null ||
+    value.visitedAt ||
     (value.memo || '').trim()
   ));
 }
@@ -375,8 +376,8 @@ async function syncPersonalRecords() {
   const recordResponse = await apiFetch('/api/personal-records');
   const remoteRecords = await recordResponse.json();
   const mergedRecords = {};
-  (remoteRecords.records || []).forEach(r => { mergedRecords[r.restaurant_key] = { mapTarget: Boolean(r.map_target), mapSaved: Boolean(r.map_saved), mapSavedAt: r.map_saved_at || '', kakaoTarget: Boolean(r.kakao_target), kakaoSaved: Boolean(r.kakao_saved), kakaoSavedAt: r.kakao_saved_at || '', memo: r.memo || '', personalRating: r.personal_rating ?? '' }; });
-  const missingRecords = Object.entries(localRecords).filter(([key]) => !mergedRecords[key]).map(([restaurant_key, value]) => ({ restaurant_key, map_target: value.mapTarget, map_saved: value.mapSaved, map_saved_at: value.mapSavedAt || null, kakao_target: value.kakaoTarget || false, kakao_saved: value.kakaoSaved || false, kakao_saved_at: value.kakaoSavedAt || null, memo: value.memo || '', personal_rating: value.personalRating || null }));
+  (remoteRecords.records || []).forEach(r => { mergedRecords[r.restaurant_key] = { mapTarget: Boolean(r.map_target), mapSaved: Boolean(r.map_saved), mapSavedAt: r.map_saved_at || '', kakaoTarget: Boolean(r.kakao_target), kakaoSaved: Boolean(r.kakao_saved), kakaoSavedAt: r.kakao_saved_at || '', memo: r.memo || '', personalRating: r.personal_rating ?? '', visitedAt: r.visited_at || '' }; });
+  const missingRecords = Object.entries(localRecords).filter(([key]) => !mergedRecords[key]).map(([restaurant_key, value]) => ({ restaurant_key, map_target: value.mapTarget, map_saved: value.mapSaved, map_saved_at: value.mapSavedAt || null, kakao_target: value.kakaoTarget || false, kakao_saved: value.kakaoSaved || false, kakao_saved_at: value.kakaoSavedAt || null, memo: value.memo || '', personal_rating: value.personalRating || null, visited_at: value.visitedAt || null }));
   if (missingRecords.length) await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: missingRecords }) });
   Object.entries(localRecords).forEach(([key, value]) => {
     mergedRecords[key] = { ...(mergedRecords[key] || {}), ...value };
@@ -559,6 +560,7 @@ function renderRows(rows) {
           ${badgeTags(d)}
           ${personalTag(currentState)}
           ${record.personalRating !== '' && record.personalRating != null ? `<span class="tag personal-rating-tag">내 평점 ${Number(record.personalRating).toFixed(1)}</span>` : ''}
+          ${currentState === '가봄' && record.visitedAt ? `<span class="tag visited-at-tag">방문 ${record.visitedAt.replaceAll('-', '.')}</span>` : ''}
           ${visibleMapTags(record)}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
@@ -572,6 +574,7 @@ function renderRows(rows) {
           <button class="kakao-action ${record.kakaoTarget ? 'active' : ''}" data-action="kakao-target">${record.kakaoTarget ? '카카오 저장 해제' : '카카오 저장 대상'}</button>
           ${record.kakaoTarget ? `<button class="kakao-action ${record.kakaoSaved ? 'active' : ''}" data-action="kakao-saved">${record.kakaoSaved ? '카카오 완료 취소' : '카카오 저장 완료'}</button>` : ''}
           <select class="personal-rating-select" data-action="rating">${personalRatingOptions(record.personalRating)}</select>
+          ${currentState === '가봄' ? `<label class="visited-at-input">방문일 <input type="date" data-action="visited-at" value="${record.visitedAt || ''}"></label>` : ''}
         </div>
       </div>
       <div class="ratings">
@@ -582,7 +585,6 @@ function renderRows(rows) {
     card.__restaurant = d;
     listEl.appendChild(card);
   });
-  updateSelectionBar();
 }
 
 function buildParams() {
@@ -796,6 +798,17 @@ listEl.addEventListener('change', (event) => {
       })
       .catch(error => { metaEl.textContent = error.message; });
     return;
+  }
+  if (event.target.dataset.action === 'visited-at') {
+    const d = event.target.closest('.card')?.__restaurant;
+    if (!d) return;
+    const visitedAt = /^\d{4}-\d{2}-\d{2}$/.test(event.target.value) ? event.target.value : '';
+    setPersonalRecord(d, { visitedAt })
+      .then(() => {
+        metaEl.textContent = visitedAt ? `${d.name}의 방문일을 저장했습니다.` : `${d.name}의 방문일을 지웠습니다.`;
+        triggerSearch(false);
+      })
+      .catch(error => { metaEl.textContent = error.message; });
   }
 });
 

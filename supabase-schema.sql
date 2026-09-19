@@ -29,6 +29,7 @@ create table if not exists public.personal_records (
   map_saved_at timestamptz,
   memo text not null default '',
   personal_rating numeric(2,1) check (personal_rating is null or (personal_rating >= 0 and personal_rating <= 5)),
+  visited_at date,
   updated_at timestamptz not null default now(),
   primary key (user_id, restaurant_key)
 );
@@ -41,3 +42,4 @@ alter table public.personal_records add column if not exists map_saved_at timest
 alter table public.personal_records add column if not exists kakao_target boolean not null default false;
 alter table public.personal_records add column if not exists kakao_saved boolean not null default false;
 alter table public.personal_records add column if not exists kakao_saved_at timestamptz;
+alter table public.personal_records add column if not exists visited_at date;
