@@ -91,6 +91,11 @@ h1{
   line-height:1.75;
   max-width:600px;
 }
+.grade-disclaimer{max-width:650px; margin-top:16px; padding:11px 16px; display:flex; align-items:flex-start; gap:10px; text-align:left; color:#F8F0DD; background:rgba(255,248,225,.12); border:1px solid rgba(221,194,125,.72); border-radius:4px; box-shadow:0 3px 12px rgba(0,0,0,.12); font-family:var(--sans); font-size:11.5px; line-height:1.55;}
+.grade-disclaimer-mark{flex:0 0 auto; width:19px; height:19px; margin-top:1px; display:grid; place-items:center; border-radius:50%; background:#DDBF72; color:var(--cover); font:800 12px/1 var(--serif);}
+.grade-disclaimer strong{color:#FFF6DB; font-size:12.5px; letter-spacing:.01em;}
+.grade-disclaimer span:not(.grade-disclaimer-mark){color:#E5D8BB;}
+.grade-disclaimer b{color:#FFF1BF; font-weight:800;}
 .cover-tally{
   margin-top:22px;
   display:flex;
