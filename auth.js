@@ -86,7 +86,7 @@ function createAuth() {
 
   async function setPersonalStates(userId, states) {
     const rows = states.filter(s => typeof s?.restaurant_key === 'string' && s.restaurant_key.length <= 1000 && VALID_STATES.has(s.status))
-      .slice(0, 10000).map(s => ({ user_id: userId, restaurant_key: s.restaurant_key, status: s.status }));
+      .slice(0, 10000).map(s => ({ user_id: userId, restaurant_key: s.restaurant_key, status: s.status, updated_at: new Date().toISOString() }));
     if (!rows.length) return [];
     return supabase('/rest/v1/personal_states?on_conflict=user_id,restaurant_key', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify(rows),
@@ -102,6 +102,27 @@ function createAuth() {
   }
 
   async function setPersonalRecords(userId, records) {
+    if (records.some(r => r?.patch)) {
+      const allowed = new Set(['map_target', 'map_saved', 'map_saved_at', 'kakao_target', 'kakao_saved', 'kakao_saved_at', 'personal_rating', 'visited_at']);
+      const saved = [];
+      for (const r of records.slice(0, 100)) {
+        if (typeof r.restaurant_key !== 'string' || r.restaurant_key.length > 1000 || !r.patch || typeof r.patch !== 'object') continue;
+        const patch = Object.fromEntries(Object.entries(r.patch).filter(([key]) => allowed.has(key)));
+        if (!Object.keys(patch).length) continue;
+        for (const key of ['map_target', 'map_saved', 'kakao_target', 'kakao_saved']) if (key in patch && typeof patch[key] !== 'boolean') throw new Error('Invalid map state');
+        if ('personal_rating' in patch && patch.personal_rating !== null && (!Number.isFinite(patch.personal_rating) || patch.personal_rating < 0 || patch.personal_rating > 5)) throw new Error('Invalid rating');
+        if ('visited_at' in patch && patch.visited_at !== null && !/^\d{4}-\d{2}-\d{2}$/.test(String(patch.visited_at))) throw new Error('Invalid visit date');
+        patch.updated_at = new Date().toISOString();
+        const updated = await supabase(`/rest/v1/personal_records?user_id=eq.${encodeURIComponent(userId)}&restaurant_key=eq.${encodeURIComponent(r.restaurant_key)}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(patch),
+        });
+        if (updated.length) saved.push(...updated);
+        else saved.push(...await supabase('/rest/v1/personal_records?on_conflict=user_id,restaurant_key', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ user_id: userId, restaurant_key: r.restaurant_key, ...patch }),
+        }));
+      }
+      return saved;
+    }
     const rows = records.filter(r => typeof r?.restaurant_key === 'string' && r.restaurant_key.length <= 1000)
       .slice(0, 10000).map(r => ({
         user_id: userId,
@@ -115,6 +136,7 @@ function createAuth() {
         memo: String(r.memo || '').slice(0, 2000),
         personal_rating: r.personal_rating == null || r.personal_rating === '' ? null : Number(r.personal_rating),
         visited_at: /^\d{4}-\d{2}-\d{2}$/.test(String(r.visited_at || '')) ? r.visited_at : null,
+        updated_at: new Date().toISOString(),
       })).filter(r => r.personal_rating == null || (Number.isFinite(r.personal_rating) && r.personal_rating >= 0 && r.personal_rating <= 5));
     if (!rows.length) return [];
     return supabase('/rest/v1/personal_records?on_conflict=user_id,restaurant_key', {

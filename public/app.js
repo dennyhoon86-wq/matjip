@@ -64,18 +64,54 @@ let supabaseClient = null;
 let currentProfile = null;
 let ledgerLoadVersion = 0;
 let ledgerPreviousView = null;
+let searchVocabulary = {};
+let searchVersion = 0;
+let toastTimer;
+let recordVersion = 0;
+let guLoadVersion = 0;
+const pendingWrites = new Set();
+const expandedRecords = new Set();
+document.getElementById('advancedFilters').open = window.matchMedia('(min-width:641px)').matches;
+document.getElementById('resetFilters').addEventListener('click', () => { clearView(ledgerDashboardEl.style.display !== 'none'); triggerSearch(); });
+document.getElementById('retrySearch').addEventListener('click', () => search());
+
+function storageKey(base) { return authConfig.enabled ? `${base}:${currentProfile?.id || 'signed-out'}` : `${base}:local`; }
+function showToast(message, error = false) {
+  const toast = document.getElementById('saveFeedback');
+  toast.textContent = message;
+  toast.classList.toggle('error', error);
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, error ? 6000 : 3000);
+}
+
+async function writeForRestaurant(d, operation) {
+  const key = restaurantKey(d);
+  if (pendingWrites.has(key)) return;
+  recordVersion++;
+  pendingWrites.add(key);
+  const card = Array.from(listEl.children).find(el => restaurantKey(el.__restaurant) === key);
+  card?.querySelectorAll('button,select,input').forEach(el => { el.disabled = true; });
+  try { await operation(); showToast(`${d.name} · 저장됨`); }
+  catch (error) { refreshAfterRecord(); showToast(error.message || '저장하지 못했습니다. 다시 시도해 주세요.', true); }
+  finally {
+    pendingWrites.delete(key);
+    Array.from(listEl.children).find(el => restaurantKey(el.__restaurant) === key)?.querySelectorAll('button,select,input').forEach(el => { el.disabled = false; });
+    if (ledgerDashboardEl.style.display !== 'none') loadLedgerDashboard();
+  }
+}
 
 function restaurantKey(d) {
   return `${d.name}\u001f${d.address || ''}`;
 }
 
 function loadPersonal() {
-  try { return JSON.parse(localStorage.getItem(PERSONAL_STORAGE_KEY) || '{}'); }
+  try { return JSON.parse(localStorage.getItem(storageKey(PERSONAL_STORAGE_KEY)) || '{}'); }
   catch { return {}; }
 }
 
 function savePersonal(personal) {
-  localStorage.setItem(PERSONAL_STORAGE_KEY, JSON.stringify(personal));
+  localStorage.setItem(storageKey(PERSONAL_STORAGE_KEY), JSON.stringify(personal));
   updatePersonalSummary();
 }
 
@@ -88,13 +124,13 @@ function personalRecordFor(d) {
 }
 
 function loadPersonalRecords() {
-  try { return JSON.parse(localStorage.getItem(PERSONAL_RECORD_STORAGE_KEY) || '{}'); }
+  try { return JSON.parse(localStorage.getItem(storageKey(PERSONAL_RECORD_STORAGE_KEY)) || '{}'); }
   catch { return {}; }
 }
 
 function savePersonalRecords(records) {
   personalRecords = records;
-  localStorage.setItem(PERSONAL_RECORD_STORAGE_KEY, JSON.stringify(records));
+  localStorage.setItem(storageKey(PERSONAL_RECORD_STORAGE_KEY), JSON.stringify(records));
   updatePersonalSummary();
 }
 
@@ -106,7 +142,11 @@ async function setPersonalRecord(d, patch) {
   savePersonalRecords(personalRecords);
   if (!authConfig.enabled) return;
   try {
-    await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, map_target: next.mapTarget, map_saved: next.mapSaved, map_saved_at: next.mapSavedAt || null, kakao_target: next.kakaoTarget, kakao_saved: next.kakaoSaved, kakao_saved_at: next.kakaoSavedAt || null, memo: next.memo, personal_rating: next.personalRating, visited_at: next.visitedAt || null }] }) });
+    const fields = { mapTarget: 'map_target', mapSaved: 'map_saved', mapSavedAt: 'map_saved_at', kakaoTarget: 'kakao_target', kakaoSaved: 'kakao_saved', kakaoSavedAt: 'kakao_saved_at', personalRating: 'personal_rating', visitedAt: 'visited_at' };
+    const remotePatch = Object.fromEntries(Object.entries(patch).filter(([field]) => fields[field]).map(([field, value]) => [fields[field], value === '' ? null : value]));
+    const response = await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: [{ restaurant_key: key, patch: remotePatch }] }) });
+    const saved = await response.json();
+    if (saved.records?.[0]) { personalRecords[key] = recordFromRemote(saved.records[0]); savePersonalRecords(personalRecords); }
   } catch (error) {
     personalRecords[key] = before;
     savePersonalRecords(personalRecords);
@@ -163,7 +203,7 @@ function updatePersonalSummary() {
   const kakaoSaved = Object.values(personalRecords).filter(x => x.kakaoTarget && x.kakaoSaved).length;
   const mapPending = Object.values(personalRecords).filter(value => (value.mapTarget && !value.mapSaved) || (value.kakaoTarget && !value.kakaoSaved)).length;
   const mapComplete = Object.values(personalRecords).filter(value => (value.mapTarget && value.mapSaved) || (value.kakaoTarget && value.kakaoSaved)).length;
-  personalSummaryEl.textContent = `내 기록 ${entries.length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 지도 대기 ${mapPending.toLocaleString()} / 완료 ${mapComplete.toLocaleString()}`;
+  personalSummaryEl.textContent = `내 장부 ${keysForLedger().length.toLocaleString()}곳 · 가고싶음 ${wanted.toLocaleString()}곳 · 지도 대기 ${mapPending.toLocaleString()} / 완료 ${mapComplete.toLocaleString()}`;
   renderLedgerStats();
 }
 
@@ -252,23 +292,40 @@ async function loadLedgerDashboard() {
   }
 }
 
-function openLedgerDashboard() {
+function captureView() {
+  return { q: qEl.value, region: regionEl.value, gu: guEl.value, category: catEl.value, grade: gradeEl.value, gradeMin: gradeMinEl.value, badge: badgeEl.value, sort: sortEl.value, personalFilter: personalFilterEl.value, excludeNew: excludeNewEl.checked, includeClosed: includeClosedEl.checked };
+}
+
+function clearView(ledger = false) {
+  qEl.value = ''; regionEl.value = ''; guEl.value = ''; catEl.value = '';
+  gradeEl.value = ''; gradeMinEl.value = ''; badgeEl.value = ''; sortEl.value = 'avg_desc';
+  excludeNewEl.checked = false; includeClosedEl.checked = ledger;
+  personalFilterEl.value = ledger ? '내 장부 전체' : '';
+  loadGuOptions('').catch(error => showToast(error.message, true));
+}
+
+async function openLedgerDashboard() {
   if (ledgerDashboardEl.style.display !== 'none') return closeLedgerDashboard();
-  ledgerPreviousView = { q: qEl.value, personalFilter: personalFilterEl.value };
+  ledgerPreviousView = captureView();
   ledgerDashboardEl.style.display = '';
   openLedgerBtn.classList.add('active');
-  qEl.value = '';
-  personalFilterEl.value = '내 장부 전체';
+  clearView(true);
   triggerSearch();
   loadLedgerDashboard();
 }
 
-function closeLedgerDashboard() {
+async function closeLedgerDashboard() {
   ledgerDashboardEl.style.display = 'none';
   openLedgerBtn.classList.remove('active');
   if (ledgerPreviousView) {
     qEl.value = ledgerPreviousView.q;
     personalFilterEl.value = ledgerPreviousView.personalFilter;
+    regionEl.value = ledgerPreviousView.region;
+    await loadGuOptions(ledgerPreviousView.region);
+    guEl.value = ledgerPreviousView.gu; catEl.value = ledgerPreviousView.category;
+    gradeEl.value = ledgerPreviousView.grade; gradeMinEl.value = ledgerPreviousView.gradeMin;
+    badgeEl.value = ledgerPreviousView.badge; sortEl.value = ledgerPreviousView.sort;
+    excludeNewEl.checked = ledgerPreviousView.excludeNew; includeClosedEl.checked = ledgerPreviousView.includeClosed;
     ledgerPreviousView = null;
   } else {
     qEl.value = '';
@@ -304,13 +361,14 @@ async function copyText(text, successMessage) {
     document.execCommand('copy');
     textarea.remove();
   }
-  metaEl.textContent = successMessage;
+  showToast(successMessage);
 }
 
 async function apiFetch(url, options = {}) {
   const headers = new Headers(options.headers || {});
   if (authConfig.enabled && supabaseClient) {
     const { data } = await supabaseClient.auth.getSession();
+    if (currentProfile && data.session?.user?.id && data.session.user.id !== currentProfile.id) throw new Error('계정이 변경되었습니다. 새로고침해 주세요.');
     if (data.session?.access_token) headers.set('Authorization', `Bearer ${data.session.access_token}`);
   }
   const response = await fetch(url, { ...options, headers });
@@ -346,43 +404,27 @@ async function signInWithGoogle() {
 }
 
 async function signOut() {
+  personal = {}; personalRecords = {}; currentProfile = null;
+  document.body.classList.add('auth-pending');
   if (supabaseClient) await supabaseClient.auth.signOut();
   window.location.reload();
 }
 
-async function syncPersonalRecords() {
-  const local = loadPersonal();
-  const response = await apiFetch('/api/personal-states');
-  const remote = await response.json();
-  const retiredKeys = new Set([
-    ...Object.entries(local).filter(([, value]) => value.state === '재방문').map(([key]) => key),
-    ...(remote.states || []).filter(state => state.status === '재방문').map(state => state.restaurant_key),
-  ]);
-  if (retiredKeys.size) {
-    await Promise.all(Array.from(retiredKeys).map(restaurant_key => apiFetch('/api/personal-states', {
-      method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ restaurant_key }),
-    })));
-    retiredKeys.forEach(key => delete local[key]);
-  }
-  const merged = {};
-  (remote.states || []).filter(s => s.status !== '재방문').forEach(s => { merged[s.restaurant_key] = { state: s.status, updatedAt: Date.parse(s.updated_at) || Date.now() }; });
-  const missing = Object.entries(local).filter(([key]) => !merged[key]).map(([restaurant_key, value]) => ({ restaurant_key, status: value.state }));
-  if (missing.length) await apiFetch('/api/personal-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ states: missing }) });
-  Object.assign(merged, local);
-  personal = merged;
-  savePersonal(personal);
+function recordFromRemote(r) {
+  return { mapTarget: Boolean(r.map_target), mapSaved: Boolean(r.map_saved), mapSavedAt: r.map_saved_at || '', kakaoTarget: Boolean(r.kakao_target), kakaoSaved: Boolean(r.kakao_saved), kakaoSavedAt: r.kakao_saved_at || '', memo: r.memo || '', personalRating: r.personal_rating ?? '', visitedAt: r.visited_at || '', updatedAt: r.updated_at || '' };
+}
 
-  const localRecords = loadPersonalRecords();
-  const recordResponse = await apiFetch('/api/personal-records');
-  const remoteRecords = await recordResponse.json();
-  const mergedRecords = {};
-  (remoteRecords.records || []).forEach(r => { mergedRecords[r.restaurant_key] = { mapTarget: Boolean(r.map_target), mapSaved: Boolean(r.map_saved), mapSavedAt: r.map_saved_at || '', kakaoTarget: Boolean(r.kakao_target), kakaoSaved: Boolean(r.kakao_saved), kakaoSavedAt: r.kakao_saved_at || '', memo: r.memo || '', personalRating: r.personal_rating ?? '', visitedAt: r.visited_at || '' }; });
-  const missingRecords = Object.entries(localRecords).filter(([key]) => !mergedRecords[key]).map(([restaurant_key, value]) => ({ restaurant_key, map_target: value.mapTarget, map_saved: value.mapSaved, map_saved_at: value.mapSavedAt || null, kakao_target: value.kakaoTarget || false, kakao_saved: value.kakaoSaved || false, kakao_saved_at: value.kakaoSavedAt || null, memo: value.memo || '', personal_rating: value.personalRating || null, visited_at: value.visitedAt || null }));
-  if (missingRecords.length) await apiFetch('/api/personal-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ records: missingRecords }) });
-  Object.entries(localRecords).forEach(([key, value]) => {
-    mergedRecords[key] = { ...(mergedRecords[key] || {}), ...value };
-  });
-  savePersonalRecords(mergedRecords);
+async function syncPersonalRecords() {
+  const accountId = currentProfile?.id;
+  const version = recordVersion;
+  if (!accountId || pendingWrites.size) return;
+  const [stateResponse, recordResponse] = await Promise.all([apiFetch('/api/personal-states'), apiFetch('/api/personal-records')]);
+  const [remote, records] = await Promise.all([stateResponse.json(), recordResponse.json()]);
+  if (currentProfile?.id !== accountId || pendingWrites.size || version !== recordVersion) return;
+  personal = Object.fromEntries((remote.states || []).filter(s => PERSONAL_STATES.includes(s.status)).map(s => [s.restaurant_key, { state: s.status, updatedAt: Date.parse(s.updated_at) || 0 }]));
+  personalRecords = Object.fromEntries((records.records || []).map(r => [r.restaurant_key, recordFromRemote(r)]));
+  savePersonal(personal);
+  savePersonalRecords(personalRecords);
 }
 
 async function loadAdminUsers() {
@@ -420,12 +462,20 @@ async function initAuthentication() {
     const me = await apiFetch('/api/auth/me');
     const { profile } = await me.json();
     currentProfile = profile;
+    personal = {}; personalRecords = {};
     if (!profile.allowed) { showAuthGate('열람 승인 대기 중', `${profile.fullName} · ${profile.email} 계정으로 요청되었습니다. 관리자가 승인하면 이용할 수 있습니다.`, { signout: true }); return false; }
     document.body.classList.remove('auth-pending');
     accountNameEl.textContent = profile.fullName;
     logoutButton.style.display = '';
     if (profile.role === 'owner') adminButton.style.display = '';
     await syncPersonalRecords();
+    supabaseClient.auth.onAuthStateChange?.((event, session) => {
+      if (event === 'SIGNED_OUT' || (session?.user?.id && session.user.id !== currentProfile?.id)) {
+        personal = {}; personalRecords = {};
+        document.body.classList.add('auth-pending');
+        window.location.reload();
+      }
+    });
     return true;
   } catch (error) { showAuthGate('로그인을 확인하지 못했습니다', error.message, { login: true, signout: true }); return false; }
 }
@@ -445,6 +495,7 @@ async function fetchPersonalRows(keys) {
 async function loadMeta() {
   const res = await apiFetch('/api/meta');
   const meta = await res.json();
+  searchVocabulary = meta.vocabulary || {};
 
   meta.regions.forEach(r => {
     const opt = document.createElement('option');
@@ -476,9 +527,11 @@ async function loadMeta() {
 }
 
 async function loadGuOptions(region) {
+  const version = ++guLoadVersion;
   const url = region ? `/api/gu?region=${encodeURIComponent(region)}` : '/api/gu';
   const res = await apiFetch(url);
   const rows = await res.json();
+  if (version !== guLoadVersion) return;
   guEl.innerHTML = '<option value="">전체</option>';
   rows.forEach(r => {
     const opt = document.createElement('option');
@@ -548,7 +601,7 @@ function renderRows(rows) {
     const addrParts = [d.address, d.subway ? d.subway + '역' : null].filter(Boolean);
     const currentState = personalStateFor(d);
     const record = personalRecordFor(d);
-    const actions = PERSONAL_STATES.map(stateName => `
+    const actions = ['가고싶음', '가봄'].map(stateName => `
       <button class="personal-action ${currentState === stateName ? 'active' : ''}" data-action="personal" data-state="${stateName}">${stateName}</button>
     `).join('');
     card.innerHTML = `
@@ -564,8 +617,13 @@ function renderRows(rows) {
           ${visibleMapTags(record)}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
+        ${d.price_range ? `<div class="price-range">등록 가격대 ${d.price_range}원</div>` : ''}
         <div class="card-actions">
           ${actions}
+          <details class="record-details" ${expandedRecords.has(restaurantKey(d)) ? 'open' : ''}>
+          <summary>기록·지도</summary>
+          <div class="record-tools">
+          <button class="personal-action ${currentState === '별로였음' ? 'active' : ''}" data-action="personal" data-state="별로였음">별로였음</button>
           <button class="map-action" data-action="copy">복사</button>
           <a class="map-action" href="${naverSearchUrl(d)}" target="_blank" rel="noopener">네이버지도</a>
           <button class="map-action ${record.mapTarget ? 'active' : ''}" data-action="map-target">${record.mapTarget ? '네이버 저장 해제' : '네이버 저장 대상'}</button>
@@ -575,6 +633,7 @@ function renderRows(rows) {
           ${record.kakaoTarget ? `<button class="kakao-action ${record.kakaoSaved ? 'active' : ''}" data-action="kakao-saved">${record.kakaoSaved ? '카카오 완료 취소' : '카카오 저장 완료'}</button>` : ''}
           <select class="personal-rating-select" data-action="rating">${personalRatingOptions(record.personalRating)}</select>
           ${currentState === '가봄' ? `<label class="visited-at-input">방문일 <input type="date" data-action="visited-at" value="${record.visitedAt || ''}"></label>` : ''}
+          </div></details>
         </div>
       </div>
       <div class="ratings">
@@ -583,6 +642,12 @@ function renderRows(rows) {
       </div>
     `;
     card.__restaurant = d;
+    card.querySelector('.record-details').addEventListener('toggle', event => {
+      if (!event.target.isConnected) return;
+      if (event.target.open) expandedRecords.add(restaurantKey(d));
+      else expandedRecords.delete(restaurantKey(d));
+    });
+    if (pendingWrites.has(restaurantKey(d))) card.querySelectorAll('button,select,input').forEach(el => { el.disabled = true; });
     listEl.appendChild(card);
   });
 }
@@ -604,34 +669,47 @@ function buildParams() {
   return p;
 }
 
+function showSearchHint(smart) {
+  const parts = [];
+  if (smart) {
+    [smart.region, smart.gu, smart.dong, smart.station ? `${smart.station}역` : ''].filter(Boolean).forEach(x => parts.push(x));
+    if (smart.categoryTerms?.length) parts.push(smart.categoryTerms.join(' / '));
+    if (smart.badge) parts.push(smart.badge);
+    if (smart.gradeMin) parts.push(`리뷰 규모 ${smart.gradeMin} 이상`);
+    if (smart.avgMin != null) parts.push(`평점 ${smart.avgMin} 이상`);
+    if (smart.avgMax != null) parts.push(`평점 ${smart.avgMax} ${smart.avgMaxExclusive ? '미만' : '이하'}`);
+    const won = x => `${Number(x).toLocaleString()}원`;
+    if (smart.priceMin != null && smart.priceMax != null) parts.push(`${won(smart.priceMin)}~${won(smart.priceMax)}`);
+    else if (smart.priceMin != null) parts.push(`${won(smart.priceMin)} 이상`);
+    else if (smart.priceMax != null) parts.push(`${won(smart.priceMax)} ${smart.priceMaxExclusive ? '미만' : '이하'}`);
+    if (smart.excludeNew) parts.push('신규 제외');
+  }
+  smartHintEl.textContent = [parts.length ? `검색 조건: ${parts.join(' · ')}` : '', ...(smart?.notices || [])].filter(Boolean).join(' — ');
+  smartHintEl.style.display = smartHintEl.textContent ? 'block' : 'none';
+}
+
 async function search() {
+  const version = ++searchVersion;
+  document.getElementById('searchError').hidden = true;
+  try { await runSearch(version); }
+  catch (error) {
+    if (version !== searchVersion) return;
+    listEl.innerHTML = ''; pagerEl.style.display = 'none'; emptyEl.style.display = 'none';
+    metaEl.textContent = '검색하지 못했습니다.';
+    document.getElementById('searchError').hidden = false;
+  }
+}
+
+async function runSearch(version) {
   metaEl.textContent = '검색 중...';
-  if (personalFilterEl.value) return searchPersonal();
+  if (personalFilterEl.value) return searchPersonal(version);
   const params = buildParams();
   const res = await apiFetch('/api/restaurants?' + params.toString());
   const data = await res.json();
+  if (version !== searchVersion) return;
   state.total = data.total;
 
-  if (data.inferred && (data.inferred.gu || data.inferred.dong || data.inferred.station || data.inferred.categoryTerms.length || data.inferred.badge || data.inferred.gradeMin || data.inferred.avgMin != null || data.inferred.avgMax != null || data.inferred.priceMin != null || data.inferred.priceMax != null || data.inferred.excludeNew)) {
-    const parts = [];
-    if (data.inferred.gu) parts.push(data.inferred.gu);
-    if (data.inferred.dong) parts.push(data.inferred.dong);
-    if (data.inferred.station) parts.push(data.inferred.station + '역');
-    if (data.inferred.categoryTerms.length) parts.push(data.inferred.categoryTerms.join(', '));
-    if (data.inferred.badge) parts.push(data.inferred.badge + ' 태그');
-    if (data.inferred.gradeMin) parts.push(`${data.inferred.gradeMin} 이상`);
-    if (data.inferred.avgMin != null) parts.push(`평점 ${data.inferred.avgMin} 이상`);
-    if (data.inferred.avgMax != null) parts.push(`평점 ${data.inferred.avgMax} 이하`);
-    if (data.inferred.priceMin != null || data.inferred.priceMax != null) {
-      const won = value => `${(value / 10000).toLocaleString()}만원`;
-      parts.push(data.inferred.priceMin != null && data.inferred.priceMax != null ? `${won(data.inferred.priceMin)}~${won(data.inferred.priceMax)}` : data.inferred.priceMin != null ? `${won(data.inferred.priceMin)} 이상` : `${won(data.inferred.priceMax)} 이하`);
-    }
-    if (data.inferred.excludeNew) parts.push('신규 제외');
-    smartHintEl.textContent = `🔎 "${parts.join(' · ')}"(으)로 해석해서 검색 중`;
-    smartHintEl.style.display = 'block';
-  } else {
-    smartHintEl.style.display = 'none';
-  }
+  showSearchHint(data.inferred);
 
   renderRows(data.rows);
   emptyEl.style.display = data.rows.length ? 'none' : 'block';
@@ -648,7 +726,7 @@ async function search() {
   nextBtn.disabled = state.page >= totalPages;
 }
 
-async function searchPersonal() {
+async function searchPersonal(version) {
   const filter = personalFilterEl.value;
   const entries = Object.entries(personalRecords);
   let keys;
@@ -658,7 +736,10 @@ async function searchPersonal() {
   else if (filter === '지도 저장 대상') keys = entries.filter(([, value]) => value.mapTarget).map(([key]) => key);
   else if (filter === '카카오 저장 대상') keys = entries.filter(([, value]) => value.kakaoTarget).map(([key]) => key);
   else keys = keysForPersonalState(filter);
-  const rows = filterPersonalRows(await fetchPersonalRows(keys));
+  const fetched = await fetchPersonalRows(keys);
+  if (version !== searchVersion) return;
+  const rows = filterPersonalRows(fetched);
+  state.page = Math.min(state.page, Math.max(1, Math.ceil(rows.length / state.pageSize)));
   state.total = rows.length;
   const startIdx = (state.page - 1) * state.pageSize;
   const pageRows = rows.slice(startIdx, startIdx + state.pageSize);
@@ -677,25 +758,26 @@ async function searchPersonal() {
 }
 
 function filterPersonalRows(rows) {
-  const gradeOrder = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
-  const q = qEl.value.trim().toLowerCase();
+  const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
+  const explicit = { region: regionEl.value, gu: guEl.value, category: catEl.value.trim(), badge: badgeEl.value };
+  showSearchHint({ ...smart, region: explicit.region ? null : smart.region, gu: explicit.gu ? null : smart.gu, dong: explicit.gu ? null : smart.dong, categoryTerms: explicit.category ? [] : smart.categoryTerms, badge: explicit.badge ? null : smart.badge });
   return rows.filter(d => {
-    const haystack = `${d.name || ''} ${d.category || ''} ${d.address || ''}`.toLowerCase();
-    if (q && !haystack.includes(q)) return false;
+    if (!RestaurantSearch.matches(d, smart, explicit)) return false;
     if (regionEl.value && d.region !== regionEl.value) return false;
     if (guEl.value && d.gu !== guEl.value) return false;
     if (catEl.value.trim() && d.category !== catEl.value.trim()) return false;
     if (gradeEl.value && d.grade !== gradeEl.value) return false;
-    if (gradeMinEl.value && (!d.grade || gradeOrder.indexOf(d.grade) > gradeOrder.indexOf(gradeMinEl.value))) return false;
+    if (gradeMinEl.value && (!d.grade || RestaurantSearch.grades.indexOf(d.grade) > RestaurantSearch.grades.indexOf(gradeMinEl.value))) return false;
     if (badgeEl.value && !(d.badges || []).some(b => b.name === badgeEl.value)) return false;
     if (excludeNewEl.checked && (d.badges || []).some(b => b.name === '신규')) return false;
     if (!includeClosedEl.checked && d.status !== '영업') return false;
     return true;
-  });
+  }).sort(RestaurantSearch.compare(sortEl.value));
 }
 
 let debounceTimer;
 function triggerSearch(resetPage = true) {
+  searchVersion++;
   if (resetPage) state.page = 1;
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(search, 250);
@@ -730,93 +812,55 @@ nextBtn.addEventListener('click', () => {
   state.page++; search(); window.scrollTo({top:0, behavior:'smooth'});
 });
 
-listEl.addEventListener('click', async (event) => {
-  const button = event.target.closest('[data-action]');
-  if (!button || button.dataset.action === 'select') return;
-  const card = button.closest('.card');
-  const d = card?.__restaurant;
+function refreshAfterRecord() {
+  if (personalFilterEl.value) triggerSearch(false);
+  else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
+}
+
+listEl.addEventListener('click', async event => {
+  const button = event.target.closest('button[data-action]');
+  const d = button?.closest('.card')?.__restaurant;
   if (!d) return;
-  if (button.dataset.action === 'personal') {
-    try {
+  if (button.dataset.action === 'copy') return copyText(copyLine(d), `${d.name} · 검색어 복사됨`);
+  await writeForRestaurant(d, async () => {
+    const record = personalRecordFor(d);
+    if (button.dataset.action === 'personal') {
       await setPersonalState(d, button.dataset.state);
-      const savedState = personalStateFor(d);
-      if (savedState) {
-        // 개인 상태를 찍은 직후에는 해당 개인 목록으로 전환한다.
-        // 같은 상호의 다른 지점이 일반 검색 결과에 남아 혼동되는 것을 막는다.
-        personalFilterEl.value = savedState;
-        triggerSearch();
-      } else if (personalFilterEl.value) {
-        triggerSearch(false);
-      } else {
-        renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
-      }
-    } catch (error) { metaEl.textContent = error.message; }
-  }
-  if (button.dataset.action === 'map-target') {
-    try {
-      const nextTarget = !personalRecordFor(d).mapTarget;
-      await setPersonalRecord(d, { mapTarget: nextTarget, mapSaved: nextTarget ? personalRecordFor(d).mapSaved : false, mapSavedAt: nextTarget ? personalRecordFor(d).mapSavedAt : '' });
-      if ((['지도 저장 대상', '저장 대기', '저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).mapTarget) triggerSearch(false);
-      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
-    } catch (error) { metaEl.textContent = error.message; }
-  }
-  if (button.dataset.action === 'map-saved') {
-    try {
-      const nextSaved = !personalRecordFor(d).mapSaved;
-      await setPersonalRecord(d, { mapSaved: nextSaved, mapSavedAt: nextSaved ? new Date().toISOString() : '' });
-      if ((personalFilterEl.value === '저장 대기' && nextSaved) || (personalFilterEl.value === '저장 완료' && !nextSaved)) triggerSearch(false);
-      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
-    } catch (error) { metaEl.textContent = error.message; }
-  }
-  if (button.dataset.action === 'kakao-target') {
-    try {
-      const nextTarget = !personalRecordFor(d).kakaoTarget;
-      await setPersonalRecord(d, { kakaoTarget: nextTarget, kakaoSaved: nextTarget ? personalRecordFor(d).kakaoSaved : false, kakaoSavedAt: nextTarget ? personalRecordFor(d).kakaoSavedAt : '' });
-      if ((['카카오 저장 대상', '저장 대기', '저장 완료'].includes(personalFilterEl.value) || personalFilterEl.value === '내 장부 전체') && !personalRecordFor(d).kakaoTarget) triggerSearch(false);
-      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
-    } catch (error) { metaEl.textContent = error.message; }
-  }
-  if (button.dataset.action === 'kakao-saved') {
-    try {
-      const nextSaved = !personalRecordFor(d).kakaoSaved;
-      await setPersonalRecord(d, { kakaoSaved: nextSaved, kakaoSavedAt: nextSaved ? new Date().toISOString() : '' });
-      if ((personalFilterEl.value === '저장 대기' && nextSaved) || (personalFilterEl.value === '저장 완료' && !nextSaved)) triggerSearch(false);
-      else renderRows(Array.from(listEl.children).map(el => el.__restaurant).filter(Boolean));
-    } catch (error) { metaEl.textContent = error.message; }
-  }
-  if (button.dataset.action === 'copy') await copyText(copyLine(d), `${d.name} 지도 검색어 복사됨`);
+      if (personalStateFor(d) === '가봄') expandedRecords.add(restaurantKey(d));
+    } else if (button.dataset.action === 'map-target') {
+      const mapTarget = !record.mapTarget;
+      await setPersonalRecord(d, { mapTarget, ...(!mapTarget ? { mapSaved: false, mapSavedAt: '' } : {}) });
+    } else if (button.dataset.action === 'map-saved') {
+      const mapSaved = !record.mapSaved;
+      await setPersonalRecord(d, { mapSaved, mapSavedAt: mapSaved ? new Date().toISOString() : '' });
+    } else if (button.dataset.action === 'kakao-target') {
+      const kakaoTarget = !record.kakaoTarget;
+      await setPersonalRecord(d, { kakaoTarget, ...(!kakaoTarget ? { kakaoSaved: false, kakaoSavedAt: '' } : {}) });
+    } else if (button.dataset.action === 'kakao-saved') {
+      const kakaoSaved = !record.kakaoSaved;
+      await setPersonalRecord(d, { kakaoSaved, kakaoSavedAt: kakaoSaved ? new Date().toISOString() : '' });
+    }
+    refreshAfterRecord();
+  });
 });
 
-listEl.addEventListener('change', (event) => {
-  if (event.target.dataset.action === 'rating') {
-    const d = event.target.closest('.card')?.__restaurant;
-    if (!d) return;
-    setPersonalRecord(d, { personalRating: event.target.value === '' ? '' : Number(event.target.value) })
-      .then(() => {
-        metaEl.textContent = `${d.name}의 내 평점 ${event.target.value}을 저장했습니다.`;
-        triggerSearch(false);
-      })
-      .catch(error => { metaEl.textContent = error.message; });
-    return;
-  }
-  if (event.target.dataset.action === 'visited-at') {
-    const d = event.target.closest('.card')?.__restaurant;
-    if (!d) return;
-    const visitedAt = /^\d{4}-\d{2}-\d{2}$/.test(event.target.value) ? event.target.value : '';
-    setPersonalRecord(d, { visitedAt })
-      .then(() => {
-        metaEl.textContent = visitedAt ? `${d.name}의 방문일을 저장했습니다.` : `${d.name}의 방문일을 지웠습니다.`;
-        triggerSearch(false);
-      })
-      .catch(error => { metaEl.textContent = error.message; });
-  }
+listEl.addEventListener('change', event => {
+  const action = event.target.dataset.action;
+  const d = event.target.closest('.card')?.__restaurant;
+  if (!d || !['rating', 'visited-at'].includes(action)) return;
+  const value = event.target.value;
+  const patch = action === 'rating' ? { personalRating: value === '' ? '' : Number(value) } : { visitedAt: /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : '' };
+  writeForRestaurant(d, async () => {
+    await setPersonalRecord(d, patch);
+    refreshAfterRecord();
+  });
 });
+
 
 openLedgerBtn.addEventListener('click', openLedgerDashboard);
 closeLedgerBtn.addEventListener('click', closeLedgerDashboard);
 ledgerAllBtn.addEventListener('click', () => {
-  qEl.value = '';
-  personalFilterEl.value = '내 장부 전체';
+  clearView(true);
   triggerSearch();
   window.setTimeout(() => listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 280);
 });
@@ -872,3 +916,12 @@ adminUsersEl.addEventListener('click', async (event) => {
   updatePersonalSummary();
   await search();
 })();
+
+window.addEventListener('focus', async () => {
+  if (!authConfig.enabled || !currentProfile?.allowed || pendingWrites.size || document.body.classList.contains('auth-pending')) return;
+  try {
+    await syncPersonalRecords();
+    refreshAfterRecord();
+    if (ledgerDashboardEl.style.display !== 'none') loadLedgerDashboard();
+  } catch (error) { showToast('최근 기록을 불러오지 못했어요. 연결을 확인하고 새로고침해 주세요.', true); }
+});

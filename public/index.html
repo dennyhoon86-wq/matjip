@@ -47,69 +47,26 @@
 <div class="drawer-wrap">
   <div class="drawer">
     <div class="field wide">
-      <label for="q">통합 검색 (상호명 · 분류 · 주소 · 자연어 가능)</label>
-      <input id="q" type="text" placeholder="예) 성수역 한식 A 이상 4.6점 이상 신규 빼고, 강남 돼지고기, 서울 중식 3~5만원 ...">
+      <label for="q">식당 찾기</label>
+      <input id="q" type="search" placeholder="예: 성수 한식, 송파 수숯불" autocomplete="off">
       <div id="smartHint" class="smart-hint"></div>
     </div>
-    <div class="field">
-      <label for="region">지역</label>
-      <select id="region"><option value="">전체</option></select>
-    </div>
-    <div class="field">
-      <label for="gu">시/도 · 구</label>
-      <select id="gu"><option value="">전체</option></select>
-    </div>
-    <div class="field">
-      <label for="cat">분류</label>
-      <input id="cat" list="catList" placeholder="전체" autocomplete="off">
-      <datalist id="catList"></datalist>
-    </div>
-    <div class="field">
-      <label for="grade">등급</label>
-      <select id="grade">
-        <option value="">전체</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="gradeMin">최소 등급</label>
-      <select id="gradeMin"><option value="">전체</option><option value="A++">A++ 이상</option><option value="A+">A+ 이상</option><option value="A">A 이상</option><option value="B">B 이상</option><option value="C">C 이상</option><option value="D">D 이상</option><option value="E">E 이상</option></select>
-    </div>
-    <div class="field">
-      <label for="badge">태그</label>
-      <select id="badge">
-        <option value="">전체</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="sort">정렬</label>
-      <select id="sort">
-        <option value="avg_desc">평균 평점 높은순</option>
-        <option value="avg_asc">평균 평점 낮은순</option>
-        <option value="grade">등급순 (A++→E)</option>
-        <option value="name">가나다순</option>
-        <option value="new_first">신규 우선</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="personalFilter">내 기록</label>
-      <select id="personalFilter">
-        <option value="">전체 검색</option>
-        <option value="내 장부 전체">내 장부 전체</option>
-        <option value="가고싶음">가고싶음</option>
-        <option value="가봄">가봄</option>
-        <option value="별로였음">별로였음</option>
-        <option value="지도 저장 대상">지도 저장 대상</option>
-        <option value="카카오 저장 대상">카카오 저장 대상</option>
-        <option value="저장 대기">저장 대기</option>
-        <option value="저장 완료">저장 완료</option>
-      </select>
-    </div>
-    <div class="field checkbox-field">
-      <label><input type="checkbox" id="excludeNew"> 신규 제외</label>
-    </div>
-    <div class="field checkbox-field">
-      <label><input type="checkbox" id="includeClosed"> 폐업 포함</label>
-    </div>
+    <div class="field"><label for="region">지역</label><select id="region"><option value="">전체</option></select></div>
+    <div class="field"><label for="gu">도시 · 구</label><select id="gu"><option value="">전체</option></select></div>
+    <details id="advancedFilters" class="advanced-filters">
+      <summary>상세 조건</summary>
+      <div class="advanced-grid">
+        <div class="field"><label for="cat">분류</label><input id="cat" list="catList" placeholder="전체" autocomplete="off"><datalist id="catList"></datalist></div>
+        <div class="field"><label for="grade">등급</label><select id="grade"><option value="">전체</option></select></div>
+        <div class="field"><label for="gradeMin">최소 등급</label><select id="gradeMin"><option value="">전체</option><option value="A++">A++ 이상</option><option value="A+">A+ 이상</option><option value="A">A 이상</option><option value="B">B 이상</option><option value="C">C 이상</option><option value="D">D 이상</option><option value="E">E 이상</option></select></div>
+        <div class="field"><label for="badge">태그</label><select id="badge"><option value="">전체</option></select></div>
+        <div class="field"><label for="sort">정렬</label><select id="sort"><option value="avg_desc">평균 평점 높은순</option><option value="avg_asc">평균 평점 낮은순</option><option value="grade">등급순 (A++→E)</option><option value="name">가나다순</option><option value="new_first">신규 우선</option></select></div>
+        <div class="field"><label for="personalFilter">내 기록</label><select id="personalFilter"><option value="">전체 검색</option><option value="내 장부 전체">내 장부 전체</option><option value="가고싶음">가고싶음</option><option value="가봄">가봄</option><option value="별로였음">별로였음</option><option value="지도 저장 대상">네이버 저장 대상</option><option value="카카오 저장 대상">카카오 저장 대상</option><option value="저장 대기">저장 대기</option><option value="저장 완료">저장 완료</option></select></div>
+        <div class="field checkbox-field"><label><input type="checkbox" id="excludeNew"> 신규 제외</label></div>
+        <div class="field checkbox-field"><label><input type="checkbox" id="includeClosed"> 폐업 포함</label></div>
+      </div>
+    </details>
+    <button id="resetFilters" class="reset-filters">조건 초기화</button>
   </div>
 </div>
 
@@ -198,6 +155,7 @@
 </div>
 
 <div class="list" id="list"></div>
+<div id="searchError" class="empty" hidden>검색을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.<br><button id="retrySearch" class="legend-btn">다시 시도</button></div>
 <div class="empty" id="emptyState" style="display:none;">검색 조건에 맞는 맛집이 없다.<br>다른 이름이나 분류로 다시 찾아보길.</div>
 
 <div class="pager" id="pager" style="display:none;">
@@ -211,6 +169,8 @@
   데이터는 <code>맛집 정리(ver.6).xlsx</code>에서 가져왔다.
 </footer>
 
-<script src="app.js?v=ledger-separated-1"></script>
+<div id="saveFeedback" class="save-feedback" role="status" aria-live="polite" hidden></div>
+<script src="search-query.js?v=20261003"></script>
+<script src="app.js?v=20261003"></script>
 </body>
 </html>
