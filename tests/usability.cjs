@@ -31,7 +31,7 @@ async function localPage(context) {
   const baseContext = await browser.newContext({ viewport: { width: 1365, height: 900 }, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await localPage(baseContext);
 
-  await criterion('Search: locations, names, ratings, budgets, sentences and shared ledger matching', 25, async () => {
+  await criterion('Search: locations, names, ratings, budgets, sentences and shared ledger matching', 20, async () => {
     const S = require('../public/search-query');
     for (const text of ['서울 중식', '강남 돼지고기', '한식 4.6 이상', '부모님 모시고 갈 조용한 한식', '서울 중식 3~5만원', '한식 5만원 이하', '송파구 수숯불']) {
       const data = await (await fetch(origin + '/api/restaurants?q=' + encodeURIComponent(text) + '&pageSize=100')).json();
@@ -86,16 +86,20 @@ async function localPage(context) {
     }
     await query(page, '송파구 수숯불'); assert.equal(await page.locator('.card').count(), 1);
     const card = page.locator('.card').first(); await details(card);
-    await card.getByRole('button', { name: '네이버 저장 대상', exact: true }).click(); await settled(page);
-    await card.getByRole('button', { name: '카카오 저장 대상', exact: true }).click(); await settled(page);
-    await card.getByRole('button', { name: '네이버 저장 완료', exact: true }).click(); await settled(page);
+    await card.getByRole('button', { name: '지도에 옮기기', exact: true }).click();
+    await page.locator('#mapCandidate').click(); await settled(page);
+    await page.locator('[data-map-provider="kakao"]').click();
+    await page.locator('#mapCandidate').click(); await settled(page);
+    await page.locator('[data-map-provider="naver"]').click();
+    await page.locator('#mapComplete').click(); await settled(page);
+    await page.locator('#closeMapTransfer').click();
     await page.locator('[data-ledger-filter="저장 대기"]').click(); await settled(page);
     assert.equal(await page.locator('.kakao-target-tag').count(), 1);
     await page.locator('#closeLedger').click(); await settled(page);
     assert.equal(await page.locator('#gu').inputValue(), '부산'); assert.equal(await page.locator('#sort').inputValue(), 'avg_asc'); assert.equal(await page.locator('#q').inputValue(), songpa.name);
   });
 
-  await criterion('Accounts: isolation, authoritative cloud state, narrow saves, rollback and deleted-state persistence', 25, async () => {
+  await criterion('Accounts: isolation, authoritative cloud state, narrow saves, rollback and deleted-state persistence', 20, async () => {
     const cloud = { A: { states: [{ restaurant_key: key(songpa), status: '가봄', updated_at: '2026-10-03T00:00:00Z' }], records: [{ restaurant_key: key(songpa), personal_rating: 5, visited_at: '2026-10-02', kakao_target: true }] }, B: { states: [], records: [] } };
     const writes = []; let failNextRecord = false;
     const context = await browser.newContext({ viewport: { width: 1365, height: 900 } });
@@ -131,6 +135,14 @@ async function localPage(context) {
     await p.locator('[data-action="rating"]').selectOption('4.5'); await pause(200);
     assert.deepEqual(writes.at(-1).body.records[0].patch, { personal_rating: 4.5 });
     assert.equal(cloud.A.records[0].visited_at, '2026-10-02'); assert.equal(cloud.A.records[0].kakao_target, true);
+    await p.locator('.card').first().getByRole('button', { name: '지도에 옮기기', exact: true }).click();
+    await p.locator('[data-map-provider="kakao"]').click(); failNextRecord = true;
+    await p.locator('#mapComplete').click(); await settled(p);
+    assert(await p.locator('#saveFeedback.error').isVisible()); assert((await p.locator('#mapTransferStatus').innerText()).includes('저장 대기')); assert(!cloud.A.records[0].kakao_saved);
+    await p.locator('#mapComplete').click(); await settled(p);
+    assert.equal(cloud.A.records[0].personal_rating, 4.5); assert.equal(cloud.A.records[0].visited_at, '2026-10-02'); assert(cloud.A.records[0].kakao_saved);
+    assert.deepEqual(Object.keys(writes.at(-1).body.records[0].patch).sort(), ['kakao_saved', 'kakao_saved_at', 'kakao_target']);
+    await p.locator('#closeMapTransfer').click();
     failNextRecord = true; await p.locator('[data-action="visited-at"]').fill('2026-10-01'); await settled(p);
     assert(await p.locator('#saveFeedback.error').isVisible()); assert.equal(await p.locator('[data-action="visited-at"]').inputValue(), '2026-10-02');
     await p.locator('.card').first().getByRole('button', { name: '가봄', exact: true }).click(); await settled(p); assert.equal(cloud.A.states.length, 0);
@@ -143,7 +155,7 @@ async function localPage(context) {
     await context.close();
   });
 
-  await criterion('Mobile: 320/390px compact first results, 44px touch targets, expandable filters and records, no overflow', 15, async () => {
+  await criterion('Mobile: 320/390px compact first results, 44px touch targets, expandable filters and records, no overflow', 10, async () => {
     for (const width of [320, 390]) {
       const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true });
       const p = await localPage(context);
@@ -153,9 +165,15 @@ async function localPage(context) {
       await p.screenshot({ path: path.join(os.tmpdir(), `misik-mobile-initial-${width}-20261003.png`) });
       const card = p.locator('.card').first();
       for (const control of await card.locator('button,summary').all()) if (await control.isVisible()) assert((await control.boundingBox()).height >= 44);
-      await details(card); assert(await card.getByRole('link', { name: '네이버지도', exact: true }).isVisible());
+      await details(card); assert(await card.getByRole('button', { name: '지도에 옮기기', exact: true }).isVisible());
       for (const control of await card.locator('button,a,select').all()) if (await control.isVisible()) assert((await control.boundingBox()).height >= 44);
       await card.screenshot({ path: path.join(os.tmpdir(), `misik-mobile-card-${width}-20261003.png`) });
+      await card.getByRole('button', { name: '지도에 옮기기', exact: true }).click();
+      assert(await p.locator('#mapTransferDialog').isVisible());
+      assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), width);
+      for (const control of await p.locator('#mapTransferDialog button,#mapTransferDialog a').all()) if (await control.isVisible()) assert((await control.boundingBox()).height >= 44);
+      await p.locator('#mapTransferDialog').screenshot({ path: path.join(os.tmpdir(), `misik-map-dialog-${width}-20261003b.png`) });
+      await p.keyboard.press('Escape'); assert(!(await p.locator('#mapTransferDialog').isVisible()));
       await p.locator('#advancedFilters summary').click(); assert(await p.locator('#sort').isVisible());
       assert.equal(await p.evaluate(() => innerWidth), await p.evaluate(() => document.documentElement.scrollWidth));
       await p.screenshot({ path: path.join(os.tmpdir(), `misik-mobile-${width}-20261003.png`) });
@@ -165,7 +183,65 @@ async function localPage(context) {
     const p = await localPage(tablet); assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 768); await tablet.close();
   });
 
-  await criterion('First-use: plain search example and no browser exceptions', 10, async () => {
+  await criterion('Recovery: zero results, location widening, removable conditions and empty ledger escape', 5, async () => {
+    await page.locator('#resetFilters').click(); await settled(page);
+    await query(page, songpa.name); await page.locator('#gu').selectOption('강남구'); await settled(page);
+    assert(await page.locator('#emptyState').isVisible()); assert(await page.locator('#widenLocation').isVisible());
+    await page.locator('[data-remove-filter="gu"]').click(); await settled(page); assert.equal(await page.locator('.card').count(), 2);
+    await query(page, `강남구 ${songpa.name} 4.5 이상`); assert.equal(await page.locator('.card').count(), 0);
+    await page.locator('#widenLocation').click(); await settled(page);
+    assert.equal(await page.locator('#q').inputValue(), `${songpa.name} 4.5 이상`); assert.equal(await page.locator('.card').count(), 1);
+    await query(page, '식당없음QA테스트'); assert(await page.locator('#emptyReset').isVisible());
+    await page.locator('#emptyReset').click(); await settled(page); assert.equal(await page.locator('#q').inputValue(), ''); assert(await page.locator('.card').count() > 0);
+    const blank = await browser.newContext(); const p = await localPage(blank);
+    await p.locator('#openLedger').click(); await settled(p); assert.equal(await p.locator('.card').count(), 0);
+    assert((await p.locator('#emptyMessage').innerText()).includes('아직 내 장부'));
+    await p.locator('#emptyBrowse').click(); await settled(p); assert(await p.locator('.card').count() > 0); assert(!(await p.locator('#ledgerDashboard').isVisible()));
+    await blank.close();
+  });
+
+  await criterion('Review scale: labels differ from taste scores and original grading data stays intact', 5, async () => {
+    assert.equal(await page.locator('label[for="grade"]').innerText(), '리뷰 규모');
+    assert.equal(await page.locator('label[for="gradeMin"]').innerText(), '최소 리뷰 규모');
+    for (const card of await page.locator('.card').all()) {
+      assert((await card.locator('.review-scale').innerText()).includes('리뷰 규모'));
+      assert.equal(await card.locator('.rating-label').innerText(), '평균 평점');
+      assert((await card.locator('.rating-evidence').innerText()).includes('추천 순위 아님'));
+      assert.equal(await card.locator('.stamp').innerText(), await card.evaluate(el => el.__restaurant.grade || '무등급'));
+    }
+    await page.locator('#rubricToggle').click(); assert((await page.locator('#rubricPanel').innerText()).includes('기존 분류 값과 기준은 그대로'));
+    await page.locator('#rubricToggle').click();
+  });
+
+  await criterion('Map workflow: provider isolation, legacy state preservation, manual completion and clean copy', 10, async () => {
+    await query(page, songpa.name);
+    const card = page.locator('.card').filter({ hasText: songpa.address });
+    const stored = () => page.evaluate(key => JSON.parse(localStorage.getItem('misik-jangbu-personal-records-v1:local'))[key], key(songpa));
+    const before = await stored(); assert(before.mapSaved && before.kakaoTarget && !before.kakaoSaved);
+    await card.getByRole('button', { name: '지도에 옮기기', exact: true }).click();
+    assert((await page.locator('#mapTransferStatus').innerText()).includes('저장 완료'));
+    assert((await page.locator('#mapTransferHelp').innerText()).includes('자동 저장되지는'));
+    assert((await page.locator('#mapSearchLink').getAttribute('href')).startsWith('https://map.naver.com/p/search/'));
+    await page.locator('[data-map-provider="kakao"]').click(); assert((await page.locator('#mapTransferStatus').innerText()).includes('저장 대기'));
+    assert((await page.locator('#mapSearchLink').getAttribute('href')).startsWith('https://map.kakao.com/?q='));
+    assert.deepEqual(await stored(), before, 'opening or switching provider changed saved records');
+    await page.locator('#mapCopy').click(); assert.equal(await page.evaluate(() => navigator.clipboard.readText()), `${songpa.name} ${songpa.address}`);
+    await page.locator('#mapComplete').click(); await settled(page); let record = await stored(); assert(record.mapSaved && record.kakaoSaved && record.kakaoSavedAt); assert.equal(record.personalRating, 5);
+    await page.locator('#mapComplete').click(); await settled(page); record = await stored(); assert(record.mapSaved && record.kakaoTarget && !record.kakaoSaved);
+    await page.locator('#mapRemove').click(); await settled(page); record = await stored(); assert(record.mapTarget && record.mapSaved && !record.kakaoTarget);
+    await page.locator('#mapCandidate').click(); await settled(page);
+    await baseContext.route('https://map.kakao.com/**', r => r.fulfill({ body: 'Isolated map link test' }));
+    const popupPromise = page.waitForEvent('popup'); await page.locator('#mapSearchLink').click(); const popup = await popupPromise;
+    await popup.close(); await settled(page); assert(!(await stored()).kakaoSaved, 'opening map marked it complete');
+    await page.locator('#closeMapTransfer').click();
+    assert.equal(await page.locator('.card').count(), 2); assert.equal(await page.locator('#personalFilter').inputValue(), '');
+    await page.reload({ waitUntil: 'networkidle' }); await query(page, songpa.name);
+    await page.locator('.card').filter({ hasText: songpa.address }).getByRole('button', { name: '지도에 옮기기', exact: true }).click();
+    assert((await page.locator('#mapTransferStatus').innerText()).includes('저장 완료'));
+    await page.keyboard.press('Escape');
+  });
+
+  await criterion('First-use: plain search example and no browser exceptions', 5, async () => {
     const placeholder = await page.locator('#q').getAttribute('placeholder');
     assert.equal(placeholder, '예: 성수 한식, 송파 수숯불'); assert(!/A|4\.6|신규/.test(placeholder));
     assert.equal(await page.locator('label[for="q"]').innerText(), '식당 찾기');
@@ -176,5 +252,5 @@ async function localPage(context) {
   });
   const score = results.filter(r => r.passed).reduce((sum, r) => sum + r.points, 0);
   console.log(JSON.stringify({ score, results, browserErrors: errors, note: 'Internal scenario gate; live Google OAuth and real-device testing are separate.' }, null, 2));
-  if (score < 95 || results.some(r => !r.passed && ['Accounts', 'Search', 'Ledger'].some(s => r.name.startsWith(s)))) process.exitCode = 1;
+  if (score < 95 || results.some(r => !r.passed)) process.exitCode = 1;
 })().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); if (server) server.kill(); });

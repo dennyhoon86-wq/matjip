@@ -48,6 +48,13 @@ test('restaurant names are not stripped as sentence filler', () => {
   for (const name of ['밤나무집', '아침식당', '점심밥상', '맛집정원', '모임식당']) assert.deepEqual(search.parse(name, v).leftoverTokens, [name]);
   assert.equal(search.parse('최근 한식', v).badge, '신규');
 });
+test('widening removes only recognized locations, keeping names, ratings and budgets', () => {
+  assert.equal(search.withoutLocation('서울 강남구 한식 4.6 이상 5만원 이하', v), '한식 4.6 이상 5만원 이하');
+  assert.equal(search.withoutLocation('성수역에서 수숯불', v), '수숯불');
+  assert.equal(search.withoutLocation('서울,수숯불 50,000원 이하', v), '수숯불 50,000원 이하');
+  assert.equal(search.withoutLocation('밤나무집 4.6점 이상', v), '밤나무집 4.6점 이상');
+  assert.equal(search.withoutLocation('부모님 모시고 갈 조용한 한식', v), '부모님 모시고 갈 조용한 한식');
+});
 test('personal sorts handle ties, null ratings and all five options', () => {
   const rows = [{ id: 1, name: '나', avg: 4.7, grade: 'B', badges: [] }, { id: 2, name: '가', avg: 4.1, grade: 'A', badges: [{ name: '신규' }] }, { id: 3, name: '다', avg: null, grade: null, badges: [] }];
   for (const [sort, ids] of [['avg_desc', [1, 2, 3]], ['avg_asc', [2, 1, 3]], ['grade', [2, 1, 3]], ['name', [2, 1, 3]], ['new_first', [2, 1, 3]]]) assert.deepEqual([...rows].sort(search.compare(sort)).map(r => r.id), ids);

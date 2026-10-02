@@ -120,5 +120,11 @@
       return order || a.id - b.id;
     };
   }
-  return { parse, matches, compare, grades };
+  function withoutLocation(q, vocabulary) {
+    return String(q || '').replace(/[，/()]/g, ' ').replace(/,(?!\d)/g, ' ').split(/\s+/).filter(token => {
+      const s = parse(token, vocabulary);
+      return !(s.region || s.gu || s.dong || s.station) || s.leftoverTokens.length > 0;
+    }).join(' ').trim();
+  }
+  return { parse, matches, compare, grades, withoutLocation };
 });

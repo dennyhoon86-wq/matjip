@@ -71,9 +71,30 @@ let recordVersion = 0;
 let guLoadVersion = 0;
 const pendingWrites = new Set();
 const expandedRecords = new Set();
+const mapDialog = document.getElementById('mapTransferDialog');
+let mapTransfer = null;
 document.getElementById('advancedFilters').open = window.matchMedia('(min-width:641px)').matches;
 document.getElementById('resetFilters').addEventListener('click', () => { clearView(ledgerDashboardEl.style.display !== 'none'); triggerSearch(); });
 document.getElementById('retrySearch').addEventListener('click', () => search());
+document.getElementById('emptyReset').addEventListener('click', () => { clearView(ledgerDashboardEl.style.display !== 'none'); triggerSearch(); });
+document.getElementById('emptyBrowse').addEventListener('click', closeLedgerDashboard);
+document.getElementById('widenLocation').addEventListener('click', () => {
+  qEl.value = RestaurantSearch.withoutLocation(qEl.value, searchVocabulary);
+  regionEl.value = ''; guEl.value = '';
+  loadGuOptions('').catch(error => showToast(error.message, true));
+  triggerSearch(); showToast('지역 조건만 해제했어요. 나머지 조건은 유지됩니다.');
+});
+
+const filterControls = { q: qEl, region: regionEl, gu: guEl, category: catEl, grade: gradeEl, gradeMin: gradeMinEl, badge: badgeEl, personal: personalFilterEl, excludeNew: excludeNewEl, includeClosed: includeClosedEl };
+document.getElementById('activeFilters').addEventListener('click', event => {
+  const key = event.target.closest('[data-remove-filter]')?.dataset.removeFilter;
+  if (!key || !filterControls[key]) return;
+  const control = filterControls[key];
+  if (control.type === 'checkbox') control.checked = false;
+  else control.value = key === 'personal' && ledgerDashboardEl.style.display !== 'none' ? '내 장부 전체' : '';
+  if (key === 'region') { guEl.value = ''; loadGuOptions('').catch(error => showToast(error.message, true)); }
+  triggerSearch();
+});
 
 function storageKey(base) { return authConfig.enabled ? `${base}:${currentProfile?.id || 'signed-out'}` : `${base}:local`; }
 function showToast(message, error = false) {
@@ -90,6 +111,7 @@ async function writeForRestaurant(d, operation) {
   if (pendingWrites.has(key)) return;
   recordVersion++;
   pendingWrites.add(key);
+  if (mapDialog.open && mapTransfer && restaurantKey(mapTransfer.restaurant) === key) renderMapTransfer();
   const card = Array.from(listEl.children).find(el => restaurantKey(el.__restaurant) === key);
   card?.querySelectorAll('button,select,input').forEach(el => { el.disabled = true; });
   try { await operation(); showToast(`${d.name} · 저장됨`); }
@@ -98,6 +120,7 @@ async function writeForRestaurant(d, operation) {
     pendingWrites.delete(key);
     Array.from(listEl.children).find(el => restaurantKey(el.__restaurant) === key)?.querySelectorAll('button,select,input').forEach(el => { el.disabled = false; });
     if (ledgerDashboardEl.style.display !== 'none') loadLedgerDashboard();
+    if (mapTransfer && restaurantKey(mapTransfer.restaurant) === key && mapDialog.open) renderMapTransfer();
   }
 }
 
@@ -341,6 +364,62 @@ function naverSearchUrl(d) {
 function kakaoSearchUrl(d) {
   return `https://map.kakao.com/?q=${encodeURIComponent(`${d.name} ${d.address || ''}`.trim())}`;
 }
+
+function openMapTransfer(d) {
+  mapTransfer = { restaurant: d, provider: 'naver' };
+  renderMapTransfer();
+  if (!mapDialog.open) mapDialog.showModal();
+}
+
+function renderMapTransfer() {
+  if (!mapTransfer) return;
+  const { restaurant: d, provider } = mapTransfer;
+  const record = personalRecordFor(d), naver = provider === 'naver';
+  const target = naver ? record.mapTarget : record.kakaoTarget;
+  const saved = naver ? record.mapSaved : record.kakaoSaved;
+  const name = naver ? '네이버' : '카카오';
+  document.getElementById('mapRestaurantName').textContent = d.name;
+  document.getElementById('mapRestaurantAddress').textContent = d.address || '주소 정보 없음';
+  document.getElementById('mapTransferStatus').textContent = `${name} · ${saved ? '저장 완료로 표시됨' : target ? '저장 대기' : '아직 저장 후보가 아니에요'}`;
+  const link = document.getElementById('mapSearchLink');
+  link.href = naver ? naverSearchUrl(d) : kakaoSearchUrl(d);
+  link.textContent = naver ? '네이버지도에서 검색' : '카카오맵에서 검색';
+  document.getElementById('mapCandidate').hidden = Boolean(target || saved);
+  document.getElementById('mapComplete').textContent = saved ? '완료 표시 취소' : '저장 완료로 표시';
+  document.getElementById('mapRemove').hidden = !target && !saved;
+  mapDialog.querySelectorAll('[data-map-provider]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mapProvider === provider)));
+  const busy = pendingWrites.has(restaurantKey(d));
+  mapDialog.querySelectorAll('button:not(#closeMapTransfer)').forEach(button => { button.disabled = busy; });
+  link.setAttribute('aria-disabled', String(busy));
+}
+
+async function updateMapTransfer(action) {
+  if (!mapTransfer) return;
+  const { restaurant: d, provider } = mapTransfer;
+  await writeForRestaurant(d, async () => {
+    const record = personalRecordFor(d), naver = provider === 'naver';
+    const saved = naver ? record.mapSaved : record.kakaoSaved;
+    let patch;
+    if (action === 'remove') patch = naver ? { mapTarget: false, mapSaved: false, mapSavedAt: '' } : { kakaoTarget: false, kakaoSaved: false, kakaoSavedAt: '' };
+    else if (action === 'complete') patch = naver ? { mapTarget: true, mapSaved: !saved, mapSavedAt: !saved ? new Date().toISOString() : '' } : { kakaoTarget: true, kakaoSaved: !saved, kakaoSavedAt: !saved ? new Date().toISOString() : '' };
+    else patch = naver ? { mapTarget: true } : { kakaoTarget: true };
+    await setPersonalRecord(d, patch); refreshAfterRecord();
+  });
+}
+
+document.getElementById('closeMapTransfer').addEventListener('click', () => mapDialog.close());
+mapDialog.addEventListener('close', () => { mapTransfer = null; });
+mapDialog.querySelectorAll('[data-map-provider]').forEach(button => button.addEventListener('click', () => {
+  mapTransfer.provider = button.dataset.mapProvider; renderMapTransfer();
+}));
+document.getElementById('mapCopy').addEventListener('click', () => mapTransfer && copyText(copyLine(mapTransfer.restaurant), '상호·주소 복사됨'));
+document.getElementById('mapCandidate').addEventListener('click', () => updateMapTransfer('candidate'));
+document.getElementById('mapComplete').addEventListener('click', () => updateMapTransfer('complete'));
+document.getElementById('mapRemove').addEventListener('click', () => updateMapTransfer('remove'));
+document.getElementById('mapSearchLink').addEventListener('click', event => {
+  if (!mapTransfer || pendingWrites.has(restaurantKey(mapTransfer.restaurant))) { event.preventDefault(); return; }
+  updateMapTransfer('candidate');
+});
 
 function copyLine(d) {
   return `${d.name} ${d.address || ''}`.trim();
@@ -605,7 +684,7 @@ function renderRows(rows) {
       <button class="personal-action ${currentState === stateName ? 'active' : ''}" data-action="personal" data-state="${stateName}">${stateName}</button>
     `).join('');
     card.innerHTML = `
-      <div class="stamp${stampClass}" style="${stampBg}">${stampLabel}</div>
+      <div class="review-scale" title="리뷰 규모 분류 · 맛 점수나 순위가 아닙니다"><div class="stamp${stampClass}" style="${stampBg}">${stampLabel}</div><span>리뷰 규모</span></div>
       <div class="info">
         <div class="name">${d.name}
           <span class="tag">${d.category || '분류없음'}</span>
@@ -620,24 +699,21 @@ function renderRows(rows) {
         ${d.price_range ? `<div class="price-range">등록 가격대 ${d.price_range}원</div>` : ''}
         <div class="card-actions">
           ${actions}
+          <button class="map-action map-transfer-button" data-action="map-transfer">지도에 옮기기</button>
           <details class="record-details" ${expandedRecords.has(restaurantKey(d)) ? 'open' : ''}>
-          <summary>기록·지도</summary>
+          <summary>기록</summary>
           <div class="record-tools">
           <button class="personal-action ${currentState === '별로였음' ? 'active' : ''}" data-action="personal" data-state="별로였음">별로였음</button>
           <button class="map-action" data-action="copy">복사</button>
-          <a class="map-action" href="${naverSearchUrl(d)}" target="_blank" rel="noopener">네이버지도</a>
-          <button class="map-action ${record.mapTarget ? 'active' : ''}" data-action="map-target">${record.mapTarget ? '네이버 저장 해제' : '네이버 저장 대상'}</button>
-          ${record.mapTarget ? `<button class="map-action ${record.mapSaved ? 'active' : ''}" data-action="map-saved">${record.mapSaved ? '네이버 완료 취소' : '네이버 저장 완료'}</button>` : ''}
-          <a class="kakao-action" href="${kakaoSearchUrl(d)}" target="_blank" rel="noopener">카카오맵</a>
-          <button class="kakao-action ${record.kakaoTarget ? 'active' : ''}" data-action="kakao-target">${record.kakaoTarget ? '카카오 저장 해제' : '카카오 저장 대상'}</button>
-          ${record.kakaoTarget ? `<button class="kakao-action ${record.kakaoSaved ? 'active' : ''}" data-action="kakao-saved">${record.kakaoSaved ? '카카오 완료 취소' : '카카오 저장 완료'}</button>` : ''}
           <select class="personal-rating-select" data-action="rating">${personalRatingOptions(record.personalRating)}</select>
           ${currentState === '가봄' ? `<label class="visited-at-input">방문일 <input type="date" data-action="visited-at" value="${record.visitedAt || ''}"></label>` : ''}
           </div></details>
         </div>
       </div>
       <div class="ratings">
+        <div class="rating-label">평균 평점</div>
         <div class="avg">${avgHtml}</div>
+        <div class="rating-evidence">${d.avg == null ? '평점 자료 없음' : `평점 출처 ${[d.naver, d.google, d.daum].filter(value => value != null).length}곳 · 추천 순위 아님`}</div>
         <div class="src">${ratingLine(d)}</div>
       </div>
     `;
@@ -686,6 +762,35 @@ function showSearchHint(smart) {
   }
   smartHintEl.textContent = [parts.length ? `검색 조건: ${parts.join(' · ')}` : '', ...(smart?.notices || [])].filter(Boolean).join(' — ');
   smartHintEl.style.display = smartHintEl.textContent ? 'block' : 'none';
+  renderActiveFilters();
+}
+
+function renderActiveFilters() {
+  const container = document.getElementById('activeFilters');
+  const labels = { q: '검색어', region: '지역', gu: '도시·구', category: '분류', grade: '리뷰 규모', gradeMin: '최소 리뷰 규모', badge: '태그', personal: '내 기록', excludeNew: '신규 제외', includeClosed: '폐업 포함' };
+  container.replaceChildren();
+  for (const [key, control] of Object.entries(filterControls)) {
+    const value = control.type === 'checkbox' ? control.checked : control.value.trim();
+    if (!value || key === 'personal' && value === '내 장부 전체') continue;
+    const button = document.createElement('button');
+    button.className = 'filter-chip'; button.dataset.removeFilter = key;
+    const label = control.type === 'checkbox' ? labels[key] : `${labels[key]}: ${value}${key === 'gradeMin' ? ' 이상' : ''}`;
+    button.textContent = `${label} ×`; button.setAttribute('aria-label', `${label} 조건 해제`);
+    container.appendChild(button);
+  }
+  container.hidden = !container.children.length;
+}
+
+function renderEmptyState(hasRows) {
+  emptyEl.style.display = hasRows ? 'none' : 'block';
+  if (hasRows) return;
+  const ledger = Boolean(personalFilterEl.value), noRecords = ledger && keysForLedger().length === 0;
+  document.getElementById('emptyMessage').textContent = noRecords ? '아직 내 장부에 기록한 식당이 없어요. 식당 목록에서 가고싶음·가봄을 눌러 시작해 보세요.' : ledger ? '내 기록 중 검색 조건에 맞는 식당이 없어요.' : '검색 조건에 맞는 식당이 없어요.';
+  document.getElementById('emptyReset').hidden = noRecords;
+  document.getElementById('emptyReset').textContent = ledger ? '내 장부 전체 보기' : '조건 지우기';
+  const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
+  document.getElementById('widenLocation').hidden = noRecords || !(regionEl.value || guEl.value || smart.region || smart.gu || smart.dong || smart.station);
+  document.getElementById('emptyBrowse').hidden = ledgerDashboardEl.style.display === 'none';
 }
 
 async function search() {
@@ -702,6 +807,8 @@ async function search() {
 
 async function runSearch(version) {
   metaEl.textContent = '검색 중...';
+  emptyEl.style.display = 'none';
+  renderActiveFilters();
   if (personalFilterEl.value) return searchPersonal(version);
   const params = buildParams();
   const res = await apiFetch('/api/restaurants?' + params.toString());
@@ -712,7 +819,7 @@ async function runSearch(version) {
   showSearchHint(data.inferred);
 
   renderRows(data.rows);
-  emptyEl.style.display = data.rows.length ? 'none' : 'block';
+  renderEmptyState(data.rows.length);
 
   const startIdx = data.rows.length ? (state.page - 1) * state.pageSize + 1 : 0;
   const endIdx = startIdx + data.rows.length - 1;
@@ -744,7 +851,7 @@ async function searchPersonal(version) {
   const startIdx = (state.page - 1) * state.pageSize;
   const pageRows = rows.slice(startIdx, startIdx + state.pageSize);
   renderRows(pageRows);
-  emptyEl.style.display = pageRows.length ? 'none' : 'block';
+  renderEmptyState(pageRows.length);
   const shownStart = pageRows.length ? startIdx + 1 : 0;
   const shownEnd = startIdx + pageRows.length;
   const filterLabel = filter === '내 장부 전체' ? '내 장부' : `내 ${filter}`;
@@ -821,24 +928,12 @@ listEl.addEventListener('click', async event => {
   const button = event.target.closest('button[data-action]');
   const d = button?.closest('.card')?.__restaurant;
   if (!d) return;
+  if (button.dataset.action === 'map-transfer') return openMapTransfer(d);
   if (button.dataset.action === 'copy') return copyText(copyLine(d), `${d.name} · 검색어 복사됨`);
   await writeForRestaurant(d, async () => {
-    const record = personalRecordFor(d);
     if (button.dataset.action === 'personal') {
       await setPersonalState(d, button.dataset.state);
       if (personalStateFor(d) === '가봄') expandedRecords.add(restaurantKey(d));
-    } else if (button.dataset.action === 'map-target') {
-      const mapTarget = !record.mapTarget;
-      await setPersonalRecord(d, { mapTarget, ...(!mapTarget ? { mapSaved: false, mapSavedAt: '' } : {}) });
-    } else if (button.dataset.action === 'map-saved') {
-      const mapSaved = !record.mapSaved;
-      await setPersonalRecord(d, { mapSaved, mapSavedAt: mapSaved ? new Date().toISOString() : '' });
-    } else if (button.dataset.action === 'kakao-target') {
-      const kakaoTarget = !record.kakaoTarget;
-      await setPersonalRecord(d, { kakaoTarget, ...(!kakaoTarget ? { kakaoSaved: false, kakaoSavedAt: '' } : {}) });
-    } else if (button.dataset.action === 'kakao-saved') {
-      const kakaoSaved = !record.kakaoSaved;
-      await setPersonalRecord(d, { kakaoSaved, kakaoSavedAt: kakaoSaved ? new Date().toISOString() : '' });
     }
     refreshAfterRecord();
   });
@@ -889,7 +984,7 @@ const rubricToggle = document.getElementById('rubricToggle');
 const rubricPanel = document.getElementById('rubricPanel');
 rubricToggle.addEventListener('click', () => {
   const open = rubricPanel.classList.toggle('open');
-  rubricToggle.textContent = open ? '등급 기준 닫기 ▴' : '등급 기준 보기 ▾';
+  rubricToggle.textContent = open ? '리뷰 규모 기준 닫기 ▴' : '리뷰 규모 기준 ▾';
 });
 
 googleLoginBtn.addEventListener('click', signInWithGoogle);
