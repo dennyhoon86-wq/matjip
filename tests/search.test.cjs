@@ -55,8 +55,34 @@ test('widening removes only recognized locations, keeping names, ratings and bud
   assert.equal(search.withoutLocation('밤나무집 4.6점 이상', v), '밤나무집 4.6점 이상');
   assert.equal(search.withoutLocation('부모님 모시고 갈 조용한 한식', v), '부모님 모시고 갈 조용한 한식');
 });
-test('personal sorts handle ties, null ratings and all five options', () => {
+test('personal sorts handle ties, null ratings and legacy options', () => {
   const rows = [{ id: 1, name: '나', avg: 4.7, grade: 'B', badges: [] }, { id: 2, name: '가', avg: 4.1, grade: 'A', badges: [{ name: '신규' }] }, { id: 3, name: '다', avg: null, grade: null, badges: [] }];
   for (const [sort, ids] of [['avg_desc', [1, 2, 3]], ['avg_asc', [2, 1, 3]], ['grade', [2, 1, 3]], ['name', [2, 1, 3]], ['new_first', [2, 1, 3]]]) assert.deepEqual([...rows].sort(search.compare(sort)).map(r => r.id), ids);
+});
+test('price bands are honest and single-value ranges cannot leak into low budgets', () => {
+  assert.deepEqual(search.priceBandSelection(search.parse('한식 10만원 이하', v)), ['under_100k']);
+  assert.deepEqual(search.priceBandSelection(search.parse('한식 10~20만원', v)), ['100k_200k']);
+  assert.deepEqual(search.priceBandSelection(search.parse('한식 20만원 이상', v)), ['over_200k']);
+  assert.equal(search.priceBandSelection(search.parse('한식 1만원 이하', v)), null);
+  assert(search.priceMatches({ origin_sheet: '~ 100,000' }, search.parse('10만원 이하', v)));
+  assert(!search.priceMatches({ origin_sheet: '100,000 ~ 200,000' }, search.parse('10만원 이하', v)));
+  assert(!search.priceMatches({ price_range: '156000' }, search.parse('10만원 이하', v)));
+  assert.equal(search.withoutPrice('강남역 한식 1만원 이하'), '강남역 한식');
+});
+test('station fallback stays local and recommendation balances evidence', () => {
+  const smart = search.parse('강남역 점심', v);
+  assert.equal(smart.mealIntent, 'lunch');
+  const areas = [{ region: '서울', gu: '강남구', dong: '역삼동' }];
+  const restaurant = { subway: '역삼', region: '서울', gu: '강남구', dong: '역삼동' };
+  assert(!search.matches(restaurant, smart));
+  assert(search.matches(restaurant, smart, { locationScope: 'neighborhood', stationAreas: areas }));
+  assert(!search.matches({ ...restaurant, region: '부산' }, smart, { locationScope: 'district', stationAreas: areas }));
+  const strong = { avg: 4.7, grade: 'A++', naver: 4.7, google: 4.7, daum: 4.7, category: '한식' };
+  const weak = { avg: 5, grade: 'E', naver: 5, category: '한식' };
+  assert(search.quickScore(strong) > search.quickScore(weak));
+  assert(search.quickScore({ ...strong, avg: 4.2 }) < search.quickScore({ ...weak, avg: 4.8 }));
+  assert(search.quickScore({ ...strong, category: '요리주점' }, 'lunch') < search.quickScore(strong, 'lunch'));
+  assert(search.quickScore({ ...strong, category: '와인' }, 'lunch') < search.quickScore(strong, 'lunch'));
+  assert.equal(search.parse('홍대입구역 저녁 술', v).mealIntent, 'dinner');
 });
 

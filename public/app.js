@@ -65,6 +65,8 @@ let currentProfile = null;
 let ledgerLoadVersion = 0;
 let ledgerPreviousView = null;
 let searchVocabulary = {};
+let stationAreas = {};
+let locationScope = 'exact';
 let searchVersion = 0;
 let toastTimer;
 let recordVersion = 0;
@@ -78,12 +80,24 @@ document.getElementById('resetFilters').addEventListener('click', () => { clearV
 document.getElementById('retrySearch').addEventListener('click', () => search());
 document.getElementById('emptyReset').addEventListener('click', () => { clearView(ledgerDashboardEl.style.display !== 'none'); triggerSearch(); });
 document.getElementById('emptyBrowse').addEventListener('click', closeLedgerDashboard);
-document.getElementById('widenLocation').addEventListener('click', () => {
+document.getElementById('removePrice').addEventListener('click', () => {
+  qEl.value = RestaurantSearch.withoutPrice(qEl.value);
+  triggerSearch();
+});
+function widenLocation() {
+  const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
+  if (smart.station && locationScope !== 'district') {
+    locationScope = locationScope === 'exact' ? 'neighborhood' : 'district';
+    triggerSearch();
+    return;
+  }
   qEl.value = RestaurantSearch.withoutLocation(qEl.value, searchVocabulary);
   regionEl.value = ''; guEl.value = '';
   loadGuOptions('').catch(error => showToast(error.message, true));
   triggerSearch(); showToast('지역 조건만 해제했어요. 나머지 조건은 유지됩니다.');
-});
+}
+document.getElementById('widenLocation').addEventListener('click', widenLocation);
+document.getElementById('nearbyMore').addEventListener('click', widenLocation);
 
 const filterControls = { q: qEl, region: regionEl, gu: guEl, category: catEl, grade: gradeEl, gradeMin: gradeMinEl, badge: badgeEl, personal: personalFilterEl, excludeNew: excludeNewEl, includeClosed: includeClosedEl };
 document.getElementById('activeFilters').addEventListener('click', event => {
@@ -316,12 +330,12 @@ async function loadLedgerDashboard() {
 }
 
 function captureView() {
-  return { q: qEl.value, region: regionEl.value, gu: guEl.value, category: catEl.value, grade: gradeEl.value, gradeMin: gradeMinEl.value, badge: badgeEl.value, sort: sortEl.value, personalFilter: personalFilterEl.value, excludeNew: excludeNewEl.checked, includeClosed: includeClosedEl.checked };
+  return { q: qEl.value, region: regionEl.value, gu: guEl.value, category: catEl.value, grade: gradeEl.value, gradeMin: gradeMinEl.value, badge: badgeEl.value, sort: sortEl.value, locationScope, personalFilter: personalFilterEl.value, excludeNew: excludeNewEl.checked, includeClosed: includeClosedEl.checked };
 }
 
 function clearView(ledger = false) {
   qEl.value = ''; regionEl.value = ''; guEl.value = ''; catEl.value = '';
-  gradeEl.value = ''; gradeMinEl.value = ''; badgeEl.value = ''; sortEl.value = 'avg_desc';
+  gradeEl.value = ''; gradeMinEl.value = ''; badgeEl.value = ''; sortEl.value = 'recommended'; locationScope = 'exact';
   excludeNewEl.checked = false; includeClosedEl.checked = ledger;
   personalFilterEl.value = ledger ? '내 장부 전체' : '';
   loadGuOptions('').catch(error => showToast(error.message, true));
@@ -348,6 +362,7 @@ async function closeLedgerDashboard() {
     guEl.value = ledgerPreviousView.gu; catEl.value = ledgerPreviousView.category;
     gradeEl.value = ledgerPreviousView.grade; gradeMinEl.value = ledgerPreviousView.gradeMin;
     badgeEl.value = ledgerPreviousView.badge; sortEl.value = ledgerPreviousView.sort;
+    locationScope = ledgerPreviousView.locationScope || 'exact';
     excludeNewEl.checked = ledgerPreviousView.excludeNew; includeClosedEl.checked = ledgerPreviousView.includeClosed;
     ledgerPreviousView = null;
   } else {
@@ -575,6 +590,7 @@ async function loadMeta() {
   const res = await apiFetch('/api/meta');
   const meta = await res.json();
   searchVocabulary = meta.vocabulary || {};
+  stationAreas = meta.stationAreas || {};
 
   meta.regions.forEach(r => {
     const opt = document.createElement('option');
@@ -696,7 +712,7 @@ function renderRows(rows) {
           ${visibleMapTags(record)}
         </div>
         <div class="addr">${addrParts.join('<span class="dot">·</span>')}</div>
-        ${d.price_range ? `<div class="price-range">등록 가격대 ${d.price_range}원</div>` : ''}
+        ${d.price_range ? `<div class="price-range">등록 가격 ${d.price_range}원</div>` : ({ '~ 100,000': '10만 원 이하', '100,000 ~ 200,000': '10만~20만 원', '200,000 ~': '20만 원 이상' }[d.origin_sheet] ? `<div class="price-range">원본 가격 구간 ${({ '~ 100,000': '10만 원 이하', '100,000 ~ 200,000': '10만~20만 원', '200,000 ~': '20만 원 이상' })[d.origin_sheet]}</div>` : '')}
         <div class="card-actions">
           ${actions}
           <button class="map-action map-transfer-button" data-action="map-transfer">지도에 옮기기</button>
@@ -738,6 +754,7 @@ function buildParams() {
   if (gradeMinEl.value) p.set('gradeMin', gradeMinEl.value);
   if (badgeEl.value) p.set('badge', badgeEl.value);
   p.set('sort', sortEl.value);
+  if (locationScope !== 'exact') p.set('locationScope', locationScope);
   p.set('status', includeClosedEl.checked ? '전체' : '영업');
   if (excludeNewEl.checked) p.set('excludeNew', 'true');
   p.set('page', state.page);
@@ -749,6 +766,8 @@ function showSearchHint(smart) {
   const parts = [];
   if (smart) {
     [smart.region, smart.gu, smart.dong, smart.station ? `${smart.station}역` : ''].filter(Boolean).forEach(x => parts.push(x));
+    if (smart.station && locationScope === 'neighborhood') parts.push('역이 속한 동네까지');
+    if (smart.station && locationScope === 'district') parts.push('역이 속한 구까지');
     if (smart.categoryTerms?.length) parts.push(smart.categoryTerms.join(' / '));
     if (smart.badge) parts.push(smart.badge);
     if (smart.gradeMin) parts.push(`리뷰 규모 ${smart.gradeMin} 이상`);
@@ -789,7 +808,12 @@ function renderEmptyState(hasRows) {
   document.getElementById('emptyReset').hidden = noRecords;
   document.getElementById('emptyReset').textContent = ledger ? '내 장부 전체 보기' : '조건 지우기';
   const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
-  document.getElementById('widenLocation').hidden = noRecords || !(regionEl.value || guEl.value || smart.region || smart.gu || smart.dong || smart.station);
+  const hasPrice = smart.priceMin != null || smart.priceMax != null;
+  const priceUnsupported = hasPrice && RestaurantSearch.priceBandSelection(smart) === null;
+  if (priceUnsupported && !ledger) document.getElementById('emptyMessage').textContent = '이 가격은 원본 자료로 정확히 가릴 수 없어요. 가격 조건을 빼고 다시 찾아보세요.';
+  document.getElementById('removePrice').hidden = noRecords || !hasPrice;
+  document.getElementById('widenLocation').hidden = noRecords || priceUnsupported || smart.station && locationScope === 'district' || !(regionEl.value || guEl.value || smart.region || smart.gu || smart.dong || smart.station);
+  document.getElementById('widenLocation').textContent = smart.station ? locationScope === 'exact' ? `${smart.station}역과 같은 동네 보기` : '역이 속한 구까지 보기' : '지역 범위 넓히기';
   document.getElementById('emptyBrowse').hidden = ledgerDashboardEl.style.display === 'none';
 }
 
@@ -810,9 +834,20 @@ async function runSearch(version) {
   emptyEl.style.display = 'none';
   renderActiveFilters();
   if (personalFilterEl.value) return searchPersonal(version);
-  const params = buildParams();
-  const res = await apiFetch('/api/restaurants?' + params.toString());
-  const data = await res.json();
+  let params = buildParams();
+  let res = await apiFetch('/api/restaurants?' + params.toString());
+  let data = await res.json();
+  const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
+  if (smart.station && !data.total && RestaurantSearch.priceBandSelection(smart) !== null) {
+    for (const scope of locationScope === 'exact' ? ['neighborhood', 'district'] : locationScope === 'neighborhood' ? ['district'] : []) {
+      if (version !== searchVersion) return;
+      locationScope = scope;
+      params = buildParams();
+      res = await apiFetch('/api/restaurants?' + params.toString());
+      data = await res.json();
+      if (data.total) break;
+    }
+  }
   if (version !== searchVersion) return;
   state.total = data.total;
 
@@ -820,6 +855,9 @@ async function runSearch(version) {
 
   renderRows(data.rows);
   renderEmptyState(data.rows.length);
+  const nearbyMore = document.getElementById('nearbyMore');
+  nearbyMore.hidden = !smart.station || !data.total || data.total >= 5 || locationScope === 'district';
+  nearbyMore.textContent = locationScope === 'exact' ? `${smart.station}역과 같은 동네 더 보기` : '역이 속한 구까지 더 보기';
 
   const startIdx = data.rows.length ? (state.page - 1) * state.pageSize + 1 : 0;
   const endIdx = startIdx + data.rows.length - 1;
@@ -834,6 +872,7 @@ async function runSearch(version) {
 }
 
 async function searchPersonal(version) {
+  document.getElementById('nearbyMore').hidden = true;
   const filter = personalFilterEl.value;
   const entries = Object.entries(personalRecords);
   let keys;
@@ -866,7 +905,7 @@ async function searchPersonal(version) {
 
 function filterPersonalRows(rows) {
   const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
-  const explicit = { region: regionEl.value, gu: guEl.value, category: catEl.value.trim(), badge: badgeEl.value };
+  const explicit = { region: regionEl.value, gu: guEl.value, category: catEl.value.trim(), badge: badgeEl.value, locationScope, stationAreas: stationAreas[smart.station] || [] };
   showSearchHint({ ...smart, region: explicit.region ? null : smart.region, gu: explicit.gu ? null : smart.gu, dong: explicit.gu ? null : smart.dong, categoryTerms: explicit.category ? [] : smart.categoryTerms, badge: explicit.badge ? null : smart.badge });
   return rows.filter(d => {
     if (!RestaurantSearch.matches(d, smart, explicit)) return false;
@@ -879,7 +918,7 @@ function filterPersonalRows(rows) {
     if (excludeNewEl.checked && (d.badges || []).some(b => b.name === '신규')) return false;
     if (!includeClosedEl.checked && d.status !== '영업') return false;
     return true;
-  }).sort(RestaurantSearch.compare(sortEl.value));
+  }).sort(RestaurantSearch.compare(sortEl.value, { mealIntent: smart.mealIntent }));
 }
 
 let debounceTimer;
@@ -890,7 +929,7 @@ function triggerSearch(resetPage = true) {
   debounceTimer = setTimeout(search, 250);
 }
 
-qEl.addEventListener('input', () => triggerSearch());
+qEl.addEventListener('input', () => { locationScope = 'exact'; triggerSearch(); });
 catEl.addEventListener('input', () => triggerSearch());
 gradeEl.addEventListener('change', () => triggerSearch());
 gradeMinEl.addEventListener('change', () => triggerSearch());

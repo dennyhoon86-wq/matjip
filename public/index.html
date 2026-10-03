@@ -6,7 +6,7 @@
 <title>미식장부 · 나의 맛집 아카이브</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261003b">
+  <link rel="stylesheet" href="style.css?v=20261003c">
 </head>
 <body class="auth-pending">
 
@@ -48,7 +48,7 @@
   <div class="drawer">
     <div class="field wide">
       <label for="q">식당 찾기</label>
-      <input id="q" type="search" placeholder="예: 성수 한식, 송파 수숯불" autocomplete="off">
+      <input id="q" type="search" placeholder="예: 강남역 점심, 성수역 국밥" autocomplete="off">
       <div id="smartHint" class="smart-hint"></div>
     </div>
     <div class="field"><label for="region">지역</label><select id="region"><option value="">전체</option></select></div>
@@ -60,7 +60,7 @@
         <div class="field"><label for="grade">리뷰 규모</label><select id="grade"><option value="">전체</option></select></div>
         <div class="field"><label for="gradeMin">최소 리뷰 규모</label><select id="gradeMin"><option value="">전체</option><option value="A++">A++ 이상</option><option value="A+">A+ 이상</option><option value="A">A 이상</option><option value="B">B 이상</option><option value="C">C 이상</option><option value="D">D 이상</option><option value="E">E 이상</option></select></div>
         <div class="field"><label for="badge">태그</label><select id="badge"><option value="">전체</option></select></div>
-        <div class="field"><label for="sort">정렬</label><select id="sort"><option value="avg_desc">평균 평점 높은순</option><option value="avg_asc">평균 평점 낮은순</option><option value="grade">리뷰 규모순 (A++→E)</option><option value="name">가나다순</option><option value="new_first">신규 우선</option></select></div>
+        <div class="field"><label for="sort">정렬</label><select id="sort"><option value="recommended">추천 후보순 · 평점/리뷰/출처</option><option value="avg_desc">평균 평점 높은순</option><option value="avg_asc">평균 평점 낮은순</option><option value="grade">리뷰 규모순 (A++→E)</option><option value="name">가나다순</option><option value="new_first">신규 우선</option></select></div>
         <div class="field"><label for="personalFilter">내 기록</label><select id="personalFilter"><option value="">전체 검색</option><option value="내 장부 전체">내 장부 전체</option><option value="가고싶음">가고싶음</option><option value="가봄">가봄</option><option value="별로였음">별로였음</option><option value="지도 저장 대상">네이버 저장 대상</option><option value="카카오 저장 대상">카카오 저장 대상</option><option value="저장 대기">저장 대기</option><option value="저장 완료">저장 완료</option></select></div>
         <div class="field checkbox-field"><label><input type="checkbox" id="excludeNew"> 신규 제외</label></div>
         <div class="field checkbox-field"><label><input type="checkbox" id="includeClosed"> 폐업 포함</label></div>
@@ -74,6 +74,7 @@
 <div class="meta-row">
   <span id="metaCount">불러오는 중...</span>
   <div class="meta-actions">
+    <button class="legend-btn" id="nearbyMore" hidden>역 주변 더 보기</button>
     <span id="personalSummary">내 기록 0곳</span>
     <button class="legend-btn ledger-btn" id="openLedger">내 장부</button>
     <button class="legend-btn" id="rubricToggle">리뷰 규모 기준 ▾</button>
@@ -151,6 +152,7 @@
       리뷰 규모 A++~E는 맛집의 순위나 품질 점수가 아니라, 네이버 리뷰 수 규모와 평점 조건을 함께 적용한 기존 분류다.
       리뷰가 많으면 평점이 조금 낮아도 해당 등급에 들어갈 수 있고, 리뷰가 적으면 더 높은 평점이 필요하다.
       기존 분류 값과 기준은 그대로 유지된다. 평균 평점은 제공된 평점들의 평균이며, 리뷰 수로 가중한 추천 순위가 아니다.
+      기본 ‘추천 후보순’은 평균 평점 70%·리뷰 규모 20%·평점 출처 수 10%를 합산한 탐색용 정렬이다. 거리와 현재 영업 여부는 반영하지 않는다.
     </div>
   </div>
 </div>
@@ -162,6 +164,7 @@
   <div class="empty-actions">
     <button id="emptyReset" class="legend-btn">조건 지우기</button>
     <button id="widenLocation" class="legend-btn" hidden>지역 범위 넓히기</button>
+    <button id="removePrice" class="legend-btn" hidden>가격 조건만 빼기</button>
     <button id="emptyBrowse" class="legend-btn" hidden>식당 찾기로 돌아가기</button>
   </div>
 </div>
@@ -196,7 +199,7 @@
   </div>
   <p class="map-transfer-footnote">검색 화면을 열면 저장 대기에 추가돼요. 완료 표시는 이 장부의 기록이며, 지도 저장 여부를 자동 확인하지 않아요.</p>
 </dialog>
-<script src="search-query.js?v=20261003b"></script>
-<script src="app.js?v=20261003b"></script>
+<script src="search-query.js?v=20261003c"></script>
+<script src="app.js?v=20261003c"></script>
 </body>
 </html>

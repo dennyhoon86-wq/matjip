@@ -31,7 +31,7 @@ async function localPage(context) {
   const baseContext = await browser.newContext({ viewport: { width: 1365, height: 900 }, permissions: ['clipboard-read', 'clipboard-write'] });
   const page = await localPage(baseContext);
 
-  await criterion('Search: locations, names, ratings, budgets, sentences and shared ledger matching', 20, async () => {
+  await criterion('Search: locations, names, ratings, budgets, sentences and shared ledger matching', 15, async () => {
     const S = require('../public/search-query');
     for (const text of ['서울 중식', '강남 돼지고기', '한식 4.6 이상', '부모님 모시고 갈 조용한 한식', '서울 중식 3~5만원', '한식 5만원 이하', '송파구 수숯불']) {
       const data = await (await fetch(origin + '/api/restaurants?q=' + encodeURIComponent(text) + '&pageSize=100')).json();
@@ -41,7 +41,7 @@ async function localPage(context) {
       if (text.startsWith('서울')) { assert.equal(data.inferred.region, '서울'); assert.equal(data.inferred.station, null); }
       if (text === '강남 돼지고기') assert.equal(data.inferred.gu, '강남구');
       if (text === '한식 4.6 이상') { assert.equal(data.inferred.priceMin, null); assert(data.total > 100); }
-      if (text.includes('만원')) assert(data.rows.every(r => r.price_range));
+      if (text.includes('만원')) assert(data.rows.every(r => r.price_range || ['~ 100,000', '100,000 ~ 200,000', '200,000 ~'].includes(r.origin_sheet)));
     }
     await query(page, '부모님 모시고 갈 조용한 한식');
     assert((await page.locator('#smartHint').innerText()).includes('지도에서 확인'));
@@ -72,14 +72,14 @@ async function localPage(context) {
     assert.equal(await page.locator('.visited-at-tag').count(), 0);
   });
 
-  await criterion('Ledger: full saved list, complete search restoration, five sorts and map queues', 15, async () => {
+  await criterion('Ledger: full saved list, complete search restoration, six sorts and map queues', 10, async () => {
     await page.locator('.card').filter({ hasText: '광진구' }).getByRole('button', { name: '가고싶음', exact: true }).click(); await pause(100);
     await page.locator('#gu').selectOption('부산'); await settled(page);
     await page.locator('#sort').selectOption('avg_asc'); await settled(page);
     await page.locator('#openLedger').click(); await settled(page);
     assert.equal(await page.locator('#gu').inputValue(), ''); assert.equal(await page.locator('#q').inputValue(), '');
     assert.equal(await page.locator('.card').count(), 2);
-    for (const sort of ['avg_desc', 'avg_asc', 'grade', 'name', 'new_first']) {
+    for (const sort of ['recommended', 'avg_desc', 'avg_asc', 'grade', 'name', 'new_first']) {
       await page.locator('#sort').selectOption(sort); await settled(page);
       const expected = [...restaurants].sort(require('../public/search-query').compare(sort)).map(r => r.address);
       const actual = await page.locator('.card').evaluateAll(cards => cards.map(c => c.__restaurant.address)); assert.deepEqual(actual, expected, sort);
@@ -99,7 +99,7 @@ async function localPage(context) {
     assert.equal(await page.locator('#gu').inputValue(), '부산'); assert.equal(await page.locator('#sort').inputValue(), 'avg_asc'); assert.equal(await page.locator('#q').inputValue(), songpa.name);
   });
 
-  await criterion('Accounts: isolation, authoritative cloud state, narrow saves, rollback and deleted-state persistence', 20, async () => {
+  await criterion('Accounts: isolation, authoritative cloud state, narrow saves, rollback and deleted-state persistence', 15, async () => {
     const cloud = { A: { states: [{ restaurant_key: key(songpa), status: '가봄', updated_at: '2026-10-03T00:00:00Z' }], records: [{ restaurant_key: key(songpa), personal_rating: 5, visited_at: '2026-10-02', kakao_target: true }] }, B: { states: [], records: [] } };
     const writes = []; let failNextRecord = false;
     const context = await browser.newContext({ viewport: { width: 1365, height: 900 } });
@@ -161,7 +161,10 @@ async function localPage(context) {
       const p = await localPage(context);
       const before = await p.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, firstTop: document.querySelector('.card').getBoundingClientRect().top, advanced: document.querySelector('#advancedFilters').open }));
       console.log('MOBILE', width, before);
-      assert.equal(before.width, before.scrollWidth); assert(before.firstTop < 844); assert.equal(before.advanced, false);
+      assert.equal(before.width, before.scrollWidth); assert(before.firstTop < 500); assert.equal(before.advanced, false);
+      await p.evaluate(() => { document.querySelector('#accountName').textContent = '관리자 계정'; document.querySelector('#adminButton').style.display = ''; document.querySelector('#logoutButton').style.display = ''; });
+      const signedInTop = await p.locator('.card').first().evaluate(card => card.getBoundingClientRect().top);
+      assert(signedInTop < 500, `signed-in ${width}px first result starts at ${signedInTop}px`);
       await p.screenshot({ path: path.join(os.tmpdir(), `misik-mobile-initial-${width}-20261003.png`) });
       const card = p.locator('.card').first();
       for (const control of await card.locator('button,summary').all()) if (await control.isVisible()) assert((await control.boundingBox()).height >= 44);
@@ -241,9 +244,40 @@ async function localPage(context) {
     await page.keyboard.press('Escape');
   });
 
+  await criterion('On-the-go: honest price bands, local station fallback, meal sorting and fast full database search', 15, async () => {
+    const S = require('../public/search-query');
+    for (const [q, expectedSheet] of [['서울 한식 10만원 이하', '~ 100,000'], ['서울 한식 10~20만원', '100,000 ~ 200,000'], ['서울 한식 20만원 이상', '200,000 ~']]) {
+      const start = Date.now();
+      const data = await (await fetch(origin + '/api/restaurants?' + new URLSearchParams({ q, sort: 'recommended', pageSize: '100' }))).json();
+      assert(data.total > 0, q); assert(Date.now() - start < 1000, q + ' is slow');
+      assert(data.rows.every(r => r.origin_sheet === expectedSheet || S.priceMatches(r, S.parse(q, meta.vocabulary))), q + ' has false price match');
+    }
+    const unsupported = await (await fetch(origin + '/api/restaurants?q=' + encodeURIComponent('서울 한식 1만원 이하'))).json();
+    assert.equal(unsupported.total, 0);
+    await query(page, '서울 한식 1만원 이하');
+    assert((await page.locator('#emptyMessage').innerText()).includes('정확히 가릴 수 없어요'));
+    await page.locator('#removePrice').click(); await settled(page);
+    assert.equal(await page.locator('#q').inputValue(), '서울 한식');
+    await query(page, '강남역 국밥');
+    assert.equal(await page.locator('.card').count(), 2);
+    assert((await page.locator('#smartHint').innerText()).includes('동네까지'));
+    assert(await page.locator('#nearbyMore').isVisible());
+    await page.locator('#nearbyMore').click(); await settled(page);
+    assert((await page.locator('.card').count()) > 2);
+    const districtRows = await page.locator('.card').evaluateAll(cards => cards.map(c => c.__restaurant));
+    assert(districtRows.every(r => r.region === '서울' && ['강남구', '서초구'].includes(r.gu)));
+    await query(page, '홍대입구역 점심');
+    const lunchRows = await page.locator('.card').evaluateAll(cards => cards.slice(0, 10).map(c => c.__restaurant));
+    assert.equal(lunchRows.length, 10);
+    assert(lunchRows.every(r => !/^(호프|요리주점|와인|카페|디저트)$/.test(r.category || '')));
+    assert.deepEqual([...lunchRows].sort(S.compare('recommended', { mealIntent: 'lunch' })).map(r => r.id), lunchRows.map(r => r.id));
+    const start = Date.now();
+    const all = await (await fetch(origin + '/api/restaurants?sort=recommended&status=전체&pageSize=30')).json();
+    assert(all.total > 65000); assert(Date.now() - start < 1000);
+  });
   await criterion('First-use: plain search example and no browser exceptions', 5, async () => {
     const placeholder = await page.locator('#q').getAttribute('placeholder');
-    assert.equal(placeholder, '예: 성수 한식, 송파 수숯불'); assert(!/A|4\.6|신규/.test(placeholder));
+    assert.equal(placeholder, '예: 강남역 점심, 성수역 국밥'); assert(!/A|4\.6|신규/.test(placeholder));
     assert.equal(await page.locator('label[for="q"]').innerText(), '식당 찾기');
     await page.locator('#resetFilters').click(); await settled(page); assert.equal(await page.locator('#q').inputValue(), ''); assert.equal(await page.locator('#gu').inputValue(), '');
     assert.deepEqual(errors, []);
@@ -252,5 +286,5 @@ async function localPage(context) {
   });
   const score = results.filter(r => r.passed).reduce((sum, r) => sum + r.points, 0);
   console.log(JSON.stringify({ score, results, browserErrors: errors, note: 'Internal scenario gate; live Google OAuth and real-device testing are separate.' }, null, 2));
-  if (score < 95 || results.some(r => !r.passed)) process.exitCode = 1;
+  if (score < 96 || results.some(r => !r.passed)) process.exitCode = 1;
 })().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); if (server) server.kill(); });

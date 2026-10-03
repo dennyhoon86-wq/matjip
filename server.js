@@ -12,6 +12,16 @@ const GRADE_ORDER = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
 const GRADE_CASE_SQL = `CASE grade ${GRADE_ORDER.map((g, i) => `WHEN '${g}' THEN ${i}`).join(' ')} ELSE 99 END`;
 
 const RestaurantSearch = require('./public/search-query');
+db.function('quick_score', (avg, grade, naver, google, daum, category, mealIntent) =>
+  RestaurantSearch.quickScore({ avg, grade, naver, google, daum, category }, mealIntent));
+db.function('price_matches', (origin_sheet, price_range, min, max, exclusive) =>
+  Number(RestaurantSearch.priceMatches({ origin_sheet, price_range }, { priceMin: min, priceMax: max, priceMaxExclusive: Boolean(exclusive) })));
+const stationAreas = {};
+for (const row of db.prepare(`SELECT subway, region, gu, dong, COUNT(*) c FROM restaurants
+  WHERE status='영업' AND subway IS NOT NULL AND subway != '' AND region IS NOT NULL AND gu IS NOT NULL AND dong IS NOT NULL
+  GROUP BY subway, region, gu, dong ORDER BY c DESC`).all()) {
+  (stationAreas[row.subway] ||= []).push(row);
+}
 const vocabulary = {
   gu: db.prepare("SELECT DISTINCT gu FROM restaurants WHERE gu IS NOT NULL").all().map(r => r.gu),
   dong: db.prepare("SELECT DISTINCT dong FROM restaurants WHERE dong IS NOT NULL").all().map(r => r.dong),
@@ -86,7 +96,7 @@ app.get('/api/meta', auth.requireApproved, (req, res) => {
     SELECT subway, COUNT(*) c FROM restaurants
     WHERE subway IS NOT NULL AND subway != '' GROUP BY subway ORDER BY c DESC
   `).all();
-  res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary });
+  res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary, stationAreas });
 });
 
 app.get('/api/gu', auth.requireApproved, (req, res) => {
@@ -109,7 +119,7 @@ app.get('/api/gu', auth.requireApproved, (req, res) => {
 app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const {
     q = '', region = '', gu = '', category = '', grade = '', gradeMin = '', badge = '', station = '', excludeNew = '',
-    status = '영업', sort = 'avg_desc', page = '1', pageSize = '30',
+    status = '영업', sort = 'recommended', locationScope = 'exact', page = '1', pageSize = '30',
   } = req.query;
 
   const where = [];
@@ -126,7 +136,21 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
       if (!region && smart.region) { where.push('region = @sregion'); params.sregion = smart.region; }
       if (!gu && smart.gu) { where.push('gu = @sgu'); params.sgu = smart.gu; }
       if (!gu && smart.dong) { where.push('dong = @sdong'); params.sdong = smart.dong; }
-      if (!station && smart.station) { where.push('subway = @sstation'); params.sstation = smart.station; }
+      if (!station && smart.station) {
+        const areas = stationAreas[smart.station] || [];
+        const scope = ['neighborhood', 'district'].includes(locationScope) ? locationScope : 'exact';
+        const clauses = ['subway = @sstation']; params.sstation = smart.station;
+        for (const [i, area] of areas.entries()) {
+          if (scope === 'exact') break;
+          params[`areaRegion${i}`] = area.region; params[`areaGu${i}`] = area.gu;
+          if (scope === 'neighborhood') {
+            params[`areaDong${i}`] = area.dong;
+            clauses.push(`(region=@areaRegion${i} AND gu=@areaGu${i} AND dong=@areaDong${i})`);
+          } else clauses.push(`(region=@areaRegion${i} AND gu=@areaGu${i})`);
+        }
+        where.push(`(${clauses.join(' OR ')})`);
+        inferred.locationScope = scope;
+      }
       if (!category && smart.categoryTerms.length) {
         const catClauses = smart.categoryTerms.map((t, i) => {
           params[`scat${i}`] = `%${t}%`;
@@ -141,10 +165,13 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
       }
       if (smart.avgMin != null) { where.push('avg >= @savgMin'); params.savgMin = smart.avgMin; }
       if (smart.avgMax != null) { where.push(`avg ${smart.avgMaxExclusive ? '<' : '<='} @savgMax`); params.savgMax = smart.avgMax; }
-      const priceLowSql = "CAST(REPLACE(SUBSTR(price_range, 1, INSTR(price_range, ' ~ ') - 1), ',', '') AS INTEGER)";
-      const priceHighSql = "CAST(REPLACE(SUBSTR(price_range, INSTR(price_range, ' ~ ') + 3), ',', '') AS INTEGER)";
-      if (smart.priceMin != null) { where.push(`price_range IS NOT NULL AND ${priceHighSql} >= @spriceMin`); params.spriceMin = smart.priceMin; }
-      if (smart.priceMax != null) { where.push(`price_range IS NOT NULL AND ${priceLowSql} ${smart.priceMaxExclusive ? '<' : '<='} @spriceMax`); params.spriceMax = smart.priceMax; }
+      if (smart.priceMin != null || smart.priceMax != null) {
+        if (RestaurantSearch.priceBandSelection(smart) === null) where.push('0 = 1');
+        else {
+          where.push('price_matches(origin_sheet, price_range, @spriceMin, @spriceMax, @spriceExclusive) = 1');
+          params.spriceMin = smart.priceMin; params.spriceMax = smart.priceMax; params.spriceExclusive = Number(smart.priceMaxExclusive);
+        }
+      }
       if (smart.excludeNew) where.push(`badges NOT LIKE '%"name":"신규"%'`);
       smart.leftoverTokens.forEach((token, i) => {
         where.push(`(name LIKE @token${i} OR category LIKE @token${i} OR address LIKE @token${i})`);
@@ -171,7 +198,11 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
   let orderSql = 'avg DESC';
-  if (sort === 'avg_asc') orderSql = 'avg IS NULL, avg ASC';
+  if (sort === 'recommended') {
+    const mealIntent = inferred?.mealIntent === 'lunch' ? 'lunch' : inferred?.mealIntent === 'dinner' ? 'dinner' : '';
+    orderSql = `quick_score(avg, grade, naver, google, daum, category, '${mealIntent}') DESC, avg IS NULL, avg DESC`;
+  }
+  else if (sort === 'avg_asc') orderSql = 'avg IS NULL, avg ASC';
   else if (sort === 'avg_desc') orderSql = 'avg IS NULL, avg DESC';
   else if (sort === 'grade') orderSql = `${GRADE_CASE_SQL} ASC, avg DESC`;
   else if (sort === 'name') orderSql = 'name COLLATE NOCASE ASC';
@@ -185,7 +216,7 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const total = db.prepare(`SELECT COUNT(*) c FROM restaurants ${whereSql}`).get(params).c;
 
   const rows = db.prepare(`
-    SELECT id, name, category, address, gu, dong, subway, price_range,
+    SELECT id, name, category, address, gu, dong, subway, price_range, origin_sheet,
            source_raw, sources, badges, naver, google, daum, avg, note,
            grade, region, status
     FROM restaurants
@@ -206,7 +237,7 @@ app.post('/api/personal-list', auth.requireApproved, (req, res) => {
   if (!keys.length) return res.json({ rows: [] });
   const wanted = new Set(keys);
   const rows = db.prepare(`
-    SELECT id, name, category, address, gu, dong, subway, price_range,
+    SELECT id, name, category, address, gu, dong, subway, price_range, origin_sheet,
            source_raw, sources, badges, naver, google, daum, avg, note,
            grade, region, status
     FROM restaurants

@@ -25,11 +25,16 @@
   const numeric = '(\\d[\\d,]*(?:\\.\\d+)?)';
   const numberWithUnit = numeric + '\\s*(만|천)?\\s*원?';
   const suffix = /(쪽에서|근처에서|주변에서|에서|근처|주변|쪽|으로|로|의|에|은|는|을|를)$/;
+  const priceSheets = { '~ 100,000': 'under_100k', '100,000 ~ 200,000': '100k_200k', '200,000 ~': 'over_200k' };
+  const gradeVolume = { 'A++': 1, 'A+': .85, A: .7, B: .55, C: .4, D: .25, E: .1 };
+  const mealOnly = /(?:^|\s|\()(?:바|와인|와인바|호프|이자카야|요리주점|포장마차|칵테일바|카페|베이커리|디저트)(?:\s|\)|$)/;
   function won(amount, unit) { return Number(amount.replaceAll(',', '')) * (unit === '만' ? 10000 : unit === '천' ? 1000 : 1); }
   function parse(q, vocabulary = {}) {
-    const result = { region: null, gu: null, dong: null, station: null, categoryTerms: [], badge: null, gradeMin: null, avgMin: null, avgMax: null, avgMaxExclusive: false, priceMin: null, priceMax: null, priceMaxExclusive: false, excludeNew: false, leftoverTokens: [], notices: [] };
+    const result = { region: null, gu: null, dong: null, station: null, mealIntent: null, categoryTerms: [], badge: null, gradeMin: null, avgMin: null, avgMax: null, avgMaxExclusive: false, priceMin: null, priceMax: null, priceMaxExclusive: false, excludeNew: false, leftoverTokens: [], notices: [] };
     let text = String(q || '').trim().replace(/[，/()]/g, ' ').replace(/,(?!\d)/g, ' ');
     if (!text) return result;
+    if (/(?:^|\s)점심(?:에|으로|식사)?(?=\s|$)/.test(text)) result.mealIntent = 'lunch';
+    else if (/(?:^|\s)저녁(?:에|으로|식사)?(?=\s|$)/.test(text)) result.mealIntent = 'dinner';
     const consume = (regex, handler) => { text = text.replace(regex, (...args) => { handler(...args); return ' '; }); };
     consume(/(?:^|\s)(A\+\+|A\+|A|B|C|D|E)\s*(?:등급\s*)?(이상|부터)(?=\s|$)/gi, (_, grade) => { result.gradeMin = grade.toUpperCase(); });
     consume(/신규\s*(?:제외하고|제외|빼고|빼)/g, () => { result.excludeNew = true; });
@@ -86,34 +91,74 @@
       if (!used) result.leftoverTokens.push(original);
     }
     result.categoryTerms = [...new Set(result.categoryTerms)];
-    if (result.priceMin != null || result.priceMax != null) result.notices.push('가격 정보가 있는 음식점만 검색합니다. 표시 가격은 식당의 등록 가격대입니다.');
+    if (result.mealIntent) result.notices.push('식사 종류를 우선 표시합니다. 오늘 영업시간은 지도에서 확인해 주세요.');
+    if (result.priceMin != null || result.priceMax != null) {
+      result.notices.push(priceBandSelection(result) === null
+        ? '이 금액은 원본에서 확인할 수 없어요. 가격 검색은 10만원 이하·10만~20만원·20만원 이상 구간만 지원합니다.'
+        : '원본 엑셀의 가격 구간이 있는 식당만 검색합니다. 서울 외 다수는 가격 정보가 없어 제외돼요.');
+    }
     return result;
+  }
+  function priceBandSelection(smart) {
+    const { priceMin: min, priceMax: max, priceMaxExclusive: exclusive } = smart;
+    if (min == null && max == null) return undefined;
+    if (exclusive) return null;
+    if (min == null && max === 100000) return ['under_100k'];
+    if (min == null && max === 200000) return ['under_100k', '100k_200k'];
+    if (min === 100000 && max == null) return ['100k_200k', 'over_200k'];
+    if (min === 200000 && max == null) return ['over_200k'];
+    if (min === 100000 && max === 200000) return ['100k_200k'];
+    return null;
+  }
+  function priceMatches(d, smart) {
+    const bands = priceBandSelection(smart);
+    if (bands === undefined) return true;
+    if (bands === null) return false;
+    const sheetBand = priceSheets[d.origin_sheet];
+    if (sheetBand) return bands.includes(sheetBand);
+    const numbers = String(d.price_range || '').replaceAll(',', '').match(/^(\d+)(?:\s*~\s*(\d+))?$/);
+    if (!numbers) return false;
+    const low = Number(numbers[1]), high = Number(numbers[2] || numbers[1]);
+    return (smart.priceMin == null || low >= smart.priceMin) && (smart.priceMax == null || high <= smart.priceMax);
+  }
+  function stationLocationMatches(d, smart, scope, areas = []) {
+    if (!smart.station) return true;
+    if (d.subway === smart.station) return true;
+    if (scope === 'neighborhood') return areas.some(a => d.region === a.region && d.gu === a.gu && d.dong === a.dong);
+    if (scope === 'district') return areas.some(a => d.region === a.region && d.gu === a.gu);
+    return false;
+  }
+  function quickScore(d, mealIntent = '') {
+    if (d.avg == null || !Number.isFinite(Number(d.avg))) return -1;
+    const quality = Math.max(0, Math.min(1, (Number(d.avg) - 3.5) / 1.5)) * 70;
+    const volume = (gradeVolume[d.grade] || 0) * 20;
+    const sources = [d.naver, d.google, d.daum].filter(value => value != null).length / 3 * 10;
+    const category = String(d.category || '');
+    const barOrCafe = mealOnly.test(category) && !/브런치|식사|한식|양식|중식|일식/.test(category);
+    const mealPenalty = mealIntent === 'lunch' && barOrCafe ? 30 : mealIntent === 'dinner' && /카페|베이커리|디저트/.test(category) && !/브런치|식사/.test(category) ? 20 : 0;
+    return quality + volume + sources - mealPenalty;
   }
   function matches(d, smart, explicit = {}) {
     if (smart.region && !explicit.region && d.region !== smart.region) return false;
     if (smart.gu && !explicit.gu && d.gu !== smart.gu) return false;
     if (smart.dong && !explicit.gu && d.dong !== smart.dong) return false;
-    if (smart.station && d.subway !== smart.station) return false;
+    if (!stationLocationMatches(d, smart, explicit.locationScope, explicit.stationAreas || [])) return false;
     if (smart.categoryTerms.length && !explicit.category && !smart.categoryTerms.some(t => (d.category || '').includes(t))) return false;
     if (smart.badge && !explicit.badge && !(d.badges || []).some(b => b.name === smart.badge)) return false;
     if (smart.gradeMin && (!d.grade || grades.indexOf(d.grade) > grades.indexOf(smart.gradeMin))) return false;
     if (smart.avgMin != null && (d.avg == null || d.avg < smart.avgMin)) return false;
     if (smart.avgMax != null && (d.avg == null || (smart.avgMaxExclusive ? d.avg >= smart.avgMax : d.avg > smart.avgMax))) return false;
     if (smart.excludeNew && (d.badges || []).some(b => b.name === '신규')) return false;
-    if (smart.priceMin != null || smart.priceMax != null) {
-      const range = String(d.price_range || '').replaceAll(',', '').match(/(\d+)\s*~\s*(\d+)/);
-      if (!range) return false;
-      if (smart.priceMin != null && Number(range[2]) < smart.priceMin) return false;
-      if (smart.priceMax != null && (smart.priceMaxExclusive ? Number(range[1]) >= smart.priceMax : Number(range[1]) > smart.priceMax)) return false;
-    }
+    if (!priceMatches(d, smart)) return false;
     const haystack = `${d.name || ''} ${d.category || ''} ${d.address || ''}`.toLowerCase();
     return smart.leftoverTokens.every(t => haystack.includes(t.toLowerCase()));
   }
-  function compare(sort) {
+  function compare(sort, options = {}) {
     const avg = (a, b, ascending = false) => a.avg == null ? (b.avg == null ? 0 : 1) : b.avg == null ? -1 : ascending ? a.avg - b.avg : b.avg - a.avg;
     return (a, b) => {
       let order = 0;
-      if (sort === 'name') order = a.name.localeCompare(b.name, 'ko');
+      if (sort === 'recommended') order = quickScore(b, options.mealIntent) - quickScore(a, options.mealIntent) || avg(a, b);
+      else if (sort === 'name') order = a.name.localeCompare(b.name, 'ko');
       else if (sort === 'grade') order = (a.grade ? grades.indexOf(a.grade) : 99) - (b.grade ? grades.indexOf(b.grade) : 99) || avg(a, b);
       else if (sort === 'new_first') order = Number((b.badges || []).some(x => x.name === '신규')) - Number((a.badges || []).some(x => x.name === '신규')) || avg(a, b);
       else order = avg(a, b, sort === 'avg_asc');
@@ -126,5 +171,10 @@
       return !(s.region || s.gu || s.dong || s.station) || s.leftoverTokens.length > 0;
     }).join(' ').trim();
   }
-  return { parse, matches, compare, grades, withoutLocation };
+  function withoutPrice(q) {
+    return String(q || '').replace(new RegExp(numberWithUnit + '\\s*[~～–-]\\s*' + numberWithUnit, 'g'), ' ')
+      .replace(new RegExp(numberWithUnit + '\\s*(?:대|이하|미만|이상|부터)(?=\\s|$)', 'g'), ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  return { parse, matches, compare, grades, withoutLocation, withoutPrice, priceBandSelection, priceMatches, quickScore };
 });
