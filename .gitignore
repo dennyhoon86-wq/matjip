@@ -1,6 +1,10 @@
 node_modules/
 matjip.db-shm
 matjip.db-wal
+locations.db-shm
+locations.db-wal
+.env
+.env.*
 server.log
 *.log
 

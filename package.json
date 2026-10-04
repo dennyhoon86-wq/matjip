@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node server.js",
     "import": "node import.js",
+    "geocode": "node scripts/geocode-restaurants.js",
+    "geo:stats": "node scripts/geo-stats.js",
     "test": "node --test tests/*.test.cjs",
-    "test:usability": "node tests/usability.cjs"
+    "test:usability": "node tests/usability.cjs",
+    "test:nearby-ui": "node tests/nearby-ui.cjs"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +19,7 @@
   "dependencies": {
     "better-sqlite3": "^13.0.2",
     "exceljs": "^4.4.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "proj4": "^2.22.0"
   }
 }

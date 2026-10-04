@@ -2,11 +2,42 @@ const express = require('express');
 const path = require('path');
 const Database = require('better-sqlite3');
 const { createAuth } = require('./auth');
+const fs = require('node:fs');
+const { normalizeAddress, distanceMeters } = require('./geo-locations');
 
 const db = new Database(path.join(__dirname, 'matjip.db'), { readonly: true });
 const app = express();
 const PORT = process.env.PORT || 4000;
 const auth = createAuth();
+const locationPath = process.env.LOCATIONS_DB_PATH || path.join(__dirname, 'locations.db');
+const locations = new Map();
+if (fs.existsSync(locationPath)) {
+  const locationDb = new Database(locationPath, { readonly: true });
+  try {
+    for (const row of locationDb.prepare("SELECT address_key,lat,lon FROM locations WHERE status='ok'").iterate()) {
+      if (Number.isFinite(row.lat) && Number.isFinite(row.lon)) locations.set(row.address_key, row);
+    }
+  } finally { locationDb.close(); }
+}
+const nearbyReady = process.env.NEARBY_ENABLED === 'true' && Boolean(process.env.KAKAO_REST_API_KEY) && locations.size > 0;
+db.function('near_distance', (address, lat, lon) => {
+  const point = locations.get(normalizeAddress(address));
+  return point ? Math.round(distanceMeters(point.lat, point.lon, Number(lat), Number(lon))) : null;
+});
+
+async function kakaoPlaces(query) {
+  if (!process.env.KAKAO_REST_API_KEY) { const error = new Error('장소 검색 승인키가 아직 설정되지 않았습니다.'); error.status = 503; throw error; }
+  const url = new URL('https://dapi.kakao.com/v2/local/search/keyword.json');
+  url.searchParams.set('query', query);
+  url.searchParams.set('size', '15');
+  const response = await fetch(url, {
+    headers: { Authorization: `KakaoAK ${process.env.KAKAO_REST_API_KEY}` },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!response.ok) { const error = new Error(response.status === 429 ? '오늘의 무료 장소 검색 한도를 초과했습니다.' : '장소를 조회하지 못했습니다.'); error.status = response.status === 429 ? 429 : 502; throw error; }
+  const body = await response.json();
+  return Array.isArray(body.documents) ? body.documents : [];
+}
 
 const GRADE_ORDER = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
 const GRADE_CASE_SQL = `CASE grade ${GRADE_ORDER.map((g, i) => `WHEN '${g}' THEN ${i}`).join(' ')} ELSE 99 END`;
@@ -96,7 +127,19 @@ app.get('/api/meta', auth.requireApproved, (req, res) => {
     SELECT subway, COUNT(*) c FROM restaurants
     WHERE subway IS NOT NULL AND subway != '' GROUP BY subway ORDER BY c DESC
   `).all();
-  res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary, stationAreas });
+  res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary, stationAreas,
+    nearby: { ready: nearbyReady, locatedAddresses: locations.size } });
+});
+
+app.get('/api/landmarks', auth.requireApproved, async (req, res) => {
+  if (!nearbyReady) return res.status(503).json({ error: '장소 근처 검색이 아직 준비되지 않았습니다.' });
+  const query = String(req.query.q || '').trim();
+  if (query.length < 2 || query.length > 80) return res.status(400).json({ error: '장소 이름을 2~80자로 입력해 주세요.' });
+  try {
+    const places = await kakaoPlaces(query);
+    res.set('Cache-Control', 'no-store');
+    res.json({ places: places.map(place => ({ id: place.id, name: place.place_name, address: place.road_address_name || place.address_name })) });
+  } catch (error) { res.status(error.status || 502).json({ error: error.message }); }
 });
 
 app.get('/api/gu', auth.requireApproved, (req, res) => {
@@ -116,7 +159,7 @@ app.get('/api/gu', auth.requireApproved, (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/restaurants', auth.requireApproved, (req, res) => {
+app.get('/api/restaurants', auth.requireApproved, async (req, res) => {
   const {
     q = '', region = '', gu = '', category = '', grade = '', gradeMin = '', badge = '', station = '', excludeNew = '',
     status = '영업', sort = 'recommended', locationScope = 'exact', page = '1', pageSize = '30',
@@ -125,6 +168,25 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const where = [];
   const params = {};
   let inferred = null;
+  let nearby = null;
+  const landmarkQuery = String(req.query.landmarkQuery || '').trim();
+  const landmarkId = String(req.query.landmarkId || '').trim();
+  if (landmarkQuery || landmarkId) {
+    if (!nearbyReady) return res.status(503).json({ error: '장소 근처 검색이 아직 준비되지 않았습니다.' });
+    if (!landmarkQuery || !landmarkId || landmarkQuery.length > 80 || landmarkId.length > 40) return res.status(400).json({ error: '장소를 다시 선택해 주세요.' });
+    if (!locations.size) return res.status(503).json({ error: '식당 위치자료가 아직 준비되지 않았습니다.' });
+    const radius = Number(req.query.radius || 1000);
+    if (![500, 1000, 2000, 3000].includes(radius)) return res.status(400).json({ error: '검색 반경이 올바르지 않습니다.' });
+    let place;
+    try { place = (await kakaoPlaces(landmarkQuery)).find(item => item.id === landmarkId); }
+    catch (error) { return res.status(error.status || 502).json({ error: error.message }); }
+    if (!place) return res.status(409).json({ error: '장소 검색 결과가 바뀌었습니다. 다시 선택해 주세요.' });
+    const lat = Number(place.y), lon = Number(place.x);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return res.status(502).json({ error: '장소 좌표를 읽지 못했습니다.' });
+    params.nearLat = lat; params.nearLon = lon; params.nearRadius = radius;
+    where.push('near_distance(address, @nearLat, @nearLon) <= @nearRadius');
+    nearby = { name: place.place_name, radius, distanceType: '직선거리' };
+  }
 
   const trimmedQ = q.trim();
   if (trimmedQ) {
@@ -207,6 +269,7 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   else if (sort === 'grade') orderSql = `${GRADE_CASE_SQL} ASC, avg DESC`;
   else if (sort === 'name') orderSql = 'name COLLATE NOCASE ASC';
   else if (sort === 'new_first') orderSql = `(CASE WHEN badges LIKE '%"name":"신규"%' THEN 0 ELSE 1 END) ASC, avg DESC`;
+  if (nearby) orderSql += ', near_distance(address, @nearLat, @nearLon) ASC';
   orderSql += ', id ASC';
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -218,7 +281,7 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
   const rows = db.prepare(`
     SELECT id, name, category, address, gu, dong, subway, price_range, origin_sheet,
            source_raw, sources, badges, naver, google, daum, avg, note,
-           grade, region, status
+           grade, region, status${nearby ? ', near_distance(address, @nearLat, @nearLon) AS distance_m' : ''}
     FROM restaurants
     ${whereSql}
     ORDER BY ${orderSql}
@@ -229,7 +292,8 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
     badges: JSON.parse(r.badges || '[]'),
   }));
 
-  res.json({ total, page: pageNum, pageSize: size, rows, inferred });
+  if (nearby) res.set('Cache-Control', 'no-store');
+  res.json({ total, page: pageNum, pageSize: size, rows, inferred, nearby });
 });
 
 app.post('/api/personal-list', auth.requireApproved, (req, res) => {
@@ -249,6 +313,7 @@ app.post('/api/personal-list', auth.requireApproved, (req, res) => {
   res.json({ rows });
 });
 
-app.listen(PORT, () => {
+if (require.main === module) app.listen(PORT, () => {
   console.log(`미식장부 서버 실행 중: http://localhost:${PORT}`);
 });
+module.exports = { app };
