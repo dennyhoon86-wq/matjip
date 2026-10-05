@@ -162,7 +162,10 @@ body.auth-pending .auth-gate{display:flex;}
   gap:11px;
 }
 .field.wide{grid-column:span 2;}
-.nearby-panel{grid-column:1 / -1; border-top:1px solid #E1D6BB; padding-top:11px;}
+.nearby-panel{grid-column:1 / -1; border-top:1px solid #E1D6BB;}
+.nearby-panel>summary{min-height:44px; display:flex; align-items:center; gap:5px; cursor:pointer; color:var(--cover); font:700 12px var(--sans);}
+.nearby-panel>summary small{font-weight:500; color:var(--ink-soft);}
+.nearby-panel-body{padding:2px 0 10px;}
 .nearby-panel label{display:block; color:var(--ink-soft); font:700 12px var(--sans); margin-bottom:7px;}
 .nearby-panel label small{font-weight:500; color:var(--ink-faint); margin-left:5px;}
 .nearby-controls{display:flex; gap:7px; flex-wrap:wrap;}
@@ -174,6 +177,17 @@ body.auth-pending .auth-gate{display:flex;}
 .landmark-candidates button{max-width:100%; min-height:44px; text-align:left; border:1px solid #C9B896; background:white; color:var(--ink); padding:7px 9px; font:600 12px var(--sans); cursor:pointer;}
 .landmark-candidates button span{display:block; font-weight:400; color:var(--ink-soft); font-size:11px; margin-top:2px;}
 .nearby-selection{margin-top:7px; color:var(--badge-new); font:700 12px var(--sans);}
+.nearby-data-note,.nearby-credit{margin:7px 0 0; color:var(--ink-soft); font:11px/1.5 var(--sans);}
+.nearby-credit a{color:inherit; text-underline-offset:2px;}
+.landmark-guide{margin-top:9px; border:1px solid #DDD0B2; background:#FBF7EC; padding:8px 10px;}
+.landmark-guide summary{cursor:pointer; font:700 12px var(--sans);}
+.landmark-guide summary span{color:var(--ink-faint); font-weight:500;}
+.landmark-guide-body{padding-top:10px;}
+.landmark-guide-body select{min-height:44px; max-width:100%; border:1px solid #C9B896; background:white; color:var(--ink); padding:7px 10px; font:13px var(--sans);}
+.landmark-guide-options{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px;}
+.landmark-guide-options button{min-height:44px; max-width:100%; border:1px solid #C9B896; background:white; color:var(--ink); padding:7px 10px; font:600 12px var(--sans); cursor:pointer;}
+.landmark-guide-options button:hover{background:var(--cover); color:white;}
+.landmark-guide-body p{margin:9px 0 0; color:var(--ink-faint); font:11px/1.5 var(--sans);}
 .near-distance{display:inline-block; margin-left:7px; color:var(--badge-new); font-weight:700;}
 .field label{
   display:block;
@@ -456,7 +470,7 @@ footer.note{
 [hidden]{display:none!important;}
 button:disabled,input:disabled,select:disabled{cursor:wait; opacity:.6;}
 @media(max-width:640px){
-  header.cover{padding:12px 16px 28px;}
+  header.cover{padding:10px 16px 12px;}
   .cover .eyebrow,.cover-desc,.cover-tally{display:none;}
   .cover h1{font-size:25px;}
   .grade-disclaimer{margin-top:6px; padding:6px 8px; font-size:10px; line-height:1.3; align-items:center;}

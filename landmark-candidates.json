@@ -1,0 +1,4439 @@
+{
+  "종로구:경복궁 광화문": {
+    "query": "Gwanghwamun",
+    "candidates": [
+      {
+        "name": "광화문",
+        "displayName": "광화문, 지하172, 세종대로, 종로1가, 중학동, 종로1·2·3·4가동, 종로구, 서울특별시, 03154, 대한민국",
+        "lat": 37.5716162,
+        "lon": 126.9769026,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 6039313647,
+        "address": {
+          "railway": "광화문",
+          "house_number": "지하172",
+          "road": "세종대로",
+          "neighbourhood": "종로1가",
+          "quarter": "중학동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03154",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광화문",
+        "displayName": "광화문, 광화문광장, 서울 도심, 사직동, 종로구, 서울특별시, 03172, 대한민국",
+        "lat": 37.5715921,
+        "lon": 126.9769127,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 6039313648,
+        "address": {
+          "railway": "광화문",
+          "road": "광화문광장",
+          "quarter": "서울 도심",
+          "suburb": "사직동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03172",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광화문",
+        "displayName": "광화문, 새문안로, 신문로1가, 사직동, 종로구, 서울특별시, 03185, 대한민국",
+        "lat": 37.5703108,
+        "lon": 126.9755473,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357956574,
+        "address": {
+          "highway": "광화문",
+          "road": "새문안로",
+          "quarter": "신문로1가",
+          "suburb": "사직동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03185",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광화문",
+        "displayName": "광화문, 세종대로, 태평로1가, 명동, 중구, 서울특별시, 04520, 대한민국",
+        "lat": 37.5689082,
+        "lon": 126.9769657,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357965458,
+        "address": {
+          "highway": "광화문",
+          "road": "세종대로",
+          "quarter": "태평로1가",
+          "suburb": "명동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04520",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광화문",
+        "displayName": "광화문, 새문안로, 신문로1가, 사직동, 종로구, 서울특별시, 03182, 대한민국",
+        "lat": 37.5703,
+        "lon": 126.97379,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357963246,
+        "address": {
+          "highway": "광화문",
+          "road": "새문안로",
+          "quarter": "신문로1가",
+          "suburb": "사직동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03182",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "종로구:창덕궁 돈화문": {
+    "query": "Donhwamun",
+    "candidates": [
+      {
+        "name": "돈화문로6나길",
+        "displayName": "돈화문로6나길, 종로3가, 봉익동, 종로1·2·3·4가동, 종로구, 서울특별시, 03138, 대한민국",
+        "lat": 37.5719323,
+        "lon": 126.9930389,
+        "category": "highway",
+        "type": "residential",
+        "osmType": "way",
+        "osmId": 419752064,
+        "address": {
+          "road": "돈화문로6나길",
+          "neighbourhood": "종로3가",
+          "quarter": "봉익동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03138",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "돈화문로",
+        "displayName": "돈화문로, 종로3가, 묘동, 종로1·2·3·4가동, 종로구, 서울특별시, 02822, 대한민국",
+        "lat": 37.5715503,
+        "lon": 126.9918911,
+        "category": "highway",
+        "type": "secondary",
+        "osmType": "way",
+        "osmId": 1532246175,
+        "address": {
+          "road": "돈화문로",
+          "neighbourhood": "종로3가",
+          "quarter": "묘동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02822",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "돈화문로5길",
+        "displayName": "돈화문로5길, 종로3가, 돈의동, 종로1·2·3·4가동, 종로구, 서울특별시, 03139, 대한민국",
+        "lat": 37.5707222,
+        "lon": 126.9907702,
+        "category": "highway",
+        "type": "residential",
+        "osmType": "way",
+        "osmId": 233651332,
+        "address": {
+          "road": "돈화문로5길",
+          "neighbourhood": "종로3가",
+          "quarter": "돈의동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03139",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "돈화문로11나길",
+        "displayName": "돈화문로11나길, 종로2가, 익선동, 종로1·2·3·4가동, 종로구, 서울특별시, 03132, 대한민국",
+        "lat": 37.5746797,
+        "lon": 126.9897845,
+        "category": "highway",
+        "type": "residential",
+        "osmType": "way",
+        "osmId": 329261507,
+        "address": {
+          "road": "돈화문로11나길",
+          "neighbourhood": "종로2가",
+          "quarter": "익선동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03132",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "돈화문로9가길",
+        "displayName": "돈화문로9가길, 돈의동 쪽방촌, 돈의동, 종로1·2·3·4가동, 종로구, 서울특별시, 03139, 대한민국",
+        "lat": 37.5722022,
+        "lon": 126.990934,
+        "category": "highway",
+        "type": "residential",
+        "osmType": "way",
+        "osmId": 419812894,
+        "address": {
+          "road": "돈화문로9가길",
+          "residential": "돈의동 쪽방촌",
+          "quarter": "돈의동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03139",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "종로구:세종문화회관": {
+    "query": "세종문화회관 서울",
+    "candidates": [
+      {
+        "name": "세종문화회관",
+        "displayName": "세종문화회관, 175, 세종대로, 종로1가, 중학동, 종로1·2·3·4가동, 종로구, 서울특별시, 03172, 대한민국",
+        "lat": 37.5726106,
+        "lon": 126.9756026,
+        "category": "amenity",
+        "type": "arts_centre",
+        "osmType": "way",
+        "osmId": 543729863,
+        "address": {
+          "amenity": "세종문화회관",
+          "house_number": "175",
+          "road": "세종대로",
+          "neighbourhood": "종로1가",
+          "quarter": "중학동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03172",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광화문",
+        "displayName": "광화문, 지하172, 세종대로, 종로1가, 중학동, 종로1·2·3·4가동, 종로구, 서울특별시, 03154, 대한민국",
+        "lat": 37.5716162,
+        "lon": 126.9769026,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 6039313647,
+        "address": {
+          "railway": "광화문",
+          "house_number": "지하172",
+          "road": "세종대로",
+          "neighbourhood": "종로1가",
+          "quarter": "중학동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03154",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "세종문화회관",
+        "displayName": "세종문화회관, 광화문광장, 서울 도심, 사직동, 종로구, 서울특별시, 03172, 대한민국",
+        "lat": 37.5732879,
+        "lon": 126.9769705,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357956583,
+        "address": {
+          "highway": "세종문화회관",
+          "road": "광화문광장",
+          "quarter": "서울 도심",
+          "suburb": "사직동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03172",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "종로구:국립현대미술관 서울": {
+    "query": "국립현대미술관 서울 서울",
+    "candidates": [
+      {
+        "name": "국립현대미술관",
+        "displayName": "국립현대미술관, 북촌로5길, 소격동, 삼청동, 종로구, 서울특별시, 03062, 대한민국",
+        "lat": 37.5795533,
+        "lon": 126.9804352,
+        "category": "tourism",
+        "type": "gallery",
+        "osmType": "relation",
+        "osmId": 14956894,
+        "address": {
+          "tourism": "국립현대미술관",
+          "road": "북촌로5길",
+          "quarter": "소격동",
+          "suburb": "삼청동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03062",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립현대미술관",
+        "displayName": "국립현대미술관, 북촌로5길, 소격동, 삼청동, 종로구, 서울특별시, 03062, 대한민국",
+        "lat": 37.5797081,
+        "lon": 126.9808579,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 4392549190,
+        "address": {
+          "amenity": "국립현대미술관",
+          "road": "북촌로5길",
+          "quarter": "소격동",
+          "suburb": "삼청동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03062",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립현대미술관 서울관",
+        "displayName": "국립현대미술관 서울관, 30, 삼청로, 창성동, 삼청동, 종로구, 서울특별시, 03062, 대한민국",
+        "lat": 37.5788651,
+        "lon": 126.9806797,
+        "category": "tourism",
+        "type": "gallery",
+        "osmType": "way",
+        "osmId": 421742876,
+        "address": {
+          "tourism": "국립현대미술관 서울관",
+          "house_number": "30",
+          "road": "삼청로",
+          "quarter": "창성동",
+          "suburb": "삼청동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03062",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립현대미술관 덕수궁관",
+        "displayName": "국립현대미술관 덕수궁관, 99, 세종대로, 서소문동, 소공동, 중구, 서울특별시, 04519, 대한민국",
+        "lat": 37.5659091,
+        "lon": 126.973845,
+        "category": "tourism",
+        "type": "museum",
+        "osmType": "relation",
+        "osmId": 10718798,
+        "address": {
+          "tourism": "국립현대미술관 덕수궁관",
+          "house_number": "99",
+          "road": "세종대로",
+          "quarter": "서소문동",
+          "suburb": "소공동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04519",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "종로구:광장시장": {
+    "query": "광장시장 서울",
+    "candidates": [
+      {
+        "name": "광장시장",
+        "displayName": "광장시장, 창경궁로12길, 예지동, 종로1·2·3·4가동, 종로구, 서울특별시, 03195, 대한민국",
+        "lat": 37.570189,
+        "lon": 126.9994995,
+        "category": "amenity",
+        "type": "marketplace",
+        "osmType": "way",
+        "osmId": 607083156,
+        "address": {
+          "amenity": "광장시장",
+          "road": "창경궁로12길",
+          "quarter": "예지동",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03195",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광장시장",
+        "displayName": "광장시장, 鐘路 自転車専用道路, 종로4가, 종로1·2·3·4가동, 종로구, 서울특별시, 03195, 대한민국",
+        "lat": 37.5707536,
+        "lon": 126.9998676,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 12234274241,
+        "address": {
+          "highway": "광장시장",
+          "road": "鐘路 自転車専用道路",
+          "quarter": "종로4가",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03195",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "광장시장",
+        "displayName": "광장시장, 창경궁로, 종로4가, 종로1·2·3·4가동, 종로구, 서울특별시, 03195, 대한민국",
+        "lat": 37.569485,
+        "lon": 126.9978557,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357824627,
+        "address": {
+          "highway": "광장시장",
+          "road": "창경궁로",
+          "quarter": "종로4가",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03195",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "은성회집",
+        "displayName": "은성회집, 88, 창경궁로, 종로4가, 종로1·2·3·4가동, 종로구, 서울특별시, 03195, 대한민국",
+        "lat": 37.5702899,
+        "lon": 126.9987434,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 12192245806,
+        "address": {
+          "amenity": "은성회집",
+          "house_number": "88",
+          "road": "창경궁로",
+          "quarter": "종로4가",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03195",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "종로5가역.광장시장(중)",
+        "displayName": "종로5가역.광장시장(중), 종로, 종로4가, 종로1·2·3·4가동, 종로구, 서울특별시, 03130, 대한민국",
+        "lat": 37.570909,
+        "lon": 126.9997715,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357833760,
+        "address": {
+          "highway": "종로5가역.광장시장(중)",
+          "road": "종로",
+          "quarter": "종로4가",
+          "suburb": "종로1·2·3·4가동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03130",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "종로구:통인시장": {
+    "query": "통인시장 서울",
+    "candidates": [
+      {
+        "name": "통인시장",
+        "displayName": "통인시장, 18, 자하문로15길, 통인동, 청운효자동, 종로구, 서울특별시, 03036, 대한민국",
+        "lat": 37.5807552,
+        "lon": 126.9699963,
+        "category": "amenity",
+        "type": "marketplace",
+        "osmType": "way",
+        "osmId": 307148952,
+        "address": {
+          "amenity": "통인시장",
+          "house_number": "18",
+          "road": "자하문로15길",
+          "quarter": "통인동",
+          "suburb": "청운효자동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03036",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "통인시장 정자",
+        "displayName": "통인시장 정자, 자하문로7길, 통인동, 청운효자동, 종로구, 서울특별시, 03040, 대한민국",
+        "lat": 37.5805588,
+        "lon": 126.9687882,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 12372984758,
+        "address": {
+          "amenity": "통인시장 정자",
+          "road": "자하문로7길",
+          "quarter": "통인동",
+          "suburb": "청운효자동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03040",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "종로구:서울대학교병원": {
+    "query": "서울대학교병원 서울",
+    "candidates": [
+      {
+        "name": "서울대학교병원",
+        "displayName": "서울대학교병원, 101, 대학로, 대학로거리, 연건동, 이화동, 종로구, 서울특별시, 03080, 대한민국",
+        "lat": 37.5791175,
+        "lon": 126.9987329,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 223434840,
+        "address": {
+          "amenity": "서울대학교병원",
+          "house_number": "101",
+          "road": "대학로",
+          "neighbourhood": "대학로거리",
+          "quarter": "연건동",
+          "suburb": "이화동",
+          "borough": "종로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03080",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중구:동대문디자인플라자": {
+    "query": "동대문디자인플라자 서울",
+    "candidates": [
+      {
+        "name": "동대문디자인플라자",
+        "displayName": "동대문디자인플라자, 281, 을지로, 동대문패션타운, 을지로7가, 광희동, 중구, 서울특별시, 04566, 대한민국",
+        "lat": 37.5670686,
+        "lon": 127.009899,
+        "category": "building",
+        "type": "public",
+        "osmType": "relation",
+        "osmId": 10647068,
+        "address": {
+          "building": "동대문디자인플라자",
+          "house_number": "281",
+          "road": "을지로",
+          "commercial": "동대문패션타운",
+          "quarter": "을지로7가",
+          "suburb": "광희동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04566",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "동대문디자인플라자",
+        "displayName": "동대문디자인플라자, 장충단로, 동대문패션타운, 을지로7가, 광희동, 중구, 서울특별시, 04563, 대한민국",
+        "lat": 37.5682818,
+        "lon": 127.0095417,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 12372984447,
+        "address": {
+          "amenity": "동대문디자인플라자",
+          "road": "장충단로",
+          "commercial": "동대문패션타운",
+          "quarter": "을지로7가",
+          "suburb": "광희동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04563",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중구:남대문시장": {
+    "query": "남대문시장 서울",
+    "candidates": [
+      {
+        "name": "남대문시장",
+        "displayName": "남대문시장, 남대문로, 남대문로3가, 소공동, 중구, 서울특별시, 04529, 대한민국",
+        "lat": 37.5592777,
+        "lon": 126.9773485,
+        "category": "amenity",
+        "type": "marketplace",
+        "osmType": "way",
+        "osmId": 78503350,
+        "address": {
+          "amenity": "남대문시장",
+          "road": "남대문로",
+          "quarter": "남대문로3가",
+          "suburb": "소공동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04529",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "남대문시장",
+        "displayName": "남대문시장, 남대문로, 남대문로3가, 회현동, 중구, 서울특별시, 04529, 대한민국",
+        "lat": 37.5610095,
+        "lon": 126.9784979,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 12152864727,
+        "address": {
+          "highway": "남대문시장",
+          "road": "남대문로",
+          "quarter": "남대문로3가",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04529",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "남대문시장",
+        "displayName": "남대문시장, 남대문시장6길, 남창동, 회현동, 중구, 서울특별시, 04529, 대한민국",
+        "lat": 37.5593909,
+        "lon": 126.9776733,
+        "category": "shop",
+        "type": "supermarket",
+        "osmType": "node",
+        "osmId": 14025363345,
+        "address": {
+          "shop": "남대문시장",
+          "road": "남대문시장6길",
+          "quarter": "남창동",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04529",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "남대문시장",
+        "displayName": "남대문시장, 퇴계로, 남창동, 회현동, 중구, 서울특별시, 04528, 대한민국",
+        "lat": 37.55767,
+        "lon": 126.97656,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357954206,
+        "address": {
+          "highway": "남대문시장",
+          "road": "퇴계로",
+          "quarter": "남창동",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04528",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "남대문시장",
+        "displayName": "남대문시장, 남대문로, 회현동2가, 회현동, 중구, 서울특별시, 04530, 대한민국",
+        "lat": 37.5612987,
+        "lon": 126.9798678,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357844297,
+        "address": {
+          "highway": "남대문시장",
+          "road": "남대문로",
+          "quarter": "회현동2가",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04530",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중구:명동성당": {
+    "query": "명동성당 서울",
+    "candidates": [
+      {
+        "name": "명동대성당",
+        "displayName": "명동대성당, 74, 명동길, 명동2가, 명동, 중구, 서울특별시, 04537, 대한민국",
+        "lat": 37.5631588,
+        "lon": 126.9871556,
+        "category": "amenity",
+        "type": "place_of_worship",
+        "osmType": "way",
+        "osmId": 355630939,
+        "address": {
+          "amenity": "명동대성당",
+          "house_number": "74",
+          "road": "명동길",
+          "quarter": "명동2가",
+          "suburb": "명동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04537",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "명동성당",
+        "displayName": "명동성당, 삼일대로, 저동1가, 명동, 중구, 서울특별시, 04538, 대한민국",
+        "lat": 37.5649616,
+        "lon": 126.9874726,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11538689840,
+        "address": {
+          "highway": "명동성당",
+          "road": "삼일대로",
+          "quarter": "저동1가",
+          "suburb": "명동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04538",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "명동대성당 본당",
+        "displayName": "명동대성당 본당, 74, 명동길, 명동2가, 명동, 중구, 서울특별시, 04537, 대한민국",
+        "lat": 37.5632896,
+        "lon": 126.9873198,
+        "category": "amenity",
+        "type": "place_of_worship",
+        "osmType": "way",
+        "osmId": 210335697,
+        "address": {
+          "amenity": "명동대성당 본당",
+          "house_number": "74",
+          "road": "명동길",
+          "quarter": "명동2가",
+          "suburb": "명동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04537",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중구:서울역": {
+    "query": "서울역 서울",
+    "candidates": [
+      {
+        "name": "서울역",
+        "displayName": "서울역, 세종대로, 봉래동2가, 회현동, 중구, 서울특별시, 04509, 대한민국",
+        "lat": 37.5554175,
+        "lon": 126.9725862,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 8574527311,
+        "address": {
+          "railway": "서울역",
+          "road": "세종대로",
+          "quarter": "봉래동2가",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04509",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울역",
+        "displayName": "서울역, 지하2, 세종대로, 봉래동2가, 회현동, 중구, 서울특별시, 04527, 대한민국",
+        "lat": 37.5548238,
+        "lon": 126.9722165,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 8414031491,
+        "address": {
+          "railway": "서울역",
+          "house_number": "지하2",
+          "road": "세종대로",
+          "quarter": "봉래동2가",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04527",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울역",
+        "displayName": "서울역, 378, 청파로, 서계동, 남영동, 용산구, 서울특별시, 04301, 대한민국",
+        "lat": 37.5534363,
+        "lon": 126.9697994,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 7368810705,
+        "address": {
+          "railway": "서울역",
+          "house_number": "378",
+          "road": "청파로",
+          "quarter": "서계동",
+          "suburb": "남영동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04301",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울역",
+        "displayName": "서울역, 지하2, 세종대로, 봉래동2가, 회현동, 중구, 서울특별시, 04527, 대한민국",
+        "lat": 37.5560719,
+        "lon": 126.9723599,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 8829280690,
+        "address": {
+          "railway": "서울역",
+          "house_number": "지하2",
+          "road": "세종대로",
+          "quarter": "봉래동2가",
+          "suburb": "회현동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04527",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울역",
+        "displayName": "서울역, 지하392, 한강대로, 동자동, 남영동, 용산구, 서울특별시, 04323, 대한민국",
+        "lat": 37.5528527,
+        "lon": 126.9725721,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 6036160343,
+        "address": {
+          "railway": "서울역",
+          "house_number": "지하392",
+          "road": "한강대로",
+          "quarter": "동자동",
+          "suburb": "남영동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04323",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중구:서울시립미술관 서소문본관": {
+    "query": "Seoul Museum of Art",
+    "candidates": [
+      {
+        "name": "서울시립미술관",
+        "displayName": "서울시립미술관, 61, 덕수궁길, 태평로2가, 소공동, 중구, 서울특별시, 04515, 대한민국",
+        "lat": 37.5641598,
+        "lon": 126.9738078,
+        "category": "tourism",
+        "type": "gallery",
+        "osmType": "way",
+        "osmId": 626112515,
+        "address": {
+          "tourism": "서울시립미술관",
+          "house_number": "61",
+          "road": "덕수궁길",
+          "quarter": "태평로2가",
+          "suburb": "소공동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04515",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중구:장충체육관": {
+    "query": "장충체육관 서울",
+    "candidates": [
+      {
+        "name": "장충체육관",
+        "displayName": "장충체육관, 241, 동호로, 장충동1가, 장충동, 중구, 서울특별시, 04605, 대한민국",
+        "lat": 37.5581698,
+        "lon": 127.0067954,
+        "category": "leisure",
+        "type": "stadium",
+        "osmType": "way",
+        "osmId": 261343879,
+        "address": {
+          "leisure": "장충체육관",
+          "house_number": "241",
+          "road": "동호로",
+          "quarter": "장충동1가",
+          "suburb": "장충동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04605",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "장충체육관",
+        "displayName": "장충체육관, 장충단로, 장충동1가, 장충동, 중구, 서울특별시, 04616, 대한민국",
+        "lat": 37.5590431,
+        "lon": 127.0057823,
+        "category": "highway",
+        "type": "traffic_signals",
+        "osmType": "node",
+        "osmId": 414685347,
+        "address": {
+          "highway": "장충체육관",
+          "road": "장충단로",
+          "quarter": "장충동1가",
+          "suburb": "장충동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04616",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "장충체육관",
+        "displayName": "장충체육관, 동호로, 장충동1가, 장충동, 중구, 서울특별시, 04609, 대한민국",
+        "lat": 37.5585327,
+        "lon": 127.0069885,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 12372983223,
+        "address": {
+          "amenity": "장충체육관",
+          "road": "동호로",
+          "quarter": "장충동1가",
+          "suburb": "장충동",
+          "borough": "중구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04609",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "용산구:국립중앙박물관": {
+    "query": "국립중앙박물관 서울",
+    "candidates": [
+      {
+        "name": "국립중앙박물관",
+        "displayName": "국립중앙박물관, 137, 서빙고로, 용산동6가, 서빙고동, 용산구, 서울특별시, 04383, 대한민국",
+        "lat": 37.523953,
+        "lon": 126.9803196,
+        "category": "tourism",
+        "type": "museum",
+        "osmType": "way",
+        "osmId": 168364800,
+        "address": {
+          "tourism": "국립중앙박물관",
+          "house_number": "137",
+          "road": "서빙고로",
+          "quarter": "용산동6가",
+          "suburb": "서빙고동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04383",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립중앙박물관",
+        "displayName": "국립중앙박물관, 서빙고로, 용산동5가, 한강로동, 용산구, 서울특별시, 04385, 대한민국",
+        "lat": 37.5209572,
+        "lon": 126.9786289,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 9796362757,
+        "address": {
+          "highway": "국립중앙박물관",
+          "road": "서빙고로",
+          "quarter": "용산동5가",
+          "suburb": "한강로동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04385",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "용산구:아이파크몰 용산점": {
+    "query": "아이파크몰 용산점 서울",
+    "candidates": [
+      {
+        "name": "아이파크몰 용산점 리빙파크",
+        "displayName": "아이파크몰 용산점 리빙파크, 55, 한강대로23길, 한강로2가, 한강로동, 용산구, 서울특별시, 04377, 대한민국",
+        "lat": 37.528916,
+        "lon": 126.964108,
+        "category": "shop",
+        "type": "beauty",
+        "osmType": "node",
+        "osmId": 13947202884,
+        "address": {
+          "shop": "아이파크몰 용산점 리빙파크",
+          "house_number": "55",
+          "road": "한강대로23길",
+          "quarter": "한강로2가",
+          "suburb": "한강로동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04377",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "용산구:전쟁기념관": {
+    "query": "전쟁기념관 서울",
+    "candidates": [
+      {
+        "name": "전쟁기념관",
+        "displayName": "전쟁기념관, 29, 이태원로(북로), 용산동1가, 남영동, 용산구, 서울특별시, 04353, 대한민국",
+        "lat": 37.5359715,
+        "lon": 126.9772916,
+        "category": "tourism",
+        "type": "museum",
+        "osmType": "way",
+        "osmId": 229891123,
+        "address": {
+          "tourism": "전쟁기념관",
+          "house_number": "29",
+          "road": "이태원로(북로)",
+          "quarter": "용산동1가",
+          "suburb": "남영동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04353",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "전쟁기념관",
+        "displayName": "전쟁기념관, 한강대로, 한강로1가, 한강로동, 용산구, 서울특별시, 04322, 대한민국",
+        "lat": 37.5384014,
+        "lon": 126.9735867,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 9796331114,
+        "address": {
+          "highway": "전쟁기념관",
+          "road": "한강대로",
+          "quarter": "한강로1가",
+          "suburb": "한강로동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04322",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "전쟁기념관",
+        "displayName": "전쟁기념관, 이태원로, 한강로1가, 한강로동, 용산구, 서울특별시, 04353, 대한민국",
+        "lat": 37.5347009,
+        "lon": 126.9753281,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357823556,
+        "address": {
+          "highway": "전쟁기념관",
+          "road": "이태원로",
+          "quarter": "한강로1가",
+          "suburb": "한강로동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04353",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "전쟁기념관",
+        "displayName": "전쟁기념관, 이태원로(북로), 용산동1가, 남영동, 용산구, 서울특별시, 04353, 대한민국",
+        "lat": 37.5347601,
+        "lon": 126.976781,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357861007,
+        "address": {
+          "highway": "전쟁기념관",
+          "road": "이태원로(북로)",
+          "quarter": "용산동1가",
+          "suburb": "남영동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04353",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "용산구:리움미술관": {
+    "query": "리움미술관 서울",
+    "candidates": [
+      {
+        "name": "한남동주민센터.리움미술관",
+        "displayName": "한남동주민센터.리움미술관, 이태원로, 한남동, 용산구, 서울특별시, 04348, 대한민국",
+        "lat": 37.5369741,
+        "lon": 127.0005464,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357823947,
+        "address": {
+          "highway": "한남동주민센터.리움미술관",
+          "road": "이태원로",
+          "quarter": "한남동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04348",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "용산구:서울중앙성원": {
+    "query": "Seoul Central Mosque",
+    "candidates": [
+      {
+        "name": "이슬람교서울중앙성원",
+        "displayName": "이슬람교서울중앙성원, 732-21, 우사단로, 이태원, 이태원1동, 용산구, 서울특별시, 04407, 대한민국",
+        "lat": 37.5334343,
+        "lon": 126.9975188,
+        "category": "amenity",
+        "type": "place_of_worship",
+        "osmType": "way",
+        "osmId": 353023147,
+        "address": {
+          "amenity": "이슬람교서울중앙성원",
+          "house_number": "732-21",
+          "road": "우사단로",
+          "neighbourhood": "이태원",
+          "suburb": "이태원1동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04407",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "성동구:서울숲": {
+    "query": "서울숲 서울",
+    "candidates": [
+      {
+        "name": "서울숲",
+        "displayName": "서울숲, 왕십리로, 성수동1가, 성수1가1동, 성동구, 서울특별시, 04778, 대한민국",
+        "lat": 37.5435916,
+        "lon": 127.0447397,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 6312484234,
+        "address": {
+          "railway": "서울숲",
+          "road": "왕십리로",
+          "quarter": "성수동1가",
+          "suburb": "성수1가1동",
+          "borough": "성동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04778",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울숲",
+        "displayName": "서울숲, 성수1가1동, 성동구, 서울특별시, 대한민국",
+        "lat": 37.5433175,
+        "lon": 127.0332118,
+        "category": "leisure",
+        "type": "park",
+        "osmType": "relation",
+        "osmId": 17338887,
+        "address": {
+          "park": "서울숲",
+          "suburb": "성수1가1동",
+          "borough": "성동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "성동구:디뮤지엄": {
+    "query": "디뮤지엄 서울",
+    "candidates": [
+      {
+        "name": "디뮤지엄",
+        "displayName": "디뮤지엄, 독서당로29길, 한남동, 용산구, 서울특별시, 04420, 대한민국",
+        "lat": 37.5371256,
+        "lon": 127.011551,
+        "category": "tourism",
+        "type": "gallery",
+        "osmType": "way",
+        "osmId": 877913299,
+        "address": {
+          "tourism": "디뮤지엄",
+          "road": "독서당로29길",
+          "quarter": "한남동",
+          "borough": "용산구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04420",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "디뮤지엄",
+        "displayName": "디뮤지엄, 왕십리로, 성수동1가, 성수1가1동, 성동구, 서울특별시, 04778, 대한민국",
+        "lat": 37.5438623,
+        "lon": 127.0441931,
+        "category": "tourism",
+        "type": "gallery",
+        "osmType": "way",
+        "osmId": 871884983,
+        "address": {
+          "tourism": "디뮤지엄",
+          "road": "왕십리로",
+          "quarter": "성수동1가",
+          "suburb": "성수1가1동",
+          "borough": "성동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04778",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "성동구:한양대학교병원": {
+    "query": "Hanyang University Hospital",
+    "candidates": [
+      {
+        "name": "한양대학교 구리병원",
+        "displayName": "한양대학교 구리병원, 153, 경춘로, 수택동, 구리시, 경기도, 11923, 대한민국",
+        "lat": 37.6012591,
+        "lon": 127.1324784,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 471318651,
+        "address": {
+          "amenity": "한양대학교 구리병원",
+          "house_number": "153",
+          "road": "경춘로",
+          "quarter": "수택동",
+          "city": "구리시",
+          "province": "경기도",
+          "ISO3166-2-lvl4": "KR-41",
+          "postcode": "11923",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "한양대학교의료원",
+        "displayName": "한양대학교의료원, 사근동길, 사근동, 성동구, 서울특별시, 04760, 대한민국",
+        "lat": 37.5593328,
+        "lon": 127.0440018,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 187354410,
+        "address": {
+          "amenity": "한양대학교의료원",
+          "road": "사근동길",
+          "quarter": "사근동",
+          "borough": "성동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04760",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "광진구:서울어린이대공원": {
+    "query": "서울어린이대공원 서울",
+    "candidates": [
+      {
+        "name": "서울어린이대공원",
+        "displayName": "서울어린이대공원, 광진구, 서울특별시, 04991, 대한민국",
+        "lat": 37.5488862,
+        "lon": 127.0804753,
+        "category": "leisure",
+        "type": "park",
+        "osmType": "way",
+        "osmId": 202365904,
+        "address": {
+          "park": "서울어린이대공원",
+          "borough": "광진구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04991",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "광진구:건국대학교병원": {
+    "query": "건국대학교병원 서울",
+    "candidates": [
+      {
+        "name": "건국대학교병원",
+        "displayName": "건국대학교병원, 120-1, 능동로, 모진동, 화양동, 광진구, 서울특별시, 05030, 대한민국",
+        "lat": 37.5406198,
+        "lon": 127.0723177,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 551588568,
+        "address": {
+          "amenity": "건국대학교병원",
+          "house_number": "120-1",
+          "road": "능동로",
+          "neighbourhood": "모진동",
+          "quarter": "화양동",
+          "borough": "광진구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05030",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "건국대학교병원",
+        "displayName": "건국대학교병원, 능동로, 모진동, 화양동, 광진구, 서울특별시, 05030, 대한민국",
+        "lat": 37.5404861,
+        "lon": 127.0718741,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 175320346,
+        "address": {
+          "building": "건국대학교병원",
+          "road": "능동로",
+          "neighbourhood": "모진동",
+          "quarter": "화양동",
+          "borough": "광진구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05030",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "건국대학교병원 장례식장",
+        "displayName": "건국대학교병원 장례식장, 120-1, 능동로, 모진동, 화양동, 광진구, 서울특별시, 05030, 대한민국",
+        "lat": 37.5412356,
+        "lon": 127.0720558,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 13903555628,
+        "address": {
+          "amenity": "건국대학교병원 장례식장",
+          "house_number": "120-1",
+          "road": "능동로",
+          "neighbourhood": "모진동",
+          "quarter": "화양동",
+          "borough": "광진구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05030",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "건국대학교병원 장례식장",
+        "displayName": "건국대학교병원 장례식장, 120-1, 능동로, 모진동, 화양동, 광진구, 서울특별시, 05030, 대한민국",
+        "lat": 37.5410125,
+        "lon": 127.0718949,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "node",
+        "osmId": 12074542746,
+        "address": {
+          "amenity": "건국대학교병원 장례식장",
+          "house_number": "120-1",
+          "road": "능동로",
+          "neighbourhood": "모진동",
+          "quarter": "화양동",
+          "borough": "광진구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05030",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "동대문구:경동시장": {
+    "query": "경동시장 서울",
+    "candidates": [
+      {
+        "name": "경동시장",
+        "displayName": "경동시장, 고산자로36길, 제기동, 동대문구, 서울특별시, 02571, 대한민국",
+        "lat": 37.5793623,
+        "lon": 127.0388131,
+        "category": "amenity",
+        "type": "marketplace",
+        "osmType": "way",
+        "osmId": 837300606,
+        "address": {
+          "amenity": "경동시장",
+          "road": "고산자로36길",
+          "quarter": "제기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02571",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "경동시장",
+        "displayName": "경동시장, 왕산로, 용두동, 용신동, 동대문구, 서울특별시, 02560, 대한민국",
+        "lat": 37.5781279,
+        "lon": 127.0383515,
+        "category": "junction",
+        "type": "yes",
+        "osmType": "node",
+        "osmId": 436818226,
+        "address": {
+          "junction": "경동시장",
+          "road": "왕산로",
+          "quarter": "용두동",
+          "suburb": "용신동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02560",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "경동시장",
+        "displayName": "경동시장, 고산자로, 제기동, 동대문구, 서울특별시, 02571, 대한민국",
+        "lat": 37.58204,
+        "lon": 127.03871,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357936411,
+        "address": {
+          "highway": "경동시장",
+          "road": "고산자로",
+          "quarter": "제기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02571",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "경동시장",
+        "displayName": "경동시장, 약령중앙로4길, 제기동, 동대문구, 서울특별시, 02570, 대한민국",
+        "lat": 37.57994,
+        "lon": 127.03824,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357823694,
+        "address": {
+          "highway": "경동시장",
+          "road": "약령중앙로4길",
+          "quarter": "제기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02570",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "동대문구:경희의료원": {
+    "query": "경희의료원 서울",
+    "candidates": [
+      {
+        "name": "경희의료원",
+        "displayName": "경희의료원, 23, 경희대로, 회기동, 동대문구, 서울특별시, 02447, 대한민국",
+        "lat": 37.5937469,
+        "lon": 127.0507354,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 550676456,
+        "address": {
+          "building": "경희의료원",
+          "house_number": "23",
+          "road": "경희대로",
+          "quarter": "회기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02447",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "경희의료원",
+        "displayName": "경희의료원, 26, 경희대로, 회기동, 동대문구, 서울특별시, 02447, 대한민국",
+        "lat": 37.5935885,
+        "lon": 127.0512769,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "node",
+        "osmId": 368741537,
+        "address": {
+          "amenity": "경희의료원",
+          "house_number": "26",
+          "road": "경희대로",
+          "quarter": "회기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02447",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "우아한과일&카페 경희의료원점",
+        "displayName": "우아한과일&카페 경희의료원점, 23, 경희대로, 회기동, 동대문구, 서울특별시, 02447, 대한민국",
+        "lat": 37.5938755,
+        "lon": 127.0513235,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 12077802538,
+        "address": {
+          "amenity": "우아한과일&카페 경희의료원점",
+          "house_number": "23",
+          "road": "경희대로",
+          "quarter": "회기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02447",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "경희의료원 본관, 서관",
+        "displayName": "경희의료원 본관, 서관, 23, 경희대로, 회기동, 동대문구, 서울특별시, 02447, 대한민국",
+        "lat": 37.5939828,
+        "lon": 127.051886,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 329616540,
+        "address": {
+          "building": "경희의료원 본관, 서관",
+          "house_number": "23",
+          "road": "경희대로",
+          "quarter": "회기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02447",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "경희의료원 동관 A",
+        "displayName": "경희의료원 동관 A, 23, 경희대로, 회기동, 동대문구, 서울특별시, 02447, 대한민국",
+        "lat": 37.5942253,
+        "lon": 127.0512541,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 550676460,
+        "address": {
+          "building": "경희의료원 동관 A",
+          "house_number": "23",
+          "road": "경희대로",
+          "quarter": "회기동",
+          "borough": "동대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02447",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "중랑구:서울의료원": {
+    "query": "서울의료원 서울",
+    "candidates": [
+      {
+        "name": "서울특별시 서울의료원",
+        "displayName": "서울특별시 서울의료원, 156, 신내로, 신내1동, 중랑구, 서울특별시, 02053, 대한민국",
+        "lat": 37.6133422,
+        "lon": 127.0976149,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 369788217,
+        "address": {
+          "amenity": "서울특별시 서울의료원",
+          "house_number": "156",
+          "road": "신내로",
+          "suburb": "신내1동",
+          "borough": "중랑구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02053",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울특별시 서울의료원 강남분원",
+        "displayName": "서울특별시 서울의료원 강남분원, 43, 삼성1동, 강남구, 서울특별시, 06171, 대한민국",
+        "lat": 37.5134835,
+        "lon": 127.0662661,
+        "category": "landuse",
+        "type": "construction",
+        "osmType": "way",
+        "osmId": 554377770,
+        "address": {
+          "construction": "서울특별시 서울의료원 강남분원",
+          "house_number": "43",
+          "suburb": "삼성1동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06171",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "성북구:고려대학교 안암병원": {
+    "query": "고려대학교 안암병원 서울",
+    "candidates": [
+      {
+        "name": "고려대학교 안암병원",
+        "displayName": "고려대학교 안암병원, 고려대로17길, 안암동2가, 안암동, 성북구, 서울특별시, 02843, 대한민국",
+        "lat": 37.587082,
+        "lon": 127.0265997,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 26628714,
+        "address": {
+          "building": "고려대학교 안암병원",
+          "road": "고려대로17길",
+          "quarter": "안암동2가",
+          "suburb": "안암동",
+          "borough": "성북구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02843",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "성북구:성신여자대학교 정문": {
+    "query": "Sungshin Womens University Seoul",
+    "candidates": []
+  },
+  "강북구:북서울꿈의숲": {
+    "query": "북서울꿈의숲 서울",
+    "candidates": [
+      {
+        "name": "북서울꿈의숲",
+        "displayName": "북서울꿈의숲, 월계로, 장위1동, 성북구, 서울특별시, 02754, 대한민국",
+        "lat": 37.6193315,
+        "lon": 127.0448861,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11633697977,
+        "address": {
+          "highway": "북서울꿈의숲",
+          "road": "월계로",
+          "suburb": "장위1동",
+          "borough": "성북구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02754",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "북서울꿈의숲",
+        "displayName": "북서울꿈의숲, 월계로, 번3동, 강북구, 서울특별시, 02742, 대한민국",
+        "lat": 37.6189106,
+        "lon": 127.0440766,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357827535,
+        "address": {
+          "highway": "북서울꿈의숲",
+          "road": "월계로",
+          "suburb": "번3동",
+          "borough": "강북구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02742",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "북서울꿈의숲",
+        "displayName": "북서울꿈의숲, 돌곶이로, 장위3동, 성북구, 서울특별시, 02754, 대한민국",
+        "lat": 37.6192477,
+        "lon": 127.045247,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11633697978,
+        "address": {
+          "highway": "북서울꿈의숲",
+          "road": "돌곶이로",
+          "suburb": "장위3동",
+          "borough": "성북구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02754",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "북서울꿈의숲",
+        "displayName": "북서울꿈의숲, 월계로, 번3동, 강북구, 서울특별시, 02757, 대한민국",
+        "lat": 37.6202893,
+        "lon": 127.0452129,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11633697974,
+        "address": {
+          "highway": "북서울꿈의숲",
+          "road": "월계로",
+          "suburb": "번3동",
+          "borough": "강북구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "02757",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "북서울꿈의숲 후문",
+        "displayName": "북서울꿈의숲 후문, 오현로, 번2동, 강북구, 서울특별시, 01228, 대한민국",
+        "lat": 37.6225191,
+        "lon": 127.0375729,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357863675,
+        "address": {
+          "highway": "북서울꿈의숲 후문",
+          "road": "오현로",
+          "suburb": "번2동",
+          "borough": "강북구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "01228",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "도봉구:서울시립 사진미술관": {
+    "query": "Seoul Museum of Photography",
+    "candidates": []
+  },
+  "도봉구:서울로봇인공지능과학관": {
+    "query": "서울로봇인공지능과학관 서울",
+    "candidates": [
+      {
+        "name": "서울로봇인공지능과학관",
+        "displayName": "서울로봇인공지능과학관, 56, 마들로13길, 창4동, 도봉구, 서울특별시, 01411, 대한민국",
+        "lat": 37.6555437,
+        "lon": 127.049431,
+        "category": "tourism",
+        "type": "museum",
+        "osmType": "way",
+        "osmId": 474937198,
+        "address": {
+          "tourism": "서울로봇인공지능과학관",
+          "house_number": "56",
+          "road": "마들로13길",
+          "suburb": "창4동",
+          "borough": "도봉구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "01411",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "노원구:서울시립 북서울미술관": {
+    "query": "Buk Seoul Museum of Art",
+    "candidates": []
+  },
+  "노원구:화랑대 철도공원": {
+    "query": "Hwarangdae Railway Park",
+    "candidates": []
+  },
+  "은평구:롯데몰 은평점": {
+    "query": "롯데몰 은평점 서울",
+    "candidates": [
+      {
+        "name": "갓덴스시 롯데몰 은평점",
+        "displayName": "갓덴스시 롯데몰 은평점, 1050, 통일로, 진관동, 은평구, 서울특별시, 03306, 대한민국",
+        "lat": 37.6369521,
+        "lon": 126.9178327,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 12079474875,
+        "address": {
+          "amenity": "갓덴스시 롯데몰 은평점",
+          "house_number": "1050",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03306",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "아비꼬 롯데몰 은평점",
+        "displayName": "아비꼬 롯데몰 은평점, 1050, 통일로, 진관동, 은평구, 서울특별시, 03306, 대한민국",
+        "lat": 37.6366483,
+        "lon": 126.9179689,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 12079474873,
+        "address": {
+          "amenity": "아비꼬 롯데몰 은평점",
+          "house_number": "1050",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03306",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "두끼 롯데몰 은평점",
+        "displayName": "두끼 롯데몰 은평점, 1050, 통일로, 진관동, 은평구, 서울특별시, 03306, 대한민국",
+        "lat": 37.6365188,
+        "lon": 126.9177396,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 12174678144,
+        "address": {
+          "amenity": "두끼 롯데몰 은평점",
+          "house_number": "1050",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03306",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "빕스 은평롯데점",
+        "displayName": "빕스 은평롯데점, 1050, 통일로, 진관동, 은평구, 서울특별시, 03306, 대한민국",
+        "lat": 37.6377315,
+        "lon": 126.918158,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 12079474866,
+        "address": {
+          "amenity": "빕스 은평롯데점",
+          "house_number": "1050",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03306",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "(주)월드스포츠가인볼링롯데몰 4층 센터은평",
+        "displayName": "(주)월드스포츠가인볼링롯데몰 4층 센터은평, 1050, 통일로, 진관동, 은평구, 서울특별시, 03306, 대한민국",
+        "lat": 37.6381487,
+        "lon": 126.9179339,
+        "category": "tourism",
+        "type": "theme_park",
+        "osmType": "node",
+        "osmId": 12079474858,
+        "address": {
+          "tourism": "(주)월드스포츠가인볼링롯데몰 4층 센터은평",
+          "house_number": "1050",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03306",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "은평구:은평성모병원": {
+    "query": "은평성모병원 서울",
+    "candidates": [
+      {
+        "name": "은평성모병원",
+        "displayName": "은평성모병원, 통일로, 진관동, 은평구, 서울특별시, 03311, 대한민국",
+        "lat": 37.6333931,
+        "lon": 126.917558,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11152882673,
+        "address": {
+          "highway": "은평성모병원",
+          "road": "통일로",
+          "quarter": "진관동",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03311",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "가톨릭대학교 은평성모병원",
+        "displayName": "가톨릭대학교 은평성모병원, 1021, 통일로, 진관동, 은평구, 서울특별시, 03312, 대한민국",
+        "lat": 37.6334988,
+        "lon": 126.915927,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 896706032,
+        "address": {
+          "amenity": "가톨릭대학교 은평성모병원",
+          "house_number": "1021",
+          "road": "통일로",
+          "quarter": "진관동",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03312",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "던킨 은평성모병원",
+        "displayName": "던킨 은평성모병원, 1021, 통일로, 진관동, 은평구, 서울특별시, 03312, 대한민국",
+        "lat": 37.633782,
+        "lon": 126.9162218,
+        "category": "shop",
+        "type": "food",
+        "osmType": "node",
+        "osmId": 12854971490,
+        "address": {
+          "shop": "던킨 은평성모병원",
+          "house_number": "1021",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03312",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "마성떡볶이 은평성모병원",
+        "displayName": "마성떡볶이 은평성모병원, 1021, 통일로, 진관동, 은평구, 서울특별시, 03312, 대한민국",
+        "lat": 37.6336563,
+        "lon": 126.9161705,
+        "category": "shop",
+        "type": "food",
+        "osmType": "node",
+        "osmId": 12854970404,
+        "address": {
+          "shop": "마성떡볶이 은평성모병원",
+          "house_number": "1021",
+          "road": "통일로",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03312",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서대문구:세브란스병원": {
+    "query": "세브란스병원 서울",
+    "candidates": [
+      {
+        "name": "세브란스병원",
+        "displayName": "세브란스병원, 50-1, 연세로, 신촌동, 서대문구, 서울특별시, 03722, 대한민국",
+        "lat": 37.5622617,
+        "lon": 126.9403921,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 369559505,
+        "address": {
+          "amenity": "세브란스병원",
+          "house_number": "50-1",
+          "road": "연세로",
+          "quarter": "신촌동",
+          "suburb": "신촌동",
+          "borough": "서대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03722",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "세브란스병원",
+        "displayName": "세브란스병원, 성산로, 대현동, 신촌동, 서대문구, 서울특별시, 03776, 대한민국",
+        "lat": 37.5602718,
+        "lon": 126.9390698,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357916258,
+        "address": {
+          "highway": "세브란스병원",
+          "road": "성산로",
+          "quarter": "대현동",
+          "suburb": "신촌동",
+          "borough": "서대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03776",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "세브란스병원",
+        "displayName": "세브란스병원, 성산로, 신촌동, 서대문구, 서울특별시, 03776, 대한민국",
+        "lat": 37.5598578,
+        "lon": 126.9374553,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357845333,
+        "address": {
+          "highway": "세브란스병원",
+          "road": "성산로",
+          "quarter": "신촌동",
+          "suburb": "신촌동",
+          "borough": "서대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03776",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "세브란스병원",
+        "displayName": "세브란스병원, 50-1, 연세로, 신촌동, 서대문구, 서울특별시, 03722, 대한민국",
+        "lat": 37.5604647,
+        "lon": 126.9382408,
+        "category": "historic",
+        "type": "memorial",
+        "osmType": "node",
+        "osmId": 12557349870,
+        "address": {
+          "historic": "세브란스병원",
+          "house_number": "50-1",
+          "road": "연세로",
+          "quarter": "신촌동",
+          "suburb": "신촌동",
+          "borough": "서대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03722",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서대문구:서대문형무소역사관": {
+    "query": "서대문형무소역사관 서울",
+    "candidates": [
+      {
+        "name": "서대문형무소역사관",
+        "displayName": "서대문형무소역사관, 251, 통일로, 현저동, 천연동, 서대문구, 서울특별시, 03732, 대한민국",
+        "lat": 37.5745368,
+        "lon": 126.9563173,
+        "category": "tourism",
+        "type": "museum",
+        "osmType": "node",
+        "osmId": 368871454,
+        "address": {
+          "tourism": "서대문형무소역사관",
+          "house_number": "251",
+          "road": "통일로",
+          "quarter": "현저동",
+          "borough": "서대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03732",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서대문구:이화여자대학교 정문": {
+    "query": "Ewha Womans University Seoul",
+    "candidates": [
+      {
+        "name": "이화여자대학교",
+        "displayName": "이화여자대학교, 52, 이화여대길, 대현동, 신촌동, 서대문구, 서울특별시, 03760, 대한민국",
+        "lat": 37.5643371,
+        "lon": 126.9468925,
+        "category": "amenity",
+        "type": "university",
+        "osmType": "relation",
+        "osmId": 6384813,
+        "address": {
+          "amenity": "이화여자대학교",
+          "house_number": "52",
+          "road": "이화여대길",
+          "quarter": "대현동",
+          "suburb": "신촌동",
+          "borough": "서대문구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03760",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "마포구:서울월드컵경기장": {
+    "query": "서울월드컵경기장 서울",
+    "candidates": [
+      {
+        "name": "서울월드컵경기장",
+        "displayName": "서울월드컵경기장, 240, 월드컵로, 성산동, 성산2동, 마포구, 서울특별시, 03932, 대한민국",
+        "lat": 37.5683021,
+        "lon": 126.8972477,
+        "category": "leisure",
+        "type": "stadium",
+        "osmType": "way",
+        "osmId": 168102974,
+        "address": {
+          "leisure": "서울월드컵경기장",
+          "house_number": "240",
+          "road": "월드컵로",
+          "quarter": "성산동",
+          "suburb": "성산2동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03932",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "마포구:망원시장": {
+    "query": "망원시장 서울",
+    "candidates": [
+      {
+        "name": "망원시장",
+        "displayName": "망원시장, 망원로7길, 6통, 망원2동, 마포구, 서울특별시, 03964, 대한민국",
+        "lat": 37.5566206,
+        "lon": 126.9060503,
+        "category": "amenity",
+        "type": "marketplace",
+        "osmType": "way",
+        "osmId": 31856777,
+        "address": {
+          "amenity": "망원시장",
+          "road": "망원로7길",
+          "neighbourhood": "6통",
+          "suburb": "망원2동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03964",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "망원시장",
+        "displayName": "망원시장, 망원로8길, 15통, 망원1동, 마포구, 서울특별시, 04011, 대한민국",
+        "lat": 37.5571726,
+        "lon": 126.9058228,
+        "category": "amenity",
+        "type": "marketplace",
+        "osmType": "node",
+        "osmId": 4196342490,
+        "address": {
+          "amenity": "망원시장",
+          "road": "망원로8길",
+          "neighbourhood": "15통",
+          "suburb": "망원1동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04011",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "마포구:홍익대학교 정문": {
+    "query": "Hongik University Seoul",
+    "candidates": [
+      {
+        "name": "홍익대학교 서울캠퍼스",
+        "displayName": "홍익대학교 서울캠퍼스, 94, 와우산로, 홍대거리, 동교동, 서교동, 마포구, 서울특별시, 04066, 대한민국",
+        "lat": 37.5503552,
+        "lon": 126.9254349,
+        "category": "amenity",
+        "type": "university",
+        "osmType": "way",
+        "osmId": 216908773,
+        "address": {
+          "amenity": "홍익대학교 서울캠퍼스",
+          "house_number": "94",
+          "road": "와우산로",
+          "neighbourhood": "홍대거리",
+          "quarter": "동교동",
+          "suburb": "서교동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04066",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "홍대입구",
+        "displayName": "홍대입구, 양화로, 홍대거리, 동교동, 서교동, 마포구, 서울특별시, 03995, 대한민국",
+        "lat": 37.5566261,
+        "lon": 126.9235144,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 5937884688,
+        "address": {
+          "railway": "홍대입구",
+          "road": "양화로",
+          "neighbourhood": "홍대거리",
+          "quarter": "동교동",
+          "suburb": "서교동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03995",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "홍익대학교",
+        "displayName": "홍익대학교, 와우산로, 홍대거리, 동교동, 서교동, 마포구, 서울특별시, 04059, 대한민국",
+        "lat": 37.55305,
+        "lon": 126.92461,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357934105,
+        "address": {
+          "highway": "홍익대학교",
+          "road": "와우산로",
+          "neighbourhood": "홍대거리",
+          "quarter": "동교동",
+          "suburb": "서교동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04059",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "홍익대학교",
+        "displayName": "홍익대학교, 와우산로, 홍대거리, 동교동, 서교동, 마포구, 서울특별시, 04041, 대한민국",
+        "lat": 37.5522089,
+        "lon": 126.9237514,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357916618,
+        "address": {
+          "highway": "홍익대학교",
+          "road": "와우산로",
+          "neighbourhood": "홍대거리",
+          "quarter": "동교동",
+          "suburb": "서교동",
+          "borough": "마포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "04041",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "양천구:이대목동병원": {
+    "query": "이대목동병원 서울",
+    "candidates": [
+      {
+        "name": "이대목동병원",
+        "displayName": "이대목동병원, 목동동로, 목동, 목5동, 양천구, 서울특별시, 07984, 대한민국",
+        "lat": 37.5365347,
+        "lon": 126.886217,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 468438487,
+        "address": {
+          "amenity": "이대목동병원",
+          "road": "목동동로",
+          "quarter": "목동",
+          "suburb": "목5동",
+          "borough": "양천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07984",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "양천구:현대백화점 목동점": {
+    "query": "현대백화점 목동점 서울",
+    "candidates": [
+      {
+        "name": "에즈블랑 현대백화점 목동점",
+        "displayName": "에즈블랑 현대백화점 목동점, 257, 목동동로, 목1동, 양천구, 서울특별시, 07998, 대한민국",
+        "lat": 37.526245,
+        "lon": 126.875544,
+        "category": "shop",
+        "type": "beauty",
+        "osmType": "node",
+        "osmId": 13947201072,
+        "address": {
+          "shop": "에즈블랑 현대백화점 목동점",
+          "house_number": "257",
+          "road": "목동동로",
+          "suburb": "목1동",
+          "borough": "양천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07998",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "스파리움 현대백화점 목동점",
+        "displayName": "스파리움 현대백화점 목동점, 257, 목동동로, 목1동, 양천구, 서울특별시, 07998, 대한민국",
+        "lat": 37.5271042,
+        "lon": 126.8754276,
+        "category": "shop",
+        "type": "hairdresser",
+        "osmType": "node",
+        "osmId": 13851199923,
+        "address": {
+          "shop": "스파리움 현대백화점 목동점",
+          "house_number": "257",
+          "road": "목동동로",
+          "suburb": "목1동",
+          "borough": "양천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07998",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "양천구:목동종합운동장": {
+    "query": "목동종합운동장 서울",
+    "candidates": [
+      {
+        "name": "목동4단지상가.목동종합운동장",
+        "displayName": "목동4단지상가.목동종합운동장, 목동서로, 목동, 목5동, 양천구, 서울특별시, 07988, 대한민국",
+        "lat": 37.5322162,
+        "lon": 126.8752053,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357829989,
+        "address": {
+          "highway": "목동4단지상가.목동종합운동장",
+          "road": "목동서로",
+          "quarter": "목동",
+          "suburb": "목5동",
+          "borough": "양천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07988",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강서구:김포공항 국내선청사": {
+    "query": "Gimpo International Airport domestic terminal",
+    "candidates": [
+      {
+        "name": "김포국제공항 국내선청사",
+        "displayName": "김포국제공항 국내선청사, 112, 하늘길, 공항동, 강서구, 서울특별시, 07505, 대한민국",
+        "lat": 37.5584619,
+        "lon": 126.8032964,
+        "category": "aeroway",
+        "type": "terminal",
+        "osmType": "way",
+        "osmId": 226573238,
+        "address": {
+          "aeroway": "김포국제공항 국내선청사",
+          "house_number": "112",
+          "road": "하늘길",
+          "quarter": "공항동",
+          "suburb": "공항동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07505",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강서구:롯데몰 김포공항점": {
+    "query": "Lotte Mall Gimpo Airport",
+    "candidates": []
+  },
+  "강서구:서울식물원": {
+    "query": "서울식물원 서울",
+    "candidates": [
+      {
+        "name": "서울식물원",
+        "displayName": "서울식물원, 가양1동, 강서구, 서울특별시, 07789, 대한민국",
+        "lat": 37.5710656,
+        "lon": 126.8346641,
+        "category": "leisure",
+        "type": "garden",
+        "osmType": "way",
+        "osmId": 465318366,
+        "address": {
+          "garden": "서울식물원",
+          "suburb": "가양1동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07789",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강서구:LG아트센터 서울": {
+    "query": "LG아트센터 서울 서울",
+    "candidates": [
+      {
+        "name": "LG아트센터 서울",
+        "displayName": "LG아트센터 서울, 136, 마곡동로, 마곡지구도시개발지구, 가양1동, 강서구, 서울특별시, 07789, 대한민국",
+        "lat": 37.5658383,
+        "lon": 126.8294147,
+        "category": "tourism",
+        "type": "museum",
+        "osmType": "way",
+        "osmId": 643261411,
+        "address": {
+          "tourism": "LG아트센터 서울",
+          "house_number": "136",
+          "road": "마곡동로",
+          "quarter": "마곡지구도시개발지구",
+          "suburb": "가양1동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07789",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "LG아트센터",
+        "displayName": "LG아트센터, 테헤란로27길, 역삼1동, 강남구, 서울특별시, 06141, 대한민국",
+        "lat": 37.5021541,
+        "lon": 127.0377321,
+        "category": "amenity",
+        "type": "theatre",
+        "osmType": "node",
+        "osmId": 2676397686,
+        "address": {
+          "amenity": "LG아트센터",
+          "road": "테헤란로27길",
+          "suburb": "역삼1동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06141",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강서구:이대서울병원": {
+    "query": "이대서울병원 서울",
+    "candidates": [
+      {
+        "name": "이대서울병원",
+        "displayName": "이대서울병원, 강서로, 발산1동, 강서구, 서울특별시, 07804, 대한민국",
+        "lat": 37.5572503,
+        "lon": 126.8361187,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 465480953,
+        "address": {
+          "amenity": "이대서울병원",
+          "road": "강서로",
+          "suburb": "발산1동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07804",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "이대서울병원",
+        "displayName": "이대서울병원, 공항대로, 발산1동, 강서구, 서울특별시, 07802, 대한민국",
+        "lat": 37.5586319,
+        "lon": 126.8355942,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 12372983403,
+        "address": {
+          "amenity": "이대서울병원",
+          "road": "공항대로",
+          "suburb": "발산1동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07802",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "이대서울병원",
+        "displayName": "이대서울병원, 728-10, 공항대로, 발산1동, 강서구, 서울특별시, 07802, 대한민국",
+        "lat": 37.558632,
+        "lon": 126.835594,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 13890054715,
+        "address": {
+          "amenity": "이대서울병원",
+          "house_number": "728-10",
+          "road": "공항대로",
+          "suburb": "발산1동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07802",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "이대서울병원",
+        "displayName": "이대서울병원, 공항대로, 발산1동, 강서구, 서울특별시, 07802, 대한민국",
+        "lat": 37.5587511,
+        "lon": 126.8350265,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11715052036,
+        "address": {
+          "highway": "이대서울병원",
+          "road": "공항대로",
+          "suburb": "발산1동",
+          "borough": "강서구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07802",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "구로구:고척스카이돔": {
+    "query": "고척스카이돔 서울",
+    "candidates": [
+      {
+        "name": "고척스카이돔",
+        "displayName": "고척스카이돔, 430, 경인로, 고척동, 고척1동, 구로구, 서울특별시, 08275, 대한민국",
+        "lat": 37.4981936,
+        "lon": 126.8670731,
+        "category": "leisure",
+        "type": "stadium",
+        "osmType": "way",
+        "osmId": 258637347,
+        "address": {
+          "leisure": "고척스카이돔",
+          "house_number": "430",
+          "road": "경인로",
+          "quarter": "고척동",
+          "suburb": "고척1동",
+          "borough": "구로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08275",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "구로구:고려대학교 구로병원": {
+    "query": "Korea University Guro Hospital",
+    "candidates": [
+      {
+        "name": "고려대학교구로병원",
+        "displayName": "고려대학교구로병원, 148, 구로동로, 구로동, 구로2동, 구로구, 서울특별시, 08308, 대한민국",
+        "lat": 37.492042,
+        "lon": 126.8847335,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 250489344,
+        "address": {
+          "amenity": "고려대학교구로병원",
+          "house_number": "148",
+          "road": "구로동로",
+          "quarter": "구로동",
+          "suburb": "구로2동",
+          "borough": "구로구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08308",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "금천구:마리오아울렛": {
+    "query": "마리오아울렛 서울",
+    "candidates": [
+      {
+        "name": "마리오아울렛",
+        "displayName": "마리오아울렛, 디지털로9길, 서울디지털국가산업단지 2단지, 가산동, 금천구, 서울특별시, 08512, 대한민국",
+        "lat": 37.4781569,
+        "lon": 126.8874515,
+        "category": "shop",
+        "type": "mall",
+        "osmType": "relation",
+        "osmId": 9038706,
+        "address": {
+          "shop": "마리오아울렛",
+          "road": "디지털로9길",
+          "industrial": "서울디지털국가산업단지 2단지",
+          "quarter": "가산동",
+          "suburb": "가산동",
+          "borough": "금천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08512",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "마리오아울렛",
+        "displayName": "마리오아울렛, 벚꽃로, 가산동, 금천구, 서울특별시, 08511, 대한민국",
+        "lat": 37.478533,
+        "lon": 126.8844181,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357892870,
+        "address": {
+          "highway": "마리오아울렛",
+          "road": "벚꽃로",
+          "quarter": "가산동",
+          "suburb": "가산동",
+          "borough": "금천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08511",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "마리오아울렛 2관",
+        "displayName": "마리오아울렛 2관, 23, 디지털로9길, 서울디지털국가산업단지 2단지, 가산동, 금천구, 서울특별시, 08511, 대한민국",
+        "lat": 37.4787205,
+        "lon": 126.8865234,
+        "category": "shop",
+        "type": "mall",
+        "osmType": "way",
+        "osmId": 313260160,
+        "address": {
+          "shop": "마리오아울렛 2관",
+          "house_number": "23",
+          "road": "디지털로9길",
+          "industrial": "서울디지털국가산업단지 2단지",
+          "quarter": "가산동",
+          "suburb": "가산동",
+          "borough": "금천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08511",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "마리오아울렛 3관",
+        "displayName": "마리오아울렛 3관, 266, 벚꽃로, 가산동, 금천구, 서울특별시, 08511, 대한민국",
+        "lat": 37.4784698,
+        "lon": 126.885112,
+        "category": "shop",
+        "type": "mall",
+        "osmType": "way",
+        "osmId": 384018492,
+        "address": {
+          "shop": "마리오아울렛 3관",
+          "house_number": "266",
+          "road": "벚꽃로",
+          "quarter": "가산동",
+          "suburb": "가산동",
+          "borough": "금천구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08511",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "홍성열 마리오아울렛 회장 삼성동 자택",
+        "displayName": "홍성열 마리오아울렛 회장 삼성동 자택, 49, 선릉로112길, 삼성2동, 강남구, 서울특별시, 06097, 대한민국",
+        "lat": 37.5123789,
+        "lon": 127.047542,
+        "category": "building",
+        "type": "house",
+        "osmType": "way",
+        "osmId": 480579178,
+        "address": {
+          "building": "홍성열 마리오아울렛 회장 삼성동 자택",
+          "house_number": "49",
+          "road": "선릉로112길",
+          "suburb": "삼성2동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06097",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "금천구:서울시립 서서울미술관": {
+    "query": "Seoseoul Museum of Art",
+    "candidates": []
+  },
+  "영등포구:더현대 서울": {
+    "query": "더현대 서울 서울",
+    "candidates": [
+      {
+        "name": "더현대 서울",
+        "displayName": "더현대 서울, 108, 여의대로, 여의도동, 여의동, 영등포구, 서울특별시, 07335, 대한민국",
+        "lat": 37.5259638,
+        "lon": 126.9284184,
+        "category": "shop",
+        "type": "department_store",
+        "osmType": "way",
+        "osmId": 874639191,
+        "address": {
+          "shop": "더현대 서울",
+          "house_number": "108",
+          "road": "여의대로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07335",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "영등포구:IFC몰": {
+    "query": "IFC몰 서울",
+    "candidates": [
+      {
+        "name": "렌위치",
+        "displayName": "렌위치, 10, 국제금융로, 여의도동, 여의동, 영등포구, 서울특별시, 07326, 대한민국",
+        "lat": 37.525249,
+        "lon": 126.926033,
+        "category": "amenity",
+        "type": "fast_food",
+        "osmType": "node",
+        "osmId": 12074644383,
+        "address": {
+          "amenity": "렌위치",
+          "house_number": "10",
+          "road": "국제금융로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07326",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "크리스탈제이드",
+        "displayName": "크리스탈제이드, 10, 국제금융로, IFC 서울, 여의도동, 여의동, 영등포구, 서울특별시, 07326, 대한민국",
+        "lat": 37.5251775,
+        "lon": 126.9248767,
+        "category": "amenity",
+        "type": "restaurant",
+        "osmType": "node",
+        "osmId": 13930561621,
+        "address": {
+          "amenity": "크리스탈제이드",
+          "house_number": "10",
+          "road": "국제금융로",
+          "commercial": "IFC 서울",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07326",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "영등포구:타임스퀘어": {
+    "query": "타임스퀘어 서울",
+    "candidates": [
+      {
+        "name": "타임스퀘어",
+        "displayName": "타임스퀘어, 영등포동4가, 영등포동, 영등포구, 서울특별시, 07305, 대한민국",
+        "lat": 37.5172094,
+        "lon": 126.9040371,
+        "category": "landuse",
+        "type": "retail",
+        "osmType": "way",
+        "osmId": 344430230,
+        "address": {
+          "retail": "타임스퀘어",
+          "quarter": "영등포동4가",
+          "suburb": "영등포동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07305",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "영등포구:국회의사당": {
+    "query": "국회의사당 서울",
+    "candidates": [
+      {
+        "name": "국회의사당",
+        "displayName": "국회의사당, 지하758, 국회대로, 여의도동, 여의동, 영등포구, 서울특별시, 07236, 대한민국",
+        "lat": 37.5280157,
+        "lon": 126.9179639,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 1849176201,
+        "address": {
+          "railway": "국회의사당",
+          "house_number": "지하758",
+          "road": "국회대로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07236",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국회의사당",
+        "displayName": "국회의사당, 1, 의사당대로, 여의도동, 여의동, 영등포구, 서울특별시, 07233, 대한민국",
+        "lat": 37.5318657,
+        "lon": 126.9141232,
+        "category": "office",
+        "type": "government",
+        "osmType": "way",
+        "osmId": 270596342,
+        "address": {
+          "office": "국회의사당",
+          "house_number": "1",
+          "road": "의사당대로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07233",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국회의사당",
+        "displayName": "국회의사당, 국회대로, 여의도동, 여의동, 영등포구, 서울특별시, 07237, 대한민국",
+        "lat": 37.5297897,
+        "lon": 126.9178793,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357893055,
+        "address": {
+          "highway": "국회의사당",
+          "road": "국회대로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07237",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국회의사당",
+        "displayName": "국회의사당, 의사당대로, 여의도동, 여의동, 영등포구, 서울특별시, 07236, 대한민국",
+        "lat": 37.5284048,
+        "lon": 126.9179644,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 11684194180,
+        "address": {
+          "highway": "국회의사당",
+          "road": "의사당대로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07236",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국회의사당",
+        "displayName": "국회의사당, 의사당대로, 여의도동, 여의동, 영등포구, 서울특별시, 07236, 대한민국",
+        "lat": 37.5284686,
+        "lon": 126.917637,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 10814302787,
+        "address": {
+          "railway": "국회의사당",
+          "road": "의사당대로",
+          "quarter": "여의도동",
+          "suburb": "여의동",
+          "borough": "영등포구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "07236",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "동작구:노량진수산시장": {
+    "query": "노량진수산시장 서울",
+    "candidates": [
+      {
+        "name": "노량진수산시장",
+        "displayName": "노량진수산시장, 674, 노들로, 노량진동, 노량진2동, 동작구, 서울특별시, 06900, 대한민국",
+        "lat": 37.5147164,
+        "lon": 126.9377367,
+        "category": "building",
+        "type": "retail",
+        "osmType": "way",
+        "osmId": 606419988,
+        "address": {
+          "building": "노량진수산시장",
+          "house_number": "674",
+          "road": "노들로",
+          "quarter": "노량진동",
+          "suburb": "노량진2동",
+          "borough": "동작구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06900",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "노량진수산시장.CTS기독교TV",
+        "displayName": "노량진수산시장.CTS기독교TV, 노량진로, 노량진2동, 동작구, 서울특별시, 06928, 대한민국",
+        "lat": 37.513453,
+        "lon": 126.9382027,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357959754,
+        "address": {
+          "highway": "노량진수산시장.CTS기독교TV",
+          "road": "노량진로",
+          "suburb": "노량진2동",
+          "borough": "동작구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06928",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "동작구:중앙대학교병원": {
+    "query": "중앙대학교병원 서울",
+    "candidates": [
+      {
+        "name": "중앙대학교병원",
+        "displayName": "중앙대학교병원, 흑석로, 흑석동, 상도1동, 동작구, 서울특별시, 06974, 대한민국",
+        "lat": 37.5067062,
+        "lon": 126.9607264,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 296976582,
+        "address": {
+          "amenity": "중앙대학교병원",
+          "road": "흑석로",
+          "quarter": "흑석동",
+          "suburb": "상도1동",
+          "borough": "동작구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06974",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "관악구:서울시립 남서울미술관": {
+    "query": "Namseoul Museum of Art",
+    "candidates": []
+  },
+  "관악구:낙성대공원": {
+    "query": "낙성대공원 서울",
+    "candidates": [
+      {
+        "name": "낙성대공원",
+        "displayName": "낙성대공원, 관악구, 서울특별시, 대한민국",
+        "lat": 37.4716117,
+        "lon": 126.9593138,
+        "category": "leisure",
+        "type": "park",
+        "osmType": "way",
+        "osmId": 419545972,
+        "address": {
+          "park": "낙성대공원",
+          "borough": "관악구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "낙성대공원",
+        "displayName": "낙성대공원, 낙성대로, 관악구, 서울특별시, 08799, 대한민국",
+        "lat": 37.471855,
+        "lon": 126.958717,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 13890054686,
+        "address": {
+          "amenity": "낙성대공원",
+          "road": "낙성대로",
+          "borough": "관악구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "08799",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서초구:예술의전당": {
+    "query": "예술의전당 서울",
+    "candidates": [
+      {
+        "name": "예술의전당",
+        "displayName": "예술의전당, 2406, 남부순환로, 서초3동, 서초구, 서울특별시, 06757, 대한민국",
+        "lat": 37.4802841,
+        "lon": 127.0132373,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 9316388392,
+        "address": {
+          "highway": "예술의전당",
+          "house_number": "2406",
+          "road": "남부순환로",
+          "suburb": "서초3동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06757",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "예술의전당",
+        "displayName": "예술의전당, 남부순환로, 서초3동, 서초구, 서울특별시, 06719, 대한민국",
+        "lat": 37.4811103,
+        "lon": 127.0140414,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357885798,
+        "address": {
+          "highway": "예술의전당",
+          "road": "남부순환로",
+          "suburb": "서초3동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06719",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "예술의전당 음악당",
+        "displayName": "예술의전당 음악당, 남부순환로, 서초3동, 서초구, 서울특별시, 06712, 대한민국",
+        "lat": 37.4792101,
+        "lon": 127.0117344,
+        "category": "amenity",
+        "type": "theatre",
+        "osmType": "way",
+        "osmId": 303947127,
+        "address": {
+          "amenity": "예술의전당 음악당",
+          "road": "남부순환로",
+          "suburb": "서초3동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06712",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "남부터미널(예술의전당)",
+        "displayName": "남부터미널(예술의전당), 서초중앙로, 서초3동, 서초구, 서울특별시, 06720, 대한민국",
+        "lat": 37.4849718,
+        "lon": 127.0162904,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 1939100051,
+        "address": {
+          "railway": "남부터미널(예술의전당)",
+          "road": "서초중앙로",
+          "suburb": "서초3동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06720",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서초구:서울성모병원": {
+    "query": "서울성모병원 서울",
+    "candidates": [
+      {
+        "name": "가톨릭대학교 서울성모병원",
+        "displayName": "가톨릭대학교 서울성모병원, 222, 반포대로, 반포4동, 서초구, 서울특별시, 06591, 대한민국",
+        "lat": 37.5004435,
+        "lon": 127.0055211,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 412970177,
+        "address": {
+          "amenity": "가톨릭대학교 서울성모병원",
+          "house_number": "222",
+          "road": "반포대로",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06591",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "가톨릭대학교 서울성모병원",
+        "displayName": "가톨릭대학교 서울성모병원, 222, 반포대로, 반포4동, 서초구, 서울특별시, 06591, 대한민국",
+        "lat": 37.5017397,
+        "lon": 127.0047391,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 184583238,
+        "address": {
+          "building": "가톨릭대학교 서울성모병원",
+          "house_number": "222",
+          "road": "반포대로",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06591",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울성모병원",
+        "displayName": "서울성모병원, 사평대로, 반포4동, 서초구, 서울특별시, 06591, 대한민국",
+        "lat": 37.5027203,
+        "lon": 127.0056473,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357884315,
+        "address": {
+          "highway": "서울성모병원",
+          "road": "사평대로",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06591",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울성모병원",
+        "displayName": "서울성모병원, 사평대로, 반포2동, 서초구, 서울특별시, 06546, 대한민국",
+        "lat": 37.5019983,
+        "lon": 127.0034656,
+        "category": "highway",
+        "type": "traffic_signals",
+        "osmType": "node",
+        "osmId": 1132502920,
+        "address": {
+          "highway": "서울성모병원",
+          "road": "사평대로",
+          "suburb": "반포2동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06546",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서초구:센트럴시티": {
+    "query": "센트럴시티 서울",
+    "candidates": [
+      {
+        "name": "루경헤어 신세계 강남점",
+        "displayName": "루경헤어 신세계 강남점, 205, 센트럴시티 파미에스테이션 2층 FP 204호, 사평대로, 반포4동, 서초구, 서울특별시, 06591, 대한민국",
+        "lat": 37.5038414,
+        "lon": 127.0062828,
+        "category": "shop",
+        "type": "hairdresser",
+        "osmType": "node",
+        "osmId": 13805407104,
+        "address": {
+          "shop": "루경헤어 신세계 강남점",
+          "house_number": "205, 센트럴시티 파미에스테이션 2층 FP 204호",
+          "road": "사평대로",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06591",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "비아이티살롱 센트럴시티점",
+        "displayName": "비아이티살롱 센트럴시티점, 205, 센트럴시티 파미에스테이션 2층 FP 204호, 사평대로, 반포4동, 서초구, 서울특별시, 06591, 대한민국",
+        "lat": 37.5038414,
+        "lon": 127.0062828,
+        "category": "shop",
+        "type": "hairdresser",
+        "osmType": "node",
+        "osmId": 13805399007,
+        "address": {
+          "shop": "비아이티살롱 센트럴시티점",
+          "house_number": "205, 센트럴시티 파미에스테이션 2층 FP 204호",
+          "road": "사평대로",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06591",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서초구:aT센터": {
+    "query": "aT센터 서울",
+    "candidates": [
+      {
+        "name": "aT센터",
+        "displayName": "aT센터, 강남대로, 양재동, 양재2동, 서초구, 서울특별시, 06774, 대한민국",
+        "lat": 37.4683697,
+        "lon": 127.0390529,
+        "category": "building",
+        "type": "commercial",
+        "osmType": "way",
+        "osmId": 182205720,
+        "address": {
+          "building": "aT센터",
+          "road": "강남대로",
+          "quarter": "양재동",
+          "suburb": "양재2동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06774",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "AT센터.양재꽃시장",
+        "displayName": "AT센터.양재꽃시장, 강남대로, 양재동, 양재2동, 서초구, 서울특별시, 06774, 대한민국",
+        "lat": 37.468686,
+        "lon": 127.0395445,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357824295,
+        "address": {
+          "highway": "AT센터.양재꽃시장",
+          "road": "강남대로",
+          "quarter": "양재동",
+          "suburb": "양재2동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06774",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "서초구:국립중앙도서관": {
+    "query": "국립중앙도서관 서울",
+    "candidates": [
+      {
+        "name": "국립중앙도서관",
+        "displayName": "국립중앙도서관, 반포대로37길, 서래마을, 반포4동, 서초구, 서울특별시, 06579, 대한민국",
+        "lat": 37.4972685,
+        "lon": 127.0030347,
+        "category": "amenity",
+        "type": "library",
+        "osmType": "way",
+        "osmId": 256787242,
+        "address": {
+          "amenity": "국립중앙도서관",
+          "road": "반포대로37길",
+          "neighbourhood": "서래마을",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06579",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립중앙도서관(국제회의장옆)",
+        "displayName": "국립중앙도서관(국제회의장옆), 반포대로37길, 서래마을, 반포4동, 서초구, 서울특별시, 06579, 대한민국",
+        "lat": 37.4972115,
+        "lon": 127.0042725,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 12372984538,
+        "address": {
+          "amenity": "국립중앙도서관(국제회의장옆)",
+          "road": "반포대로37길",
+          "neighbourhood": "서래마을",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06579",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립중앙도서관",
+        "displayName": "국립중앙도서관, 반포대로37길, 서래마을, 반포4동, 서초구, 서울특별시, 06579, 대한민국",
+        "lat": 37.497318,
+        "lon": 127.003258,
+        "category": "amenity",
+        "type": "library",
+        "osmType": "node",
+        "osmId": 368652466,
+        "address": {
+          "amenity": "국립중앙도서관",
+          "road": "반포대로37길",
+          "neighbourhood": "서래마을",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06579",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립중앙도서관",
+        "displayName": "국립중앙도서관, 반포대로, 반포4동, 서초구, 서울특별시, 06579, 대한민국",
+        "lat": 37.497922,
+        "lon": 127.0044198,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 9316453092,
+        "address": {
+          "highway": "국립중앙도서관",
+          "road": "반포대로",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06579",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "국립중앙도서관 디지털도서관",
+        "displayName": "국립중앙도서관 디지털도서관, 반포대로39길, 서래마을, 반포4동, 서초구, 서울특별시, 06578, 대한민국",
+        "lat": 37.4979151,
+        "lon": 127.0037522,
+        "category": "amenity",
+        "type": "library",
+        "osmType": "way",
+        "osmId": 301887161,
+        "address": {
+          "amenity": "국립중앙도서관 디지털도서관",
+          "road": "반포대로39길",
+          "neighbourhood": "서래마을",
+          "suburb": "반포4동",
+          "borough": "서초구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06578",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강남구:스타필드 코엑스몰": {
+    "query": "Starfield COEX Mall",
+    "candidates": []
+  },
+  "강남구:삼성서울병원": {
+    "query": "삼성서울병원 서울",
+    "candidates": [
+      {
+        "name": "삼성서울병원",
+        "displayName": "삼성서울병원, 81, 일원로, 일원동, 일원본동, 강남구, 서울특별시, 06351, 대한민국",
+        "lat": 37.4884518,
+        "lon": 127.0853414,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 417994820,
+        "address": {
+          "amenity": "삼성서울병원",
+          "house_number": "81",
+          "road": "일원로",
+          "quarter": "일원동",
+          "suburb": "일원본동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06351",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강남구:봉은사": {
+    "query": "봉은사 서울",
+    "candidates": [
+      {
+        "name": "봉은사",
+        "displayName": "봉은사, 봉은사로, 삼성동, 삼성1동, 강남구, 서울특별시, 06081, 대한민국",
+        "lat": 37.5141869,
+        "lon": 127.0602411,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 3824606373,
+        "address": {
+          "railway": "봉은사",
+          "road": "봉은사로",
+          "quarter": "삼성동",
+          "suburb": "삼성1동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06081",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "봉은사",
+        "displayName": "봉은사, 531, 봉은사로, 삼성동, 삼성1동, 강남구, 서울특별시, 06087, 대한민국",
+        "lat": 37.5151321,
+        "lon": 127.0567944,
+        "category": "amenity",
+        "type": "place_of_worship",
+        "osmType": "way",
+        "osmId": 74010857,
+        "address": {
+          "amenity": "봉은사",
+          "house_number": "531",
+          "road": "봉은사로",
+          "quarter": "삼성동",
+          "suburb": "삼성1동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06087",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "봉은사",
+        "displayName": "봉은사, 진관길, 진관동, 은평구, 서울특별시, 03308, 대한민국",
+        "lat": 37.6377401,
+        "lon": 126.9432597,
+        "category": "amenity",
+        "type": "place_of_worship",
+        "osmType": "way",
+        "osmId": 689856366,
+        "address": {
+          "amenity": "봉은사",
+          "road": "진관길",
+          "suburb": "진관동",
+          "borough": "은평구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "03308",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "봉은사",
+        "displayName": "봉은사, 봉은사로, 삼성동, 삼성1동, 강남구, 서울특별시, 06081, 대한민국",
+        "lat": 37.5141958,
+        "lon": 127.060164,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 3824606372,
+        "address": {
+          "railway": "봉은사",
+          "road": "봉은사로",
+          "quarter": "삼성동",
+          "suburb": "삼성1동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06081",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "봉은사",
+        "displayName": "봉은사, 영동대로, 삼성동, 삼성1동, 강남구, 서울특별시, 06164, 대한민국",
+        "lat": 37.5141546,
+        "lon": 127.0601774,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 3824606374,
+        "address": {
+          "railway": "봉은사",
+          "road": "영동대로",
+          "quarter": "삼성동",
+          "suburb": "삼성1동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06164",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강남구:도산공원": {
+    "query": "도산공원 서울",
+    "candidates": [
+      {
+        "name": "도산공원",
+        "displayName": "도산공원, 신사동, 강남구, 서울특별시, 대한민국",
+        "lat": 37.5242213,
+        "lon": 127.0352168,
+        "category": "leisure",
+        "type": "park",
+        "osmType": "way",
+        "osmId": 192743564,
+        "address": {
+          "park": "도산공원",
+          "suburb": "신사동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강남구:SETEC": {
+    "query": "SETEC 서울",
+    "candidates": [
+      {
+        "name": "SETEC",
+        "displayName": "SETEC, 영동대로, 대치동, 대치2동, 강남구, 서울특별시, 06286, 대한민국",
+        "lat": 37.4954477,
+        "lon": 127.0720963,
+        "category": "amenity",
+        "type": "conference_centre",
+        "osmType": "node",
+        "osmId": 3720964309,
+        "address": {
+          "amenity": "SETEC",
+          "road": "영동대로",
+          "quarter": "대치동",
+          "suburb": "대치2동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "06286",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "서울무역전시장(SETEC)",
+        "displayName": "서울무역전시장(SETEC), 대치동, 대치2동, 강남구, 서울특별시, 대한민국",
+        "lat": 37.4958002,
+        "lon": 127.0717912,
+        "category": "landuse",
+        "type": "commercial",
+        "osmType": "way",
+        "osmId": 261348568,
+        "address": {
+          "commercial": "서울무역전시장(SETEC)",
+          "quarter": "대치동",
+          "suburb": "대치2동",
+          "borough": "강남구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:롯데월드몰": {
+    "query": "롯데월드몰 서울",
+    "candidates": [
+      {
+        "name": "롯데월드몰",
+        "displayName": "롯데월드몰, 300, 올림픽로, 신천동, 잠실6동, 송파구, 서울특별시, 05551, 대한민국",
+        "lat": 37.5137422,
+        "lon": 127.1042466,
+        "category": "shop",
+        "type": "mall",
+        "osmType": "way",
+        "osmId": 357630219,
+        "address": {
+          "shop": "롯데월드몰",
+          "house_number": "300",
+          "road": "올림픽로",
+          "quarter": "신천동",
+          "suburb": "잠실6동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05551",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "롯데월드몰",
+        "displayName": "롯데월드몰, 300, 올림픽로, 신천동, 잠실6동, 송파구, 서울특별시, 05551, 대한민국",
+        "lat": 37.5128465,
+        "lon": 127.1018008,
+        "category": "shop",
+        "type": "department_store",
+        "osmType": "way",
+        "osmId": 357630220,
+        "address": {
+          "shop": "롯데월드몰",
+          "house_number": "300",
+          "road": "올림픽로",
+          "quarter": "신천동",
+          "suburb": "잠실6동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05551",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "롯데월드타워 & 롯데월드몰",
+        "displayName": "롯데월드타워 & 롯데월드몰, 신천동, 잠실6동, 송파구, 서울특별시, 05551, 대한민국",
+        "lat": 37.5130706,
+        "lon": 127.103181,
+        "category": "landuse",
+        "type": "retail",
+        "osmType": "way",
+        "osmId": 610940150,
+        "address": {
+          "retail": "롯데월드타워 & 롯데월드몰",
+          "quarter": "신천동",
+          "suburb": "잠실6동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05551",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:롯데월드 어드벤처": {
+    "query": "롯데월드 어드벤처 서울",
+    "candidates": [
+      {
+        "name": "롯데월드 어드벤처",
+        "displayName": "롯데월드 어드벤처, 잠실로, 잠실3동, 송파구, 서울특별시, 05554, 대한민국",
+        "lat": 37.5110774,
+        "lon": 127.0981905,
+        "category": "tourism",
+        "type": "theme_park",
+        "osmType": "node",
+        "osmId": 4792473821,
+        "address": {
+          "tourism": "롯데월드 어드벤처",
+          "road": "잠실로",
+          "suburb": "잠실3동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05554",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:KSPO DOME": {
+    "query": "KSPO DOME 서울",
+    "candidates": [
+      {
+        "name": "올림픽체조경기장",
+        "displayName": "올림픽체조경기장, 송파둘레길(보행자 전용), 오륜동, 송파구, 서울특별시, 05648, 대한민국",
+        "lat": 37.5192242,
+        "lon": 127.1274696,
+        "category": "leisure",
+        "type": "stadium",
+        "osmType": "way",
+        "osmId": 75956855,
+        "address": {
+          "leisure": "올림픽체조경기장",
+          "road": "송파둘레길(보행자 전용)",
+          "quarter": "오륜동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05648",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:석촌호수": {
+    "query": "석촌호수 서울",
+    "candidates": [
+      {
+        "name": "석촌호수",
+        "displayName": "석촌호수, 잠실6동, 송파구, 서울특별시, 05617, 대한민국",
+        "lat": 37.5100884,
+        "lon": 127.1040775,
+        "category": "water",
+        "type": "lake",
+        "osmType": "relation",
+        "osmId": 9856886,
+        "address": {
+          "lake": "석촌호수",
+          "suburb": "잠실6동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05617",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:서울아산병원": {
+    "query": "서울아산병원 서울",
+    "candidates": [
+      {
+        "name": "서울아산병원",
+        "displayName": "서울아산병원, 88, 올림픽로43길, 풍납동, 풍납2동, 송파구, 서울특별시, 05505, 대한민국",
+        "lat": 37.5263041,
+        "lon": 127.1096013,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 503505209,
+        "address": {
+          "amenity": "서울아산병원",
+          "house_number": "88",
+          "road": "올림픽로43길",
+          "quarter": "풍납동",
+          "suburb": "풍납2동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05505",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:가락몰": {
+    "query": "가락몰 서울",
+    "candidates": [
+      {
+        "name": "가락몰 업무동",
+        "displayName": "가락몰 업무동, 600, 송파대로, 가락1동, 송파구, 서울특별시, 05719, 대한민국",
+        "lat": 37.495358,
+        "lon": 127.115692,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 13890054860,
+        "address": {
+          "amenity": "가락몰 업무동",
+          "house_number": "600",
+          "road": "송파대로",
+          "suburb": "가락1동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05719",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "가락시장.가락몰",
+        "displayName": "가락시장.가락몰, 중대로, 가락1동, 송파구, 서울특별시, 05833, 대한민국",
+        "lat": 37.491777,
+        "lon": 127.1159865,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 8441052632,
+        "address": {
+          "highway": "가락시장.가락몰",
+          "road": "중대로",
+          "suburb": "가락1동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05833",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "가락몰 업무동",
+        "displayName": "가락몰 업무동, 송파대로, 가락1동, 송파구, 서울특별시, 05719, 대한민국",
+        "lat": 37.4953575,
+        "lon": 127.1156921,
+        "category": "amenity",
+        "type": "bicycle_rental",
+        "osmType": "node",
+        "osmId": 12372984150,
+        "address": {
+          "amenity": "가락몰 업무동",
+          "road": "송파대로",
+          "suburb": "가락1동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05719",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "송파구:잠실야구장": {
+    "query": "잠실야구장 서울",
+    "candidates": [
+      {
+        "name": "잠실야구장",
+        "displayName": "잠실야구장, 탄천동로, 잠실2동, 송파구, 서울특별시, 05500, 대한민국",
+        "lat": 37.5121831,
+        "lon": 127.0726803,
+        "category": "leisure",
+        "type": "stadium",
+        "osmType": "relation",
+        "osmId": 6114542,
+        "address": {
+          "leisure": "잠실야구장",
+          "road": "탄천동로",
+          "suburb": "잠실2동",
+          "borough": "송파구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05500",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강동구:이케아 강동점": {
+    "query": "IKEA Gangdong Seoul",
+    "candidates": [
+      {
+        "name": "IKEA",
+        "displayName": "IKEA, 고덕비즈밸리로3길, 고덕비즈밸리, 고덕동, 고덕2동, 강동구, 서울특별시, 05226, 대한민국",
+        "lat": 37.5664487,
+        "lon": 127.1572121,
+        "category": "shop",
+        "type": "furniture",
+        "osmType": "node",
+        "osmId": 12766511022,
+        "address": {
+          "shop": "IKEA",
+          "road": "고덕비즈밸리로3길",
+          "commercial": "고덕비즈밸리",
+          "quarter": "고덕동",
+          "suburb": "고덕2동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05226",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강동구:강동경희대학교병원": {
+    "query": "강동경희대학교병원 서울",
+    "candidates": [
+      {
+        "name": "강동경희대학교병원",
+        "displayName": "강동경희대학교병원, 세종포천고속도로, 고덕동, 상일1동, 강동구, 서울특별시, 05233, 대한민국",
+        "lat": 37.5534679,
+        "lon": 127.1574417,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 864936008,
+        "address": {
+          "amenity": "강동경희대학교병원",
+          "road": "세종포천고속도로",
+          "quarter": "고덕동",
+          "suburb": "상일1동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05233",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "강동경희대학교병원",
+        "displayName": "강동경희대학교병원, 세종포천고속도로, 고덕동, 상일1동, 강동구, 서울특별시, 05233, 대한민국",
+        "lat": 37.553361,
+        "lon": 127.1576755,
+        "category": "building",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 768576024,
+        "address": {
+          "building": "강동경희대학교병원",
+          "road": "세종포천고속도로",
+          "quarter": "고덕동",
+          "suburb": "상일1동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05233",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강동구:중앙보훈병원": {
+    "query": "중앙보훈병원 서울",
+    "candidates": [
+      {
+        "name": "중앙보훈병원",
+        "displayName": "중앙보훈병원, 동남로, 둔촌동, 둔촌2동, 강동구, 서울특별시, 05360, 대한민국",
+        "lat": 37.5282799,
+        "lon": 127.1482582,
+        "category": "railway",
+        "type": "station",
+        "osmType": "node",
+        "osmId": 6102706368,
+        "address": {
+          "railway": "중앙보훈병원",
+          "road": "동남로",
+          "quarter": "둔촌동",
+          "suburb": "둔촌2동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05360",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "중앙보훈병원",
+        "displayName": "중앙보훈병원, 53, 진황도로61길, 둔촌동, 둔촌2동, 강동구, 서울특별시, 05368, 대한민국",
+        "lat": 37.5303452,
+        "lon": 127.148015,
+        "category": "amenity",
+        "type": "hospital",
+        "osmType": "way",
+        "osmId": 419034494,
+        "address": {
+          "amenity": "중앙보훈병원",
+          "house_number": "53",
+          "road": "진황도로61길",
+          "quarter": "둔촌동",
+          "suburb": "둔촌2동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05368",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "중앙보훈병원",
+        "displayName": "중앙보훈병원, 동남로, 둔촌동, 둔촌2동, 강동구, 서울특별시, 05360, 대한민국",
+        "lat": 37.5282982,
+        "lon": 127.1481886,
+        "category": "railway",
+        "type": "stop",
+        "osmType": "node",
+        "osmId": 6117347091,
+        "address": {
+          "railway": "중앙보훈병원",
+          "road": "동남로",
+          "quarter": "둔촌동",
+          "suburb": "둔촌2동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05360",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  },
+  "강동구:강동아트센터": {
+    "query": "강동아트센터 서울",
+    "candidates": [
+      {
+        "name": "강동아트센터",
+        "displayName": "강동아트센터, 570, 동남로, 상일1동, 강동구, 서울특별시, 05278, 대한민국",
+        "lat": 37.5509631,
+        "lon": 127.1577247,
+        "category": "amenity",
+        "type": "theatre",
+        "osmType": "way",
+        "osmId": 468669304,
+        "address": {
+          "amenity": "강동아트센터",
+          "house_number": "570",
+          "road": "동남로",
+          "suburb": "상일1동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05278",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "강동아트센터.강동경희대병원후문",
+        "displayName": "강동아트센터.강동경희대병원후문, 세종포천고속도로, 고덕동, 상일1동, 강동구, 서울특별시, 05233, 대한민국",
+        "lat": 37.55052,
+        "lon": 127.1564081,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357887423,
+        "address": {
+          "highway": "강동아트센터.강동경희대병원후문",
+          "road": "세종포천고속도로",
+          "quarter": "고덕동",
+          "suburb": "상일1동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05233",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      },
+      {
+        "name": "강동아트센터.강동경희대병원",
+        "displayName": "강동아트센터.강동경희대병원, 동남로, 상일1동, 강동구, 서울특별시, 05278, 대한민국",
+        "lat": 37.5522045,
+        "lon": 127.1561628,
+        "category": "highway",
+        "type": "bus_stop",
+        "osmType": "node",
+        "osmId": 357838050,
+        "address": {
+          "highway": "강동아트센터.강동경희대병원",
+          "road": "동남로",
+          "suburb": "상일1동",
+          "borough": "강동구",
+          "city": "서울특별시",
+          "ISO3166-2-lvl4": "KR-11",
+          "postcode": "05278",
+          "country": "대한민국",
+          "country_code": "kr"
+        }
+      }
+    ]
+  }
+}

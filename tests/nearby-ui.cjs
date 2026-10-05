@@ -1,4 +1,4 @@
-// 키 없이도 장소 선택/거리 표시/해제의 브라우저 흐름을 확인한다.
+// 실제 82개 정적 장소 검색과 거리 UI의 브라우저 흐름을 확인한다.
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
@@ -17,16 +17,6 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     const errors = [];
     const nearRequests = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/api/meta', async route => {
-      const response = await route.fetch();
-      const data = await response.json();
-      data.nearby = { ready: true, locatedAddresses: 1 };
-      await route.fulfill({ json: data });
-    });
-    await page.route('**/api/landmarks?**', async route => route.fulfill({ json: { places: [
-      { id: 'ikea-gangdong', name: '이케아 강동점', address: '서울 강동구' },
-      { id: 'ikea-other', name: '이케아 다른점', address: '다른 도시' },
-    ] } }));
     await page.route('**/api/restaurants?**', async route => {
       const url = new URL(route.request().url());
       if (!url.searchParams.has('landmarkId')) return route.continue();
@@ -35,12 +25,22 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     });
     await page.goto(origin, { waitUntil: 'networkidle' });
     assert(await page.locator('#nearbyPanel').isVisible());
+    assert.equal(await page.locator('#landmarkGuideCount').textContent(), '(82곳)');
+    await page.locator('#nearbyPanel > summary').click();
+    await page.locator('#landmarkGuide summary').click();
+    await page.locator('#landmarkGuideDistrict').selectOption('강동구');
+    assert.equal(await page.locator('#landmarkGuideOptions button').count(), 4);
+    await page.locator('#landmarkGuideOptions button', { hasText: '이케아 강동점' }).click();
+    await page.waitForFunction(() => document.querySelector('.near-distance')?.textContent.includes('350m'));
+    assert.equal(nearRequests.at(-1).searchParams.get('landmarkDistrict'), '강동구');
+    await page.locator('#clearLandmark').click();
     await page.locator('#landmarkQuery').fill('강동 이케아');
     await page.locator('#findLandmark').click();
-    assert.equal(await page.locator('#landmarkCandidates button').count(), 2);
+    await page.waitForFunction(() => document.querySelectorAll('#landmarkCandidates button').length === 1);
+    assert.equal(await page.locator('#landmarkCandidates button').count(), 1);
     await page.locator('#landmarkCandidates button').first().click();
     await page.waitForFunction(() => document.querySelector('.near-distance')?.textContent.includes('350m'));
-    assert.equal(nearRequests.at(-1).searchParams.get('landmarkId'), 'ikea-gangdong');
+    assert.equal(nearRequests.at(-1).searchParams.get('landmarkId'), '강동구:이케아 강동점');
     await page.locator('#nearbyRadius').selectOption('2000');
     await page.waitForFunction(() => document.querySelector('#selectedLandmark')?.textContent.includes('2km'));
     for (let i = 0; i < 20 && nearRequests.at(-1)?.searchParams.get('radius') !== '2000'; i++) await pause(100);
@@ -51,7 +51,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await page.waitForFunction(() => !document.querySelector('.near-distance'));
     assert.equal(await page.locator('#selectedLandmark').isVisible(), false);
     await page.locator('#q').fill('강동 이케아 근처 한식');
-    await page.waitForFunction(() => document.querySelectorAll('#landmarkCandidates button').length === 2);
+    await page.waitForFunction(() => document.querySelectorAll('#landmarkCandidates button').length === 1);
     assert.equal(await page.locator('#landmarkQuery').inputValue(), '강동 이케아');
     assert.equal(await page.locator('#q').inputValue(), '한식');
     await page.locator('#landmarkCandidates button').first().click();

@@ -7,19 +7,24 @@
     "start": "node server.js",
     "import": "node import.js",
     "geocode": "node scripts/geocode-restaurants.js",
+    "geo:lookup": "node scripts/geocode-staged.js lookup",
+    "geo:coordinate": "node scripts/geocode-staged.js coordinate",
     "geo:stats": "node scripts/geo-stats.js",
     "test": "node --test tests/*.test.cjs",
     "test:usability": "node tests/usability.cjs",
-    "test:nearby-ui": "node tests/nearby-ui.cjs"
+    "test:nearby-ui": "node tests/nearby-ui.cjs",
+    "test:nearby-data": "node scripts/qa-nearby-real.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@fast-csv/parse": "^5.0.7",
     "better-sqlite3": "^13.0.2",
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
+    "iconv-lite": "^0.7.3",
     "proj4": "^2.22.0"
   }
 }

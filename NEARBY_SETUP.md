@@ -1,34 +1,30 @@
-# 장소 근처 검색 운영 절차
+# 서울 주요 장소 근처 검색
 
-이 기능은 식당 DB의 **지번 주소**를 행정안전부 주소정보 API로 좌표화하고, 사용자가 검색한 장소는 카카오 로컬 API에서 **그때그때 조회**한다. 카카오의 장소명·좌표는 저장하지 않는다. 결과의 거리는 길찾기 거리나 소요 시간이 아닌 **직선거리**다.
+현재 기능은 행안부·카카오 승인키를 기다리지 않는다. 서울 25개 구의 주요 장소 82곳을 사전 검토한 고정 좌표로 제공하고, 서울시 일반음식점 인허가 자료에서 **지번주소가 정확히 일치하는 건물 좌표**를 가져와 식당과 연결한다. 검색 시 외부 지도 API를 호출하지 않으며 거리 계산은 도보 경로가 아닌 **직선거리**다.
 
-## 필요한 무료 승인키
+## 자료와 한계
 
-1. 주소기반산업지원서비스의 **도로명주소 검색 API** 승인키 → `JUSO_ADDRESS_KEY`
-2. 같은 서비스의 **좌표제공 API** 승인키 → `JUSO_COORD_KEY`
-3. 카카오 디벨로퍼스 앱의 **REST API 키** → `KAKAO_REST_API_KEY`
+- 식당 좌표: [서울 열린데이터광장 일반음식점 인허가 정보](https://data.seoul.go.kr/dataList/OA-23056/S/1/datasetView.do). 출처 표시 및 변경 고지는 화면에 표시한다. 원본 CSV는 Git에 포함하지 않는다.
+- 장소 기준점: 서울시 지도·한국관광공사·[© OpenStreetMap contributors](https://www.openstreetmap.org/copyright). 정적 82개 점의 세부 출처는 `seoul-landmark-points.json`의 `sourceUrl`에 있다. OSM 유래 좌표는 ODbL의 적용을 받는다.
+- 2026-10-05 변환 기준 서울 영업 식당 19,872곳 중 15,686곳(78.9%)의 위치가 연결되었다. 좌표가 없거나 좌표 간 불일치가 있는 식당은 반경 결과에서 제외한다. 이는 해당 지역에 음식점이 없다는 뜻이 아니다.
+- 인허가 자료의 건물 좌표이지 출입구 좌표가 아니다. 넓은 쇼핑몰·공원·호수의 경우 같은 장소에서도 실제 출입구와 차이가 날 수 있다. 위치 연결은 영업 여부 자체를 증명하지 않는다.
 
-키는 `.env` 같은 Git 제외 파일 또는 배포 서비스의 비밀 환경 변수에만 넣는다. Git, 이 문서, 채팅에 붙여넣지 않는다. 행안부 API 신청과 카카오 계정 로그인·앱 생성은 계정 소유자가 직접 완료해야 한다.
+## 좌표 재생성
 
-## 위치자료 만들기
-
-`matjip.db`를 갱신한 뒤 로컬에서 다음을 실행한다. 위치자료는 별도 `locations.db`에 저장되며, 중단했다가 재실행하면 이미 확인한 주소를 건너뛴다. API 호출 제한을 고려하여 느리게 진행한다.
+원본 `matjip.db`를 갱신했거나 인허가 자료가 갱신되었을 때 실행한다. 기존 `locations.db`는 먼저 별도 백업한다. 변환 중 구 좌표계와 신 좌표계의 값이 100m 넘게 어긋나거나 같은 지번에서 두 건물 좌표가 100m 넘게 충돌하면 그 주소는 제외한다.
 
 ```powershell
-$env:JUSO_ADDRESS_KEY = '<승인키>'
-$env:JUSO_COORD_KEY = '<승인키>'
-npm run geocode -- --limit 100 --region 서울
-npm run geo:stats
+node scripts/import-seoul-public-coordinates.js 'C:\path\to\서울시 일반음식점 인허가 정보.csv' 'C:\path\to\locations.db'
 ```
 
-첫 100건의 `ok`, `ambiguous_or_inexact`, `not_found`, `no_coordinate` 비율과 실제 위치 샘플을 검토한 뒤 전국 대상으로 배치를 늘린다. `--retry-missing`은 이전 미확인 주소를 다시 시도할 때만 쓴다. 주소검색 결과의 지번이 **정확히 같은 단일 건물**일 때만 좌표를 채택하며, 애매한 주소를 임의로 가까운 장소에 붙이지 않는다.
+`scripts/build-seoul-landmark-points.js`는 수동 검토된 리서치 결과로 정적 점 파일을 재생성하는 유지보수 도구다. `landmark-candidates.json`은 재생성 근거가 되는 리서치 캐시이며 런타임에서는 읽지 않는다. [Nominatim 사용 정책](https://operations.osmfoundation.org/policies/nominatim/)에 따라 사이트 실행 중 대량·자동 호출을 하지 않는다.
 
-## 배포 전 확인
+## 배포 전 게이트
 
-- `npm test`, `npm run test:nearby-ui`, `npm run test:usability` 통과.
-- `npm run geo:stats`에서 전국과 각 시도별 좌표 확보율 검토. 확보율이 낮은 지역은 원인 확인 전 공개하지 않는다.
-- 행안부 실제 응답으로 지번 일치·좌표 변환 샘플 검증. 카카오 실제 응답으로 동명 장소 선택과 500m/1/2/3km 결과 검증.
-- `locations.db`를 배포물에 포함하고 `KAKAO_REST_API_KEY`, `NEARBY_ENABLED=true`를 서버 환경 변수로 설정한 뒤 재시작. 준비 전에는 새 검색 UI가 숨겨지고 기존 검색은 그대로 작동한다.
-- 배포 사이트에서 `강동 이케아 근처 한식`을 입력해 장소 후보를 선택하고, 거리·반경·기존 조건·모바일 화면을 확인한다.
+1. `npm test`, `npm run test:nearby-ui`, `npm run test:usability`가 모두 통과한다.
+2. 장소 82곳, 자치구 25개, 좌표 범위와 동명 지하철역·버스정류장 오선택을 확인한다.
+3. `강동 이케아`, `코엑스`, `롯데월드몰`에서 500m·1km·2km·3km 결과가 반경 안에 있고 거리 오름차순인지 확인한다.
+4. 320px/390px 모바일에서 장소 패널을 펼치고 검색·선택·해제할 수 있으며 가로 넘침이 없고 기본 첫 결과가 화면 위쪽에 나타나는지 확인한다.
+5. 실제 배포 화면에서 위 절차를 다시 확인한다. 배포 전 또는 검증 미완료 시 99/100 이상으로 평가하지 않는다.
 
-카카오 API의 장소 결과는 응답을 만드는 동안에만 사용하고 DB/로그/캐시에 보관하지 않는다. 행안부 지오코딩 결과는 해당 주소를 가진 **자체 식당 DB의 위치자료**로만 사용한다.
+`locations.db`와 `seoul-landmark-points.json`을 배포물에 포함한다. `NEARBY_ENABLED=false`이면 기능을 끌 수 있다. `JUSO_ADDRESS_KEY`, `JUSO_COORD_KEY`, `KAKAO_REST_API_KEY`는 이 1차 기능의 필수 조건이 아니다.

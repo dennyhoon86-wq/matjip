@@ -6,7 +6,7 @@
 <title>미식장부 · 나의 맛집 아카이브</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261004a">
+  <link rel="stylesheet" href="style.css?v=20261005a">
 </head>
 <body class="auth-pending">
 
@@ -51,17 +51,31 @@
       <input id="q" type="search" placeholder="예: 강남역 점심, 성수역 국밥" autocomplete="off">
       <div id="smartHint" class="smart-hint"></div>
     </div>
-    <div id="nearbyPanel" class="nearby-panel" hidden>
-      <label for="landmarkQuery">장소 근처에서 찾기 <small>예: 강동 이케아 · 수원 화성행궁</small></label>
+    <details id="nearbyPanel" class="nearby-panel" hidden>
+      <summary>서울 주요 장소 근처에서 찾기 <small id="nearbySummarySelection">강동 이케아·롯데월드몰 등</small></summary>
+      <div class="nearby-panel-body">
+      <label for="landmarkQuery">서울 주요 장소 근처에서 찾기 <small>예: 강동 이케아 · 롯데월드몰</small></label>
       <div class="nearby-controls">
-        <input id="landmarkQuery" type="search" placeholder="건물·명소 이름" autocomplete="off">
+        <input id="landmarkQuery" type="search" placeholder="서울의 건물·명소 이름" autocomplete="off">
         <button id="findLandmark" type="button">장소 찾기</button>
         <select id="nearbyRadius" aria-label="장소에서의 거리"><option value="500">500m</option><option value="1000" selected>1km</option><option value="2000">2km</option><option value="3000">3km</option></select>
         <button id="clearLandmark" type="button" hidden>근처 조건 해제</button>
       </div>
       <div id="landmarkCandidates" class="landmark-candidates" role="status" aria-live="polite"></div>
       <p id="selectedLandmark" class="nearby-selection" hidden></p>
-    </div>
+      <p id="nearbyDataNote" class="nearby-data-note"></p>
+      <details id="landmarkGuide" class="landmark-guide" hidden>
+        <summary>서울 주요 장소에서 고르기 <span id="landmarkGuideCount"></span></summary>
+        <div class="landmark-guide-body">
+          <label for="landmarkGuideDistrict">자치구</label>
+          <select id="landmarkGuideDistrict"><option value="">구를 선택해 주세요</option></select>
+          <div id="landmarkGuideOptions" class="landmark-guide-options"></div>
+          <p>선택한 장소의 기준점에서 직선거리를 계산합니다. 넓은 공원·호수는 실제 출입구와 거리가 다를 수 있습니다.</p>
+        </div>
+      </details>
+      <p class="nearby-credit">식당 위치: <a href="https://data.seoul.go.kr/dataList/OA-23056/S/1/datasetView.do" target="_blank" rel="noopener noreferrer">서울시 일반음식점 인허가 정보</a> · 장소 기준점: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>, <a href="https://map.seoul.go.kr/" target="_blank" rel="noopener noreferrer">서울시 지도</a>, <a href="https://data.visitkorea.or.kr/" target="_blank" rel="noopener noreferrer">한국관광공사</a></p>
+      </div>
+    </details>
     <div class="field"><label for="region">지역</label><select id="region"><option value="">전체</option></select></div>
     <div class="field"><label for="gu">도시 · 구</label><select id="gu"><option value="">전체</option></select></div>
     <details id="advancedFilters" class="advanced-filters">
@@ -211,6 +225,6 @@
   <p class="map-transfer-footnote">검색 화면을 열면 저장 대기에 추가돼요. 완료 표시는 이 장부의 기록이며, 지도 저장 여부를 자동 확인하지 않아요.</p>
 </dialog>
 <script src="search-query.js?v=20261003c"></script>
-<script src="app.js?v=20261004a"></script>
+<script src="app.js?v=20261005a"></script>
 </body>
 </html>

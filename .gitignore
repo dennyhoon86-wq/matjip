@@ -3,6 +3,10 @@ matjip.db-shm
 matjip.db-wal
 locations.db-shm
 locations.db-wal
+locations-public.db
+locations-public.db-shm
+locations-public.db-wal
+locations-juso-backup.db
 .env
 .env.*
 server.log
