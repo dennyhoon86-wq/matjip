@@ -195,10 +195,16 @@ app.get('/api/restaurants', auth.requireApproved, async (req, res) => {
     const usedInference = true;
 
     if (usedInference) {
-      inferred = { ...smart, region: region ? null : smart.region, gu: gu ? null : smart.gu, dong: gu ? null : smart.dong, categoryTerms: category ? [] : smart.categoryTerms, badge: badge ? null : smart.badge };
+      inferred = { ...smart, region: region ? null : smart.region, gu: gu ? null : smart.gu, dong: gu ? null : smart.dong, neighborhood: gu ? null : smart.neighborhood, dongPrefixes: gu ? [] : smart.dongPrefixes, categoryTerms: category ? [] : smart.categoryTerms, badge: badge ? null : smart.badge };
       if (!region && smart.region) { where.push('region = @sregion'); params.sregion = smart.region; }
       if (!gu && smart.gu) { where.push('gu = @sgu'); params.sgu = smart.gu; }
       if (!gu && smart.dong) { where.push('dong = @sdong'); params.sdong = smart.dong; }
+      if (!gu && smart.dongPrefixes?.length) {
+        where.push(`(${smart.dongPrefixes.map((prefix, i) => {
+          params[`sdongPrefix${i}`] = `${prefix}%`;
+          return `dong LIKE @sdongPrefix${i}`;
+        }).join(' OR ')})`);
+      }
       if (!station && smart.station) {
         const areas = stationAreas[smart.station] || [];
         const scope = ['neighborhood', 'district'].includes(locationScope) ? locationScope : 'exact';
@@ -301,16 +307,32 @@ app.post('/api/personal-list', auth.requireApproved, (req, res) => {
   const keys = Array.isArray(req.body?.keys) ? req.body.keys.filter(x => typeof x === 'string').slice(0, 10000) : [];
   if (!keys.length) return res.json({ rows: [] });
   const wanted = new Set(keys);
-  const rows = db.prepare(`
+  const matches = db.prepare(`
     SELECT id, name, category, address, gu, dong, subway, price_range, origin_sheet,
            source_raw, sources, badges, naver, google, daum, avg, note,
            grade, region, status
     FROM restaurants
-  `).all().filter(r => wanted.has(`${r.name}\u001f${r.address || ''}`)).map(r => ({
-    ...r,
-    sources: JSON.parse(r.sources || '[]'),
-    badges: JSON.parse(r.badges || '[]'),
-  }));
+  `).all();
+  const byKey = new Map();
+  for (const row of matches) {
+    const key = `${row.name}\u001f${row.address || ''}`;
+    if (!wanted.has(key)) continue;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(row);
+  }
+  const rows = Array.from(byKey.values(), group => {
+    // 개인 기록은 상호+주소가 한 단위다. 원본에 같은 장소가 여러 행이어도 카드 하나만 반환한다.
+    const quality = row => [row.naver, row.google, row.daum].filter(value => value != null).length;
+    const best = group.reduce((chosen, row) => quality(row) > quality(chosen) ? row : chosen);
+    const statusConflict = new Set(group.map(row => row.status)).size > 1;
+    return {
+      ...best,
+      status: statusConflict ? '확인 필요' : best.status,
+      statusConflict,
+      sources: JSON.parse(best.sources || '[]'),
+      badges: JSON.parse(best.badges || '[]'),
+    };
+  });
   res.json({ rows });
 });
 

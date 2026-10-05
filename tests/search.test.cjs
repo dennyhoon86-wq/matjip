@@ -15,8 +15,23 @@ test('regions, districts and explicit station names remain distinct', () => {
   assert.equal(search.parse('강남 돼지고기', v).gu, '강남구');
   assert.equal(search.parse('강남역 돼지고기', v).station, '강남');
   assert.equal(search.parse('성수 한식', v).gu, '성동구');
+  assert.deepEqual(search.parse('성수 한식', v).dongPrefixes, ['성수동']);
+  assert.equal(search.parse('성수 한식', v).neighborhood, '성수');
   assert.equal(search.parse('성수역 한식', v).station, '성수');
   assert.equal(search.parse('경기도 수원 한식', v).gu, '경기');
+});
+test('neighborhood aliases do not silently include the whole district', () => {
+  const smart = search.parse('성수 점심 한식', v);
+  const inArea = { region: '서울', gu: '성동구', dong: '성수동2가', category: '한식', badges: [] };
+  assert(search.matches(inArea, smart));
+  assert(!search.matches({ ...inArea, dong: '금호동4가' }, smart));
+  assert(!search.matches({ ...inArea, dong: '행당동' }, smart));
+  assert.deepEqual(search.parse('여의도 한식', v).dongPrefixes, ['여의도동']);
+  assert.deepEqual(search.parse('잠실 한식', v).dongPrefixes, ['잠실동', '신천동']);
+  assert.deepEqual(search.parse('홍대 한식', v).dongPrefixes, ['서교동', '동교동', '상수동', '연남동']);
+  assert(!search.matches({ ...inArea, gu: '마포구', dong: '상암동' }, search.parse('홍대 한식', v)));
+  assert.deepEqual(search.parse('왕십리 한식', v).dongPrefixes, ['행당동', '도선동', '하왕십리동', '상왕십리동']);
+  assert.deepEqual(search.parse('강남 한식', v).dongPrefixes, []);
 });
 test('ratings never become a budget', () => {
   for (const q of ['한식 4.6 이상', '한식 4.6점 이상', '한식 평점 4.6 이상']) {

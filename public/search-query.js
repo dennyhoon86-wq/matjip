@@ -13,6 +13,25 @@
     종로: '종로구', 익선동: '종로구', 삼청동: '종로구', 서촌: '종로구', 북촌: '종로구',
     명동: '중구', 을지로: '중구', 성수: '성동구', 왕십리: '성동구',
   };
+  // 구 전체로 넓히면 다른 동네 식당이 섞인다. 생활권은 지번의 동 단위로 좁히되
+  // 반경 검색은 아니므로 화면에서 실제 거리와 구별해 안내한다.
+  const neighborhoodPrefixes = {
+    역삼: ['역삼동'], 삼성: ['삼성동'], 청담: ['청담동'], 압구정: ['압구정동'],
+    신사: ['신사동'], 논현: ['논현동'], 가로수길: ['신사동'],
+    홍대: ['서교동', '동교동', '상수동', '연남동'], 합정: ['합정동'],
+    연남: ['연남동'], 망원: ['망원동'], 상수: ['상수동'],
+    이태원: ['이태원동'], 한남: ['한남동'], 용리단길: ['한강로2가', '한강로3가'],
+    여의도: ['여의도동'], 문래: ['문래동'], 건대: ['화양동', '자양동'],
+    건대입구: ['화양동', '자양동'], 잠실: ['잠실동', '신천동'],
+    송리단길: ['송파동', '석촌동'], 석촌: ['석촌동'],
+    노량진: ['노량진동'], 사당: ['사당동'],
+    신촌: ['창천동', '노고산동', '대현동'], 연희: ['연희동'],
+    익선동: ['익선동'], 삼청동: ['삼청동'],
+    서촌: ['통인동', '통의동', '누하동', '누상동', '체부동', '옥인동', '효자동', '필운동'],
+    북촌: ['가회동', '계동', '재동', '안국동', '삼청동'],
+    명동: ['명동', '충무로1가', '충무로2가'], 을지로: ['을지로'],
+    성수: ['성수동'], 왕십리: ['행당동', '도선동', '하왕십리동', '상왕십리동'],
+  };
   const categories = {
     한식: ['한식'], 일식: ['일식'], 스시: ['스시', '일식'], 오마카세: ['오마카세'],
     중식: ['중식'], 중국집: ['중식'], 양식: ['양식', '이탈리아'], 파스타: ['파스타', '이탈리아'],
@@ -30,7 +49,7 @@
   const mealOnly = /(?:^|\s|\()(?:바|와인|와인바|호프|이자카야|요리주점|포장마차|칵테일바|카페|베이커리|디저트)(?:\s|\)|$)/;
   function won(amount, unit) { return Number(amount.replaceAll(',', '')) * (unit === '만' ? 10000 : unit === '천' ? 1000 : 1); }
   function parse(q, vocabulary = {}) {
-    const result = { region: null, gu: null, dong: null, station: null, mealIntent: null, categoryTerms: [], badge: null, gradeMin: null, avgMin: null, avgMax: null, avgMaxExclusive: false, priceMin: null, priceMax: null, priceMaxExclusive: false, excludeNew: false, leftoverTokens: [], notices: [] };
+    const result = { region: null, gu: null, dong: null, neighborhood: null, dongPrefixes: [], station: null, mealIntent: null, categoryTerms: [], badge: null, gradeMin: null, avgMin: null, avgMax: null, avgMaxExclusive: false, priceMin: null, priceMax: null, priceMaxExclusive: false, excludeNew: false, leftoverTokens: [], notices: [] };
     let text = String(q || '').trim().replace(/[，/()]/g, ' ').replace(/,(?!\d)/g, ' ');
     if (!text) return result;
     if (/(?:^|\s)점심(?:에|으로|식사)?(?=\s|$)/.test(text)) result.mealIntent = 'lunch';
@@ -80,6 +99,10 @@
         if (!result.gu && gu.has(token)) { result.gu = token; used = true; break; }
         if (token.endsWith('역') && stations.has(token.slice(0, -1))) { result.station = token.slice(0, -1); used = true; break; }
         if (!result.dong && dong.has(token)) { result.dong = token; used = true; break; }
+        if (neighborhoodPrefixes[token] && (!result.gu || result.gu === areas[token])) {
+          result.gu = areas[token]; result.neighborhood = token;
+          result.dongPrefixes = neighborhoodPrefixes[token]; used = true; break;
+        }
         if (!result.gu && gu.has(areas[token])) { result.gu = areas[token]; used = true; break; }
         if (!result.station && stations.has(token)) { result.station = token; used = true; break; }
         if (badges.has(token)) { result.badge = token; used = true; break; }
@@ -91,6 +114,7 @@
       if (!used) result.leftoverTokens.push(original);
     }
     result.categoryTerms = [...new Set(result.categoryTerms)];
+    if (result.neighborhood) result.notices.push('동 기준으로 좁힌 결과예요. 실제 거리는 지도에서 확인해 주세요.');
     if (result.mealIntent) result.notices.push('식사 종류를 우선 표시합니다. 오늘 영업시간은 지도에서 확인해 주세요.');
     if (result.priceMin != null || result.priceMax != null) {
       result.notices.push(priceBandSelection(result) === null
@@ -142,6 +166,7 @@
     if (smart.region && !explicit.region && d.region !== smart.region) return false;
     if (smart.gu && !explicit.gu && d.gu !== smart.gu) return false;
     if (smart.dong && !explicit.gu && d.dong !== smart.dong) return false;
+    if (smart.dongPrefixes?.length && !explicit.gu && !smart.dongPrefixes.some(prefix => String(d.dong || '').startsWith(prefix))) return false;
     if (!stationLocationMatches(d, smart, explicit.locationScope, explicit.stationAreas || [])) return false;
     if (smart.categoryTerms.length && !explicit.category && !smart.categoryTerms.some(t => (d.category || '').includes(t))) return false;
     if (smart.badge && !explicit.badge && !(d.badges || []).some(b => b.name === smart.badge)) return false;

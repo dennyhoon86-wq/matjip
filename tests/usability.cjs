@@ -33,13 +33,15 @@ async function localPage(context) {
 
   await criterion('Search: locations, names, ratings, budgets, sentences and shared ledger matching', 15, async () => {
     const S = require('../public/search-query');
-    for (const text of ['서울 중식', '강남 돼지고기', '한식 4.6 이상', '부모님 모시고 갈 조용한 한식', '서울 중식 3~5만원', '한식 5만원 이하', '송파구 수숯불']) {
+    for (const text of ['서울 중식', '강남 돼지고기', '성수 점심 한식', '홍대 한식', '한식 4.6 이상', '부모님 모시고 갈 조용한 한식', '서울 중식 3~5만원', '한식 5만원 이하', '송파구 수숯불']) {
       const data = await (await fetch(origin + '/api/restaurants?q=' + encodeURIComponent(text) + '&pageSize=100')).json();
       const smart = S.parse(text, meta.vocabulary);
       assert(data.rows.every(r => S.matches(r, smart)), text + ' differs between global and ledger');
       if (!text.includes('만원')) assert(data.total > 0, text + ' unexpectedly empty');
       if (text.startsWith('서울')) { assert.equal(data.inferred.region, '서울'); assert.equal(data.inferred.station, null); }
       if (text === '강남 돼지고기') assert.equal(data.inferred.gu, '강남구');
+      if (text === '성수 점심 한식') assert(data.rows.every(r => r.gu === '성동구' && r.dong.startsWith('성수동')));
+      if (text === '홍대 한식') assert(data.rows.every(r => ['서교동', '동교동', '상수동', '연남동'].includes(r.dong)));
       if (text === '한식 4.6 이상') { assert.equal(data.inferred.priceMin, null); assert(data.total > 100); }
       if (text.includes('만원')) assert(data.rows.every(r => r.price_range || ['~ 100,000', '100,000 ~ 200,000', '200,000 ~'].includes(r.origin_sheet)));
     }
@@ -97,6 +99,17 @@ async function localPage(context) {
     assert.equal(await page.locator('.kakao-target-tag').count(), 1);
     await page.locator('#closeLedger').click(); await settled(page);
     assert.equal(await page.locator('#gu').inputValue(), '부산'); assert.equal(await page.locator('#sort').inputValue(), 'avg_asc'); assert.equal(await page.locator('#q').inputValue(), songpa.name);
+    const duplicateContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    try {
+      const duplicatePage = await localPage(duplicateContext);
+      await query(duplicatePage, '성북동섭지코지');
+      assert((await duplicatePage.locator('.card').count()) > 1, 'fixture must contain original duplicate rows');
+      await duplicatePage.locator('.card').first().getByRole('button', { name: '가봄', exact: true }).click();
+      await duplicatePage.locator('#openLedger').click(); await settled(duplicatePage);
+      assert.equal(await duplicatePage.locator('.card').count(), 1);
+      assert.match(await duplicatePage.locator('#metaCount').innerText(), /내 장부 1건/);
+      assert.match(await duplicatePage.locator('#personalSummary').innerText(), /내 장부 1곳/);
+    } finally { await duplicateContext.close(); }
   });
 
   await criterion('Accounts: isolation, authoritative cloud state, narrow saves, rollback and deleted-state persistence', 15, async () => {
@@ -286,5 +299,5 @@ async function localPage(context) {
   });
   const score = results.filter(r => r.passed).reduce((sum, r) => sum + r.points, 0);
   console.log(JSON.stringify({ score, results, browserErrors: errors, note: 'Internal scenario gate; live Google OAuth and real-device testing are separate.' }, null, 2));
-  if (score < 96 || results.some(r => !r.passed)) process.exitCode = 1;
+  if (score < 99 || results.some(r => !r.passed)) process.exitCode = 1;
 })().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); if (server) server.kill(); });
