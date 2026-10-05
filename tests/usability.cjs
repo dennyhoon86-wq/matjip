@@ -99,6 +99,11 @@ async function localPage(context) {
     assert.equal(await page.locator('.kakao-target-tag').count(), 1);
     await page.locator('#closeLedger').click(); await settled(page);
     assert.equal(await page.locator('#gu').inputValue(), '부산'); assert.equal(await page.locator('#sort').inputValue(), 'avg_asc'); assert.equal(await page.locator('#q').inputValue(), songpa.name);
+    await page.locator('#openLedger').click();
+    await page.locator('#closeLedger').click();
+    await page.locator('#q').fill('강동 이케아 근처 한식');
+    await page.waitForFunction(() => document.querySelector('#landmarkCandidates button'));
+    assert.equal(await page.locator('#q').inputValue(), '한식', 'fast typing after closing ledger must not be overwritten');
     const duplicateContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
     try {
       const duplicatePage = await localPage(duplicateContext);
