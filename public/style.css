@@ -91,11 +91,11 @@ h1{
   line-height:1.75;
   max-width:600px;
 }
-.grade-disclaimer{max-width:650px; margin-top:16px; padding:11px 16px; display:flex; align-items:flex-start; gap:10px; text-align:left; color:#F8F0DD; background:rgba(255,248,225,.12); border:1px solid rgba(221,194,125,.72); border-radius:4px; box-shadow:0 3px 12px rgba(0,0,0,.12); font-family:var(--sans); font-size:11.5px; line-height:1.55;}
-.grade-disclaimer-mark{flex:0 0 auto; width:19px; height:19px; margin-top:1px; display:grid; place-items:center; border-radius:50%; background:#DDBF72; color:var(--cover); font:800 12px/1 var(--serif);}
-.grade-disclaimer strong{color:#FFF6DB; font-size:12.5px; letter-spacing:.01em;}
-.grade-disclaimer span:not(.grade-disclaimer-mark){color:#E5D8BB;}
-.grade-disclaimer b{color:#FFF1BF; font-weight:800;}
+.cover-mobile-grade{display:none;}
+.grade-disclaimer{display:block; max-width:650px; padding:8px 12px; margin-top:10px; text-align:left; color:#F8F0DD; background:rgba(255,248,225,.12); border:1px solid rgba(221,194,125,.72); border-radius:4px; box-shadow:0 3px 12px rgba(0,0,0,.12); font-family:var(--sans); font-size:11.5px; line-height:1.55;}
+.grade-disclaimer summary{cursor:pointer; font:700 12px/1.5 var(--sans); color:#FFF6DB;}
+.grade-disclaimer summary span{font-weight:400; color:#E5D8BB; margin-left:5px;}
+.grade-disclaimer p{margin:7px 0 0; color:#E5D8BB; line-height:1.6;}
 .cover-tally{
   margin-top:22px;
   display:flex;
@@ -363,6 +363,11 @@ body.auth-pending .auth-gate{display:flex;}
   display:flex; align-items:center; gap:7px; flex-wrap:wrap;
   color:var(--ink);
 }
+.restaurant-name-button{border:0; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; text-decoration:underline; text-decoration-color:#A9822F; text-underline-offset:3px;}
+.restaurant-name-button:hover,.restaurant-name-button:focus-visible{color:#2C4A7C;}
+.card{cursor:pointer;}
+.card button,.card input,.card select,.card summary{cursor:pointer;}
+.card:focus-visible{outline:3px solid #2C4A7C; outline-offset:2px;}
 .tag{
   font-family:var(--sans);
   font-size:11.5px;
@@ -470,13 +475,12 @@ footer.note{
 [hidden]{display:none!important;}
 button:disabled,input:disabled,select:disabled{cursor:wait; opacity:.6;}
 @media(max-width:640px){
-  header.cover{padding:10px 16px 12px;}
-  .cover .eyebrow,.cover-desc,.cover-tally{display:none;}
+  header.cover{padding:10px 16px 9px;}
+  .cover .eyebrow,.cover-tally{display:none;}
+  .cover-desc{display:block; margin-top:4px; font-size:11px; line-height:1.4;}
+  .cover-mobile-grade{display:block; color:var(--ink-soft); margin-top:4px; font:500 10px/1.35 var(--sans);}
+  .grade-disclaimer{display:none;}
   .cover h1{font-size:25px;}
-  .grade-disclaimer{margin-top:6px; padding:6px 8px; font-size:10px; line-height:1.3; align-items:center;}
-  .grade-disclaimer strong{font-size:10.5px;}
-  .grade-disclaimer div span,.grade-disclaimer br{display:none;}
-  .grade-disclaimer-mark{width:17px; height:17px;}
   .account-area{position:static; flex-wrap:wrap; margin:0 0 5px; min-height:0;}
   .account-area:empty{display:none;}
   .seal{display:none;}
@@ -496,6 +500,7 @@ button:disabled,input:disabled,select:disabled{cursor:wait; opacity:.6;}
   .card{grid-template-columns:36px minmax(0,1fr); gap:10px; padding:14px;}
   .stamp{width:34px; height:34px;}
   .info .name{font-size:15px; overflow-wrap:anywhere;}
+  .restaurant-name-button{min-height:44px; display:inline-flex; align-items:center;}
   .tag{font-size:10px; padding:3px 7px;}
   .card-actions{gap:8px;}
   .card-actions .personal-action,.record-tools .map-action,.record-tools .kakao-action,.personal-rating-select,.record-details summary,.visited-at-input input{min-height:44px; padding:10px; font-size:12px;}
@@ -517,6 +522,19 @@ button:disabled,input:disabled,select:disabled{cursor:wait; opacity:.6;}
 .card-actions .map-transfer-button{min-height:36px; padding:8px 10px; font-size:12px;}
 .map-transfer-dialog{width:min(500px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); padding:24px; box-sizing:border-box; border:1px solid #C9B896; border-radius:8px; color:var(--ink); background:#FBF6E9; font:14px/1.65 var(--sans); overflow-y:auto;}
 .map-transfer-dialog::backdrop{background:#0B142BCC;}
+.restaurant-detail-dialog{width:min(520px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); padding:20px; box-sizing:border-box; border:1px solid #C9B896; border-radius:8px; color:var(--ink); background:#FBF6E9; font:14px/1.55 var(--sans); overflow-y:auto;}
+.restaurant-detail-dialog::backdrop{background:#0B142BCC;}
+.restaurant-detail-heading{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+.restaurant-detail-heading h2{font:700 22px/1.35 var(--serif); overflow-wrap:anywhere;}
+.restaurant-detail-dialog button,.restaurant-detail-dialog a{border:1px solid #C9B896; border-radius:4px; padding:10px 12px; background:#FFFDF5; color:var(--cover); min-height:44px; box-sizing:border-box; cursor:pointer; font:600 13px/1.5 var(--sans);}
+#restaurantDetailCategory{margin:6px 0 16px; color:var(--ink-soft);}
+.restaurant-detail-facts{display:grid; gap:8px;}
+.restaurant-detail-facts>div{border-top:1px solid #E3D7B9; padding-top:8px;}
+.restaurant-detail-facts dt{font-size:11px; font-weight:700; color:var(--ink-soft);}
+.restaurant-detail-facts dd{margin:2px 0 0; overflow-wrap:anywhere;}
+.restaurant-detail-note{font-size:11px; color:var(--ink-soft); margin:12px 0;}
+.restaurant-detail-actions{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px;}
+.restaurant-detail-actions a{text-align:center; display:flex; align-items:center; justify-content:center; text-decoration:none;}
 .map-transfer-heading{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:15px;}
 .map-transfer-heading h2{margin:0; color:var(--cover); font:700 23px var(--serif);}
 .map-transfer-dialog button,.map-transfer-dialog a{border:1px solid #C9B896; border-radius:4px; padding:10px 12px; background:#FFFDF5; color:var(--cover); min-height:44px; box-sizing:border-box; cursor:pointer; font:600 13px/1.5 var(--sans);}

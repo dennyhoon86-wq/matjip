@@ -6,7 +6,7 @@
 <title>미식장부 · 나의 맛집 아카이브</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261005b">
+  <link rel="stylesheet" href="style.css?v=20261011a">
 </head>
 <body class="auth-pending">
 
@@ -31,11 +31,11 @@
       <button id="logoutButton" class="account-button" style="display:none;">로그아웃</button>
     </div>
     <h1>미식장부</h1>
-    <p class="cover-desc">직접 다녀보고 골라 담은 맛집 아카이브. 여러 출처의 평점과 리뷰 규모를 함께 보고, 가고 싶은 곳과 방문 기록을 모은다.</p>
-    <div class="grade-disclaimer" role="note">
-      <span class="grade-disclaimer-mark">i</span>
-      <div><strong>리뷰 규모 A++~E는 맛 순위가 아닙니다.</strong><br><span>네이버 리뷰 수를 중심으로 나눈 기존 분류예요. 맛의 평가는 카드의 <b>평균 평점과 평점 출처</b>를 함께 확인해 주세요.</span></div>
-    </div>
+    <p class="cover-desc">동네·메뉴로 오늘 갈 식당을 찾고 내 장부에 기록하세요.</p>
+    <details class="grade-disclaimer">
+      <summary>A++~E는 리뷰 규모, 맛 순위 아님 <span>자세히</span></summary>
+      <p>네이버 리뷰 수를 중심으로 나눈 기존 분류예요. 맛을 판단할 때는 식당의 평균 평점과 평점 출처를 함께 확인해 주세요.</p>
+    </details>
     <div class="cover-tally">
       <div><b id="tallyShown">-</b><span>표시 중</span></div>
       <div><b id="tallyTotal">-</b><span>전체 등재</span></div>
@@ -50,6 +50,7 @@
       <label for="q">식당 찾기</label>
       <input id="q" type="search" placeholder="예: 강남역 점심, 성수역 국밥" autocomplete="off">
       <div id="smartHint" class="smart-hint"></div>
+      <p class="cover-mobile-grade">A++~E는 리뷰 규모이며 맛 순위가 아니에요.</p>
     </div>
     <details id="nearbyPanel" class="nearby-panel" hidden>
       <summary>서울 주요 장소 근처에서 찾기 <small id="nearbySummarySelection">강동 이케아·롯데월드몰 등</small></summary>
@@ -207,6 +208,23 @@
 </footer>
 
 <div id="saveFeedback" class="save-feedback" role="status" aria-live="polite" hidden></div>
+<dialog id="restaurantDetailDialog" class="restaurant-detail-dialog" aria-labelledby="restaurantDetailTitle">
+  <div class="restaurant-detail-heading"><h2 id="restaurantDetailTitle"></h2><button id="closeRestaurantDetail" type="button" aria-label="식당 상세 닫기">닫기</button></div>
+  <p id="restaurantDetailCategory"></p>
+  <dl class="restaurant-detail-facts">
+    <div><dt>주소</dt><dd id="restaurantDetailAddress"></dd></div>
+    <div><dt>평균 평점</dt><dd id="restaurantDetailRating"></dd></div>
+    <div><dt>평점 출처</dt><dd id="restaurantDetailSources"></dd></div>
+    <div><dt>리뷰 규모</dt><dd id="restaurantDetailGrade"></dd></div>
+    <div><dt>등록 정보</dt><dd id="restaurantDetailStatus"></dd></div>
+  </dl>
+  <p class="restaurant-detail-note">리뷰 규모는 맛 순위가 아니며, 현재 영업시간과 정확한 위치는 지도에서 확인해 주세요.</p>
+  <div class="restaurant-detail-actions">
+    <a id="restaurantDetailNaver" target="_blank" rel="noopener">네이버지도에서 확인</a>
+    <a id="restaurantDetailKakao" target="_blank" rel="noopener">카카오맵에서 확인</a>
+  </div>
+  <p class="restaurant-detail-note">지도 확인은 내 장부의 저장 상태를 바꾸지 않아요.</p>
+</dialog>
 <dialog id="mapTransferDialog" class="map-transfer-dialog" aria-labelledby="mapTransferTitle" aria-describedby="mapTransferHelp">
   <div class="map-transfer-heading"><h2 id="mapTransferTitle">지도에 옮기기</h2><button id="closeMapTransfer" type="button" aria-label="지도 작업 닫기">닫기</button></div>
   <strong id="mapRestaurantName"></strong><p id="mapRestaurantAddress"></p>
@@ -226,6 +244,6 @@
   <p class="map-transfer-footnote">검색 화면을 열면 저장 대기에 추가돼요. 완료 표시는 이 장부의 기록이며, 지도 저장 여부를 자동 확인하지 않아요.</p>
 </dialog>
 <script src="search-query.js?v=20261005d"></script>
-<script src="app.js?v=20261005d"></script>
+<script src="app.js?v=20261011a"></script>
 </body>
 </html>

@@ -86,6 +86,7 @@ let curatedLandmarks = [];
 const pendingWrites = new Set();
 const expandedRecords = new Set();
 const mapDialog = document.getElementById('mapTransferDialog');
+const detailDialog = document.getElementById('restaurantDetailDialog');
 let mapTransfer = null;
 document.getElementById('advancedFilters').open = window.matchMedia('(min-width:641px)').matches;
 document.getElementById('resetFilters').addEventListener('click', () => { clearView(ledgerDashboardEl.style.display !== 'none'); triggerSearch(); });
@@ -518,6 +519,22 @@ function kakaoSearchUrl(d) {
   return `https://map.kakao.com/?q=${encodeURIComponent(`${d.name} ${d.address || ''}`.trim())}`;
 }
 
+function openRestaurantDetail(d) {
+  if (!d) return;
+  document.getElementById('restaurantDetailTitle').textContent = d.name;
+  document.getElementById('restaurantDetailCategory').textContent = [d.category, d.subway ? `${d.subway}역 근처` : ''].filter(Boolean).join(' · ') || '분류 정보 없음';
+  document.getElementById('restaurantDetailAddress').textContent = d.address || '주소 정보 없음';
+  document.getElementById('restaurantDetailRating').textContent = d.avg == null ? '평점 자료 없음' : `${d.avg.toFixed(2)} / 5.0`;
+  document.getElementById('restaurantDetailSources').textContent = ratingLine(d) || '평점 자료 없음';
+  document.getElementById('restaurantDetailGrade').textContent = d.grade ? `${d.grade} · 리뷰 수 기반 분류` : '분류 없음';
+  document.getElementById('restaurantDetailStatus').textContent = d.statusConflict ? '영업 정보 확인 필요' : d.status === '폐업' ? '폐업으로 등록됨' : '영업중으로 등록됨';
+  document.getElementById('restaurantDetailNaver').href = naverSearchUrl(d);
+  document.getElementById('restaurantDetailKakao').href = kakaoSearchUrl(d);
+  if (!detailDialog.open) detailDialog.showModal();
+}
+
+document.getElementById('closeRestaurantDetail').addEventListener('click', () => detailDialog.close());
+
 function openMapTransfer(d) {
   mapTransfer = { restaurant: d, provider: 'naver' };
   renderMapTransfer();
@@ -832,6 +849,9 @@ function renderRows(rows) {
   rows.forEach(d => {
     const card = document.createElement('div');
     card.className = 'card' + (d.status === '폐업' ? ' closed' : '');
+    card.tabIndex = 0;
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-label', `${d.name} · ${d.address || '주소 정보 없음'} · 카드를 누르면 상세 정보`);
     const stampClass = d.grade ? '' : ' no-grade';
     const stampBg = d.grade ? `background:${GRADE_COLOR[d.grade]};` : '';
     const stampLabel = d.grade || '무등급';
@@ -847,7 +867,7 @@ function renderRows(rows) {
     card.innerHTML = `
       <div class="review-scale" title="리뷰 규모 분류 · 맛 점수나 순위가 아닙니다"><div class="stamp${stampClass}" style="${stampBg}">${stampLabel}</div><span>리뷰 규모</span></div>
       <div class="info">
-        <div class="name">${d.name}
+        <div class="name"><button type="button" class="restaurant-name-button" data-action="detail">${d.name}</button>
           <span class="tag">${d.category || '분류없음'}</span>
           ${d.status === '폐업' ? '<span class="tag closed-tag">폐업</span>' : ''}
           ${d.statusConflict ? '<span class="tag closed-tag" title="원본에 같은 상호·주소의 영업/폐업 기록이 함께 있습니다">영업 정보 확인 필요</span>' : ''}
@@ -863,7 +883,7 @@ function renderRows(rows) {
           ${actions}
           <button class="map-action map-transfer-button" data-action="map-transfer">지도에 옮기기</button>
           <details class="record-details" ${expandedRecords.has(restaurantKey(d)) ? 'open' : ''}>
-          <summary>기록</summary>
+          <summary>내 기록 남기기</summary>
           <div class="record-tools">
           <button class="personal-action ${currentState === '별로였음' ? 'active' : ''}" data-action="personal" data-state="별로였음">별로였음</button>
           <button class="map-action" data-action="copy">복사</button>
@@ -880,6 +900,7 @@ function renderRows(rows) {
       </div>
     `;
     card.__restaurant = d;
+    card.querySelector('.restaurant-name-button').setAttribute('aria-label', `${d.name} 상세 보기`);
     card.querySelector('.record-details').addEventListener('toggle', event => {
       if (!event.target.isConnected) return;
       if (event.target.open) expandedRecords.add(restaurantKey(d));
@@ -1130,9 +1151,16 @@ function refreshAfterRecord() {
 }
 
 listEl.addEventListener('click', async event => {
+  const card = event.target.closest('.card');
+  if (!card) return;
   const button = event.target.closest('button[data-action]');
-  const d = button?.closest('.card')?.__restaurant;
+  const d = card.__restaurant;
   if (!d) return;
+  if (button?.dataset.action === 'detail') return openRestaurantDetail(d);
+  if (!button) {
+    if (!event.target.closest('button,a,input,select,textarea,summary,details,label')) openRestaurantDetail(d);
+    return;
+  }
   if (button.dataset.action === 'map-transfer') return openMapTransfer(d);
   if (button.dataset.action === 'copy') return copyText(copyLine(d), `${d.name} · 검색어 복사됨`);
   await writeForRestaurant(d, async () => {
@@ -1142,6 +1170,12 @@ listEl.addEventListener('click', async event => {
     }
     refreshAfterRecord();
   });
+});
+
+listEl.addEventListener('keydown', event => {
+  if (event.target !== event.target.closest('.card') || !['Enter', ' '].includes(event.key)) return;
+  event.preventDefault();
+  openRestaurantDetail(event.target.__restaurant);
 });
 
 listEl.addEventListener('change', event => {
