@@ -751,7 +751,7 @@ async function loadMeta() {
     const covered = Number(meta.nearby.locatedRestaurants || 0);
     const total = Number(meta.nearby.totalRestaurants || 0);
     document.getElementById('nearbyDataNote').textContent = `서울 영업 식당 ${total.toLocaleString()}곳 중 위치가 확인된 ${covered.toLocaleString()}곳만 거리 검색에 표시됩니다 (${total ? Math.round(covered / total * 100) : 0}%).`;
-    await loadLandmarkGuide();
+    loadLandmarkGuide().catch(() => {});
   }
 
   meta.regions.forEach(r => {
@@ -1245,8 +1245,7 @@ adminUsersEl.addEventListener('click', async (event) => {
   if (!(await initAuthentication())) return;
   personal = loadPersonal();
   personalRecords = loadPersonalRecords();
-  await loadMeta();
-  await loadGuOptions('');
+  await Promise.all([loadMeta(), loadGuOptions('')]);
   updatePersonalSummary();
   await search();
 })();

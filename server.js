@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 const path = require('path');
 const Database = require('better-sqlite3');
 const { createAuth } = require('./auth');
@@ -61,6 +62,7 @@ for (const r of db.prepare("SELECT badges FROM restaurants WHERE badges IS NOT N
 vocabulary.badges = Object.keys(BADGE_COUNTS);
 function parseSmartQuery(q) { return RestaurantSearch.parse(q, vocabulary); }
 
+app.use(compression());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '1mb' }));
 
@@ -101,11 +103,14 @@ app.patch('/api/admin/users/:id', auth.requireOwner, async (req, res) => {
   if (!['member', 'blocked'].includes(role)) return res.status(400).json({ error: '허용 또는 차단만 가능합니다.' });
   try {
     const users = await auth.supabase(`/rest/v1/profiles?id=eq.${encodeURIComponent(req.params.id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify({ role }) });
+    auth.invalidateIdentity(req.params.id);
     res.json({ user: users[0] });
   } catch (error) { res.status(500).json({ error: '권한을 변경하지 못했습니다.' }); }
 });
 
-app.get('/api/meta', auth.requireApproved, (req, res) => {
+let cachedMeta;
+function getMeta() {
+  if (cachedMeta) return cachedMeta;
   const categories = db.prepare(`
     SELECT category, COUNT(*) c FROM restaurants
     WHERE category IS NOT NULL GROUP BY category ORDER BY c DESC
@@ -120,10 +125,12 @@ app.get('/api/meta', auth.requireApproved, (req, res) => {
     SELECT subway, COUNT(*) c FROM restaurants
     WHERE subway IS NOT NULL AND subway != '' GROUP BY subway ORDER BY c DESC
   `).all();
-  res.json({ categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary, stationAreas,
+  cachedMeta = { categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary, stationAreas,
     nearby: { ready: nearbyReady, locatedAddresses: locations.size, locatedRestaurants: locatedSeoulRestaurants,
-      totalRestaurants: seoulActiveAddresses.length, source: '서울시 일반음식점 인허가 정보' } });
-});
+      totalRestaurants: seoulActiveAddresses.length, source: '서울시 일반음식점 인허가 정보' } };
+  return cachedMeta;
+}
+app.get('/api/meta', auth.requireApproved, (req, res) => res.json(getMeta()));
 
 app.get('/api/landmarks', auth.requireApproved, (req, res) => {
   if (!nearbyReady) return res.status(503).json({ error: '장소 근처 검색이 아직 준비되지 않았습니다.' });
@@ -143,8 +150,10 @@ app.get('/api/landmark-guide', auth.requireApproved, (req, res) => {
     landmarks: LANDMARKS.map(({ id, district, name }) => ({ id, district, name })) });
 });
 
+const guCache = new Map();
 app.get('/api/gu', auth.requireApproved, (req, res) => {
-  const { region } = req.query;
+  const region = String(req.query.region || '');
+  if (guCache.has(region)) return res.json(guCache.get(region));
   let rows;
   if (region) {
     rows = db.prepare(`
@@ -157,10 +166,20 @@ app.get('/api/gu', auth.requireApproved, (req, res) => {
       GROUP BY gu ORDER BY c DESC
     `).all();
   }
+  guCache.set(region, rows);
   res.json(rows);
 });
 
-app.get('/api/restaurants', auth.requireApproved, async (req, res) => {
+const searchCache = new Map();
+const SEARCH_CACHE_LIMIT = 128;
+app.get('/api/restaurants', auth.requireApproved, (req, res) => {
+  const cacheKey = req.originalUrl;
+  const cached = searchCache.get(cacheKey);
+  if (cached) {
+    searchCache.delete(cacheKey);
+    searchCache.set(cacheKey, cached);
+    return res.type('json').send(cached);
+  }
   const {
     q = '', region = '', gu = '', category = '', grade = '', gradeMin = '', badge = '', station = '', excludeNew = '',
     status = '영업', sort = 'recommended', locationScope = 'exact', page = '1', pageSize = '30',
@@ -300,27 +319,39 @@ app.get('/api/restaurants', auth.requireApproved, async (req, res) => {
   }));
 
   if (nearby) res.set('Cache-Control', 'no-store');
-  res.json({ total, page: pageNum, pageSize: size, rows, inferred, nearby });
+  const body = JSON.stringify({ total, page: pageNum, pageSize: size, rows, inferred, nearby });
+  if (Buffer.byteLength(body) <= 65536) {
+    searchCache.set(cacheKey, body);
+    if (searchCache.size > SEARCH_CACHE_LIMIT) searchCache.delete(searchCache.keys().next().value);
+  }
+  res.type('json').send(body);
 });
 
 app.post('/api/personal-list', auth.requireApproved, (req, res) => {
   const keys = Array.isArray(req.body?.keys) ? req.body.keys.filter(x => typeof x === 'string').slice(0, 10000) : [];
   if (!keys.length) return res.json({ rows: [] });
-  const wanted = new Set(keys);
-  const matches = db.prepare(`
+  const findPlace = db.prepare(`
     SELECT id, name, category, address, gu, dong, subway, price_range, origin_sheet,
            source_raw, sources, badges, naver, google, daum, avg, note,
            grade, region, status
-    FROM restaurants
-  `).all();
+    FROM restaurants WHERE name = ? AND address = ? ORDER BY id
+  `);
+  const findPlaceWithoutAddress = db.prepare(`
+    SELECT id, name, category, address, gu, dong, subway, price_range, origin_sheet,
+           source_raw, sources, badges, naver, google, daum, avg, note,
+           grade, region, status
+    FROM restaurants WHERE name = ? AND (address IS NULL OR address = '') ORDER BY id
+  `);
   const byKey = new Map();
-  for (const row of matches) {
-    const key = `${row.name}\u001f${row.address || ''}`;
-    if (!wanted.has(key)) continue;
-    if (!byKey.has(key)) byKey.set(key, []);
-    byKey.get(key).push(row);
+  for (const key of new Set(keys)) {
+    const separator = key.indexOf('\u001f');
+    if (separator < 0) continue;
+    const name = key.slice(0, separator);
+    const address = key.slice(separator + 1);
+    const group = address ? findPlace.all(name, address) : findPlaceWithoutAddress.all(name);
+    if (group.length) byKey.set(key, group);
   }
-  const rows = Array.from(byKey.values(), group => {
+  const rows = Array.from(byKey.values()).sort((a, b) => a[0].id - b[0].id).map(group => {
     // 개인 기록은 상호+주소가 한 단위다. 원본에 같은 장소가 여러 행이어도 카드 하나만 반환한다.
     const quality = row => [row.naver, row.google, row.daum].filter(value => value != null).length;
     const best = group.reduce((chosen, row) => quality(row) > quality(chosen) ? row : chosen);

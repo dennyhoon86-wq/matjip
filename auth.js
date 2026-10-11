@@ -1,3 +1,4 @@
+const { createHash } = require('node:crypto');
 const VALID_STATES = new Set(['가고싶음', '가봄', '재방문', '별로였음']);
 
 function createAuth() {
@@ -7,6 +8,9 @@ function createAuth() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   const ownerEmail = (process.env.OWNER_EMAIL || 'dennyhoon86@gmail.com').trim().toLowerCase();
   const configured = Boolean(url && anonKey && serviceKey);
+  const identityCache = new Map();
+  const IDENTITY_CACHE_MS = 15000;
+  const IDENTITY_CACHE_LIMIT = 256;
 
   function config() {
     return { enabled: required, configured, supabaseUrl: required && configured ? url : '', supabaseAnonKey: required && configured ? anonKey : '' };
@@ -38,6 +42,32 @@ function createAuth() {
     }
     const token = String(req.headers.authorization || '').match(/^Bearer\s+(.+)$/i)?.[1];
     if (!token) { const err = new Error('로그인이 필요합니다.'); err.status = 401; throw err; }
+    const cacheKey = createHash('sha256').update(token).digest('hex');
+    const cached = identityCache.get(cacheKey);
+    if (cached?.promise) return cached.promise;
+    if (cached?.expires > Date.now()) return cached.identity;
+    identityCache.delete(cacheKey);
+    const pending = fetchIdentity(token);
+    identityCache.set(cacheKey, { promise: pending });
+    if (identityCache.size > IDENTITY_CACHE_LIMIT) identityCache.delete(identityCache.keys().next().value);
+    try {
+      const identity = await pending;
+      let tokenExpires = 0;
+      try { tokenExpires = Number(JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()).exp) * 1000; } catch {}
+      const expires = Math.min(Date.now() + IDENTITY_CACHE_MS, tokenExpires || 0);
+      // 승인 대기/차단과 만료된 토큰은 캐시하지 않는다.
+      if (identityCache.get(cacheKey)?.promise === pending) {
+        if (identity.allowed && expires > Date.now()) identityCache.set(cacheKey, { identity, expires });
+        else identityCache.delete(cacheKey);
+      }
+      return identity;
+    } catch (error) {
+      if (identityCache.get(cacheKey)?.promise === pending) identityCache.delete(cacheKey);
+      throw error;
+    }
+  }
+
+  async function fetchIdentity(token) {
     const response = await fetch(`${url}/auth/v1/user`, { headers: { apikey: anonKey, Authorization: `Bearer ${token}` } });
     if (!response.ok) { const err = new Error('로그인 정보가 만료되었습니다.'); err.status = 401; throw err; }
     const user = await response.json();
@@ -60,6 +90,10 @@ function createAuth() {
       profile = updated[0];
     }
     return { id: user.id, email, fullName, role: profile.role, allowed: profile.role === 'owner' || profile.role === 'member' };
+  }
+
+  function invalidateIdentity(userId) {
+    for (const [key, entry] of identityCache) if (!entry.identity || entry.identity.id === userId) identityCache.delete(key);
   }
 
   async function requireApproved(req, res, next) {
@@ -144,7 +178,7 @@ function createAuth() {
     });
   }
 
-  return { config, required, identityFromRequest, requireApproved, requireOwner, personalStates, setPersonalStates, deletePersonalState, personalRecords, setPersonalRecords, supabase };
+  return { config, required, identityFromRequest, invalidateIdentity, requireApproved, requireOwner, personalStates, setPersonalStates, deletePersonalState, personalRecords, setPersonalRecords, supabase };
 }
 
 module.exports = { createAuth };
