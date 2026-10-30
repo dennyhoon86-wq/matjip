@@ -271,7 +271,7 @@ async function localPage(context) {
     await page.keyboard.press('Escape');
   });
 
-  await criterion('On-the-go: honest price bands, local station fallback, meal sorting and fast full database search', 15, async () => {
+  await criterion('On-the-go: honest price bands, explained station widening, meal sorting and fast search', 15, async () => {
     const S = require('../public/search-query');
     for (const [q, expectedSheet] of [['서울 한식 10만원 이하', '~ 100,000'], ['서울 한식 10~20만원', '100,000 ~ 200,000'], ['서울 한식 20만원 이상', '200,000 ~']]) {
       const start = Date.now();
@@ -285,6 +285,15 @@ async function localPage(context) {
     assert((await page.locator('#emptyMessage').innerText()).includes('정확히 가릴 수 없어요'));
     await page.locator('#removePrice').click(); await settled(page);
     assert.equal(await page.locator('#q').inputValue(), '서울 한식');
+    await query(page, '여의도역');
+    assert((await page.locator('#smartHint').innerText()).includes('해당 역으로 분류된 식당만'));
+    assert((await page.locator('#smartHint').innerText()).includes('조건에 맞는 식당이 없으면'));
+    assert((await page.locator('.card').count()) > 0);
+    assert((await page.locator('.card').evaluateAll(cards => cards.map(c => c.__restaurant))).every(r => r.subway === '여의도'));
+    await query(page, '여의도역 장어');
+    assert((await page.locator('.card').count()) > 0);
+    assert((await page.locator('#smartHint').innerText()).includes('역이 속한 구까지 자동으로 넓혔어요'));
+    assert((await page.locator('.card').evaluateAll(cards => cards.map(c => c.__restaurant))).every(r => r.gu === '영등포구'));
     await query(page, '강남역 국밥');
     assert.equal(await page.locator('.card').count(), 2);
     assert((await page.locator('#smartHint').innerText()).includes('동네까지'));

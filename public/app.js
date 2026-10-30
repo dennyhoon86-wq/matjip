@@ -935,11 +935,12 @@ function buildParams() {
   return p;
 }
 
-function showSearchHint(smart) {
+function showSearchHint(smart, stationExplanation = '') {
   const parts = [];
   if (selectedLandmark) parts.push(`${selectedLandmark.name} ${nearbyRadiusEl.selectedOptions[0].textContent} 이내`);
   if (smart) {
     [smart.region, smart.neighborhood ? `${smart.neighborhood} 일대` : smart.gu, smart.dong, smart.station ? `${smart.station}역` : ''].filter(Boolean).forEach(x => parts.push(x));
+    if (smart.station && locationScope === 'exact') parts.push('해당 역으로 분류된 식당만');
     if (smart.station && locationScope === 'neighborhood') parts.push('역이 속한 동네까지');
     if (smart.station && locationScope === 'district') parts.push('역이 속한 구까지');
     if (smart.categoryTerms?.length) parts.push(smart.categoryTerms.join(' / '));
@@ -953,7 +954,7 @@ function showSearchHint(smart) {
     else if (smart.priceMax != null) parts.push(`${won(smart.priceMax)} ${smart.priceMaxExclusive ? '미만' : '이하'}`);
     if (smart.excludeNew) parts.push('신규 제외');
   }
-  smartHintEl.textContent = [parts.length ? `검색 조건: ${parts.join(' · ')}` : '', ...(smart?.notices || [])].filter(Boolean).join(' — ');
+  smartHintEl.textContent = [parts.length ? `검색 조건: ${parts.join(' · ')}` : '', ...(smart?.notices || []), stationExplanation].filter(Boolean).join(' — ');
   smartHintEl.style.display = smartHintEl.textContent ? 'block' : 'none';
   renderActiveFilters();
 }
@@ -1014,10 +1015,12 @@ async function runSearch(version) {
   let res = await apiFetch('/api/restaurants?' + params.toString());
   let data = await res.json();
   const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
+  let autoExpandedStation = false;
   if (!selectedLandmark && smart.station && !data.total && RestaurantSearch.priceBandSelection(smart) !== null) {
     for (const scope of locationScope === 'exact' ? ['neighborhood', 'district'] : locationScope === 'neighborhood' ? ['district'] : []) {
       if (version !== searchVersion) return;
       locationScope = scope;
+      autoExpandedStation = true;
       params = buildParams();
       res = await apiFetch('/api/restaurants?' + params.toString());
       data = await res.json();
@@ -1027,7 +1030,12 @@ async function runSearch(version) {
   if (version !== searchVersion) return;
   state.total = data.total;
 
-  showSearchHint(data.inferred);
+  const stationExplanation = autoExpandedStation
+    ? `${smart.station}역으로 분류된 식당 중 조건에 맞는 곳이 없어 ${locationScope === 'district' ? '역이 속한 구' : '역이 속한 동네'}까지 자동으로 넓혔어요. 역과의 실제 거리는 지도에서 확인해 주세요.`
+    : smart.station && locationScope === 'exact'
+      ? '역 기준으로 조건에 맞는 식당이 없으면 같은 동네, 그다음 구까지 자동으로 넓혀 보여줘요.'
+      : '';
+  showSearchHint(data.inferred, stationExplanation);
 
   renderRows(data.rows);
   renderEmptyState(data.rows.length);
