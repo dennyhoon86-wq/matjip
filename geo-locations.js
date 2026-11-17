@@ -27,7 +27,7 @@ function gyeonggiParcelKey(address) {
 
 function seoulParcelKey(address) {
   const normalized = normalizeAddress(address).replace(/\s*\(.*$/, '').replace(/,.*$/, '');
-  const match = normalized.match(/^(서울\s+.+?\s+(?:[^\s]+(?:동|가))\s+(?:산\s*)?\d+(?:-\d+)?)(?=\s|$)/);
+  const match = normalized.match(/^(서울\s+.+?\s+(?:[^\s]+(?:동|가)|세종로)\s+(?:산\s*)?\d+(?:-\d+)?)(?=\s|$)/);
   return match ? match[1].replace(/\s+/g, ' ') : null;
 }
 

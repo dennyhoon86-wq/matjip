@@ -1,7 +1,7 @@
 const path = require('node:path');
 const fs = require('node:fs');
 const Database = require('better-sqlite3');
-const { normalizeAddress } = require('../geo-locations');
+const { normalizeAddress, seoulParcelKey, gyeonggiParcelKey } = require('../geo-locations');
 const file = path.join(__dirname, '../locations.db');
 if (!fs.existsSync(file)) { console.log('아직 locations.db가 없습니다.'); process.exit(0); }
 const locationDb = new Database(file, { readonly: true });
@@ -14,7 +14,8 @@ for (const row of rows) {
   const region = address.split(' ')[0] || '주소없음';
   const item = stats.get(region) || { region, total: 0, located: 0 };
   item.total++;
-  if (good.has(address)) item.located++;
+  const parcel = region === '서울' ? seoulParcelKey(address) : region === '경기' ? gyeonggiParcelKey(address) : null;
+  if (good.has(address) || (parcel && good.has(parcel))) item.located++;
   stats.set(region, item);
 }
 const coverage = item => ({ ...item, coverage: `${(item.located / item.total * 100).toFixed(1)}%` });
