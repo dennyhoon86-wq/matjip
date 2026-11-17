@@ -47,6 +47,16 @@ async function settled(page) {
   await settled(page);
   const secondTotal = Number((await page.locator('#metaCount').textContent()).match(/[\d,]+/)[0].replaceAll(',', ''));
   assert(secondTotal >= firstTotal);
+  const gyeonggiContext = await browser.newContext({ viewport: { width: 390, height: 844 }, permissions: ['geolocation'], geolocation: { latitude: 37.2636, longitude: 127.0286, accuracy: 40 } });
+  const gyeonggiPage = await gyeonggiContext.newPage();
+  await gyeonggiPage.goto(origin, { waitUntil: 'networkidle' });
+  const gyeonggiSearch = gyeonggiPage.waitForResponse(response => response.url().endsWith('/api/restaurants/nearby') && response.request().method() === 'POST');
+  await gyeonggiPage.locator('#useCurrentLocation').click();
+  await gyeonggiSearch;
+  await settled(gyeonggiPage);
+  const gyeonggiRows = await gyeonggiPage.locator('.card').evaluateAll(cards => cards.map(card => card.__restaurant));
+  assert(gyeonggiRows.length > 0 && gyeonggiRows.every(row => row.address.startsWith('경기 ') && row.distance_m <= 2000));
+  assert.equal(await gyeonggiPage.locator('#region').inputValue(), '');
   const browsingSearch = page.waitForResponse(response => response.url().includes('/api/restaurants?') && response.request().method() === 'GET');
   await page.locator('#clearCurrentLocation').click();
   await browsingSearch;
@@ -64,7 +74,7 @@ async function settled(page) {
   await deniedPage.locator('#useCurrentLocation').click();
   assert((await deniedPage.locator('#currentLocationStatus').textContent()).includes('위치 권한이 거부됐어요'));
   assert.deepEqual(errors, []);
-  console.log('PASS current location: 1–10km search, distance order, private POST, reset, denial, 390px layout');
+  console.log('PASS current location: Seoul and Gyeonggi 1–10km search, distance order, private POST, reset, denial, 390px layout');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(async () => {
   await browser?.close();
   server?.kill();

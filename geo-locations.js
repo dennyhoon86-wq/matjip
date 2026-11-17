@@ -19,6 +19,18 @@ function normalizeAddress(address) {
   return value;
 }
 
+function gyeonggiParcelKey(address) {
+  const normalized = normalizeAddress(address).replace(/\s*\(.*$/, '').replace(/,.*$/, '');
+  const match = normalized.match(/^(경기\s+.+?\s+(?:[^\s]+(?:동|리|가))\s+(?:산\s*)?\d+(?:-\d+)?)(?=\s|$)/);
+  return match ? match[1].replace(/\s+/g, ' ') : null;
+}
+
+function seoulParcelKey(address) {
+  const normalized = normalizeAddress(address).replace(/\s*\(.*$/, '').replace(/,.*$/, '');
+  const match = normalized.match(/^(서울\s+.+?\s+(?:[^\s]+(?:동|가))\s+(?:산\s*)?\d+(?:-\d+)?)(?=\s|$)/);
+  return match ? match[1].replace(/\s+/g, ' ') : null;
+}
+
 function exactAddressCandidate(address, candidates) {
   const wanted = normalizeAddress(address);
   if (!wanted) return null;
@@ -42,4 +54,4 @@ function distanceMeters(lat1, lon1, lat2, lon2) {
   return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-module.exports = { normalizeAddress, exactAddressCandidate, toWgs84, distanceMeters };
+module.exports = { normalizeAddress, seoulParcelKey, gyeonggiParcelKey, exactAddressCandidate, toWgs84, distanceMeters };

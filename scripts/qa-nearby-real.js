@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const Database = require('better-sqlite3');
 const { LANDMARKS } = require('../seoul-landmarks');
-const { normalizeAddress, distanceMeters } = require('../geo-locations');
+const { normalizeAddress, seoulParcelKey, gyeonggiParcelKey, distanceMeters } = require('../geo-locations');
 
 process.env.AUTH_REQUIRED = 'false';
 const { app } = require('../server');
@@ -16,7 +16,10 @@ server.once('listening', async () => {
   try {
     const meta = await (await fetch(`${root}/api/meta`)).json();
     assert.equal(meta.nearby.ready, true);
-    assert(meta.nearby.locatedRestaurants > 15000);
+    const seoul = meta.nearby.areas.find(area => area.name === '서울');
+    const gyeonggi = meta.nearby.areas.find(area => area.name === '경기');
+    assert(seoul.locatedRestaurants > 19000);
+    assert(gyeonggi.locatedRestaurants > 7000);
     const markers = ['강동구:이케아 강동점', '강남구:스타필드 코엑스몰', '송파구:롯데월드몰'];
     let checkedResults = 0;
     let zeroCount = 0;
@@ -33,7 +36,7 @@ server.once('listening', async () => {
         if (!body.total) zeroCount++;
         let last = -1;
         for (const restaurant of body.rows) {
-          const point = pointByAddress.get(normalizeAddress(restaurant.address));
+          const point = pointByAddress.get(normalizeAddress(restaurant.address)) || pointByAddress.get(seoulParcelKey(restaurant.address));
           assert(point, `missing coordinate: ${restaurant.name}`);
           const actual = Math.round(distanceMeters(point.lat, point.lon, landmark.lat, landmark.lon));
           assert.equal(restaurant.distance_m, actual);
@@ -45,8 +48,16 @@ server.once('listening', async () => {
       }
     }
     assert.equal(zeroCount, 0, 'some landmarks have no located restaurants within 1km');
-    console.log(JSON.stringify({ landmarks: LANDMARKS.length, covered: meta.nearby.locatedRestaurants,
-      total: meta.nearby.totalRestaurants, checkedResults, zeroCount }, null, 2));
+    const nearby = await (await fetch(`${root}/api/restaurants/nearby`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude: 37.2636, longitude: 127.0286, radius: 2000, pageSize: '100' }) })).json();
+    assert(nearby.total > 0);
+    for (const restaurant of nearby.rows) {
+      const point = pointByAddress.get(gyeonggiParcelKey(restaurant.address));
+      assert(point, `missing Gyeonggi coordinate: ${restaurant.name}`);
+      assert.equal(restaurant.distance_m, Math.round(distanceMeters(point.lat, point.lon, 37.2636, 127.0286)));
+    }
+    console.log(JSON.stringify({ landmarks: LANDMARKS.length, areas: meta.nearby.areas,
+      checkedResults, gyeonggiResults: nearby.total, zeroCount }, null, 2));
   } catch (error) { console.error(error); process.exitCode = 1; }
   finally { server.close(); }
 });

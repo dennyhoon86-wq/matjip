@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-test('current-location search stays within Seoul, validates radius and sorts by straight-line distance', async () => {
+test('current-location search covers Seoul and Gyeonggi, validates radius and sorts by straight-line distance', async () => {
   process.env.AUTH_REQUIRED = 'false';
   const { app } = require('../server');
   const server = app.listen(0, '127.0.0.1');
@@ -21,6 +21,10 @@ test('current-location search stays within Seoul, validates radius and sorts by 
 
     const wider = await (await search({ ...base, radius: 10000 })).json();
     assert(wider.total >= data.total);
+    const gyeonggi = await (await search({ ...base, latitude: 37.2636, longitude: 127.0286, radius: 2000 })).json();
+    assert(gyeonggi.total > 0, 'Suwon should have nearby restaurants');
+    assert(gyeonggi.rows.every(row => row.address.startsWith('경기 ') && row.distance_m <= 2000));
+    assert(gyeonggi.rows.every((row, i) => i === 0 || gyeonggi.rows[i - 1].distance_m <= row.distance_m));
     for (const invalid of [{ ...base, radius: 11000 }, { ...base, latitude: 100 }, { ...base, longitude: null }, { ...base, landmarkId: 'somewhere' }]) {
       assert.equal((await search(invalid)).status, 400);
     }

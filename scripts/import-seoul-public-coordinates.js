@@ -87,7 +87,8 @@ async function importCoordinates(csvPath, outputPath = path.join(__dirname, '../
     });
     insertAll();
     db.pragma('wal_checkpoint(TRUNCATE)');
-    stats.locatedAddresses = db.prepare("SELECT COUNT(*) n FROM locations WHERE status='ok'").get().n;
+    const isLocated = db.prepare("SELECT 1 FROM locations WHERE address_key=? AND status='ok'");
+    stats.locatedAddresses = [...targets.keys()].filter(address => isLocated.get(address)).length;
   } finally { db.close(); }
   stats.targetAddresses = targets.size;
   stats.unlocatedAddresses = targets.size - stats.locatedAddresses;

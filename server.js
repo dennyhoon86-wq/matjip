@@ -4,7 +4,7 @@ const path = require('path');
 const Database = require('better-sqlite3');
 const { createAuth } = require('./auth');
 const fs = require('node:fs');
-const { normalizeAddress, distanceMeters } = require('./geo-locations');
+const { normalizeAddress, seoulParcelKey, gyeonggiParcelKey, distanceMeters } = require('./geo-locations');
 const { DISTRICTS, LANDMARKS, findLandmarks } = require('./seoul-landmarks');
 
 const db = new Database(path.join(__dirname, 'matjip.db'), { readonly: true });
@@ -24,14 +24,16 @@ if (fs.existsSync(locationPath)) {
 const nearbyReady = process.env.NEARBY_ENABLED !== 'false' && locations.size > 0 &&
   LANDMARKS.length === 82 && LANDMARKS.every(place => Number.isFinite(place.lat) && Number.isFinite(place.lon));
 db.function('near_distance', (address, lat, lon) => {
-  const point = locations.get(normalizeAddress(address));
+  const point = locations.get(normalizeAddress(address)) || locations.get(seoulParcelKey(address)) || locations.get(gyeonggiParcelKey(address));
   return point ? Math.round(distanceMeters(point.lat, point.lon, Number(lat), Number(lon))) : null;
 });
 
 const curatedDistricts = new Set(DISTRICTS.map(([district]) => district));
 const landmarkById = new Map(LANDMARKS.map(place => [place.id, place]));
 const seoulActiveAddresses = db.prepare("SELECT address FROM restaurants WHERE status='영업' AND address LIKE '서울%'").all();
-const locatedSeoulRestaurants = seoulActiveAddresses.filter(row => locations.has(normalizeAddress(row.address))).length;
+const locatedSeoulRestaurants = seoulActiveAddresses.filter(row => locations.has(normalizeAddress(row.address)) || locations.has(seoulParcelKey(row.address))).length;
+const gyeonggiActiveAddresses = db.prepare("SELECT address FROM restaurants WHERE status='영업' AND address LIKE '경기 %'").all();
+const locatedGyeonggiRestaurants = gyeonggiActiveAddresses.filter(row => locations.has(gyeonggiParcelKey(row.address))).length;
 
 const GRADE_ORDER = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
 const GRADE_CASE_SQL = `CASE grade ${GRADE_ORDER.map((g, i) => `WHEN '${g}' THEN ${i}`).join(' ')} ELSE 99 END`;
@@ -126,8 +128,11 @@ function getMeta() {
     WHERE subway IS NOT NULL AND subway != '' GROUP BY subway ORDER BY c DESC
   `).all();
   cachedMeta = { categories, regions, grades: GRADE_ORDER, badges, stations, total, activeTotal, vocabulary, stationAreas,
-    nearby: { ready: nearbyReady, locatedAddresses: locations.size, locatedRestaurants: locatedSeoulRestaurants,
-      totalRestaurants: seoulActiveAddresses.length, source: '서울시 일반음식점 인허가 정보' } };
+    nearby: { ready: nearbyReady, locatedAddresses: locations.size,
+      areas: [
+        { name: '서울', locatedRestaurants: locatedSeoulRestaurants, totalRestaurants: seoulActiveAddresses.length },
+        { name: '경기', locatedRestaurants: locatedGyeonggiRestaurants, totalRestaurants: gyeonggiActiveAddresses.length },
+      ], source: '서울시 일반·휴게·제과점 인허가 정보, 경기도 일반음식점 인허가 정보' } };
   return cachedMeta;
 }
 app.get('/api/meta', auth.requireApproved, (req, res) => res.json(getMeta()));
@@ -206,7 +211,7 @@ function searchRestaurants(req, res) {
     }
     if (!Number.isInteger(radius) || radius < 1000 || radius > 10000 || radius % 1000 !== 0) return res.status(400).json({ error: '검색 반경은 1~10km로 설정해 주세요.' });
     params.nearLat = lat; params.nearLon = lon; params.nearRadius = radius;
-    where.push("region = '서울'");
+    where.push("(region = '서울' OR address LIKE '경기 %')");
     where.push('near_distance(address, @nearLat, @nearLon) <= @nearRadius');
     nearby = { name: '내 위치', radius, distanceType: '직선거리', mode: 'current' };
   }
