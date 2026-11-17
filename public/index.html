@@ -48,9 +48,26 @@
   <div class="drawer">
     <div class="field wide">
       <label for="q">식당 찾기</label>
-      <input id="q" type="search" placeholder="예: 강남역 점심, 성수역 국밥" autocomplete="off">
+      <div class="search-entry-row">
+        <input id="q" type="search" placeholder="예: 강남역 점심, 성수역 국밥" autocomplete="off">
+        <button id="useCurrentLocation" type="button" disabled>내 위치</button>
+      </div>
       <div id="smartHint" class="smart-hint"></div>
       <p class="cover-mobile-grade">A++~E는 리뷰 규모이며 맛 순위가 아니에요.</p>
+    </div>
+    <div id="currentLocationPanel" class="current-location-panel" hidden>
+      <div class="current-location-controls">
+        <label for="currentLocationRadius">반경
+          <select id="currentLocationRadius" aria-label="내 위치에서의 검색 반경">
+            <option value="1000">1km</option><option value="2000" selected>2km</option><option value="3000">3km</option>
+            <option value="4000">4km</option><option value="5000">5km</option><option value="6000">6km</option>
+            <option value="7000">7km</option><option value="8000">8km</option><option value="9000">9km</option><option value="10000">10km</option>
+          </select>
+        </label>
+        <button id="clearCurrentLocation" type="button" hidden>위치 검색 해제</button>
+      </div>
+      <p id="currentLocationStatus" role="status" aria-live="polite">위치 사용을 누르면 서울의 좌표 확인 식당을 직선거리로 찾습니다.</p>
+      <p id="currentLocationCoverage"></p>
     </div>
     <details id="nearbyPanel" class="nearby-panel" hidden>
       <summary>서울 주요 장소 근처에서 찾기 <small id="nearbySummarySelection">강동 이케아·롯데월드몰 등</small></summary>

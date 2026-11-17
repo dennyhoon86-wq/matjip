@@ -27,6 +27,11 @@ const landmarkCandidatesEl = document.getElementById('landmarkCandidates');
 const selectedLandmarkEl = document.getElementById('selectedLandmark');
 const clearLandmarkBtn = document.getElementById('clearLandmark');
 const nearbyRadiusEl = document.getElementById('nearbyRadius');
+const currentLocationPanelEl = document.getElementById('currentLocationPanel');
+const currentLocationRadiusEl = document.getElementById('currentLocationRadius');
+const currentLocationStatusEl = document.getElementById('currentLocationStatus');
+const useCurrentLocationBtn = document.getElementById('useCurrentLocation');
+const clearCurrentLocationBtn = document.getElementById('clearCurrentLocation');
 const landmarkGuideEl = document.getElementById('landmarkGuide');
 const landmarkGuideDistrictEl = document.getElementById('landmarkGuideDistrict');
 const landmarkGuideOptionsEl = document.getElementById('landmarkGuideOptions');
@@ -82,6 +87,7 @@ let recordVersion = 0;
 let guLoadVersion = 0;
 let landmarkSearchVersion = 0;
 let selectedLandmark = null;
+let currentLocation = null;
 let curatedLandmarks = [];
 const pendingWrites = new Set();
 const expandedRecords = new Set();
@@ -125,6 +131,47 @@ async function widenLocation() {
 document.getElementById('widenLocation').addEventListener('click', () => widenLocation().catch(error => showToast(error.message, true)));
 document.getElementById('nearbyMore').addEventListener('click', () => widenLocation().catch(error => showToast(error.message, true)));
 
+function renderCurrentLocation() {
+  currentLocationPanelEl.hidden = !currentLocation;
+  currentLocationPanelEl.classList.toggle('active', Boolean(currentLocation));
+  clearCurrentLocationBtn.hidden = !currentLocation;
+  useCurrentLocationBtn.textContent = currentLocation ? '위치 갱신' : '내 위치';
+  if (currentLocation) {
+    const accuracy = Number.isFinite(currentLocation.accuracy) ? ` · 위치 정확도 약 ${Math.round(currentLocation.accuracy)}m` : '';
+    currentLocationStatusEl.textContent = `현재 위치에서 ${currentLocationRadiusEl.selectedOptions[0].textContent} 이내 · 직선거리${accuracy}`;
+  } else currentLocationStatusEl.textContent = '위치 사용을 누르면 서울의 좌표 확인 식당을 직선거리로 찾습니다.';
+}
+
+useCurrentLocationBtn.addEventListener('click', async () => {
+  if (!navigator.geolocation) { currentLocationPanelEl.hidden = false; currentLocationStatusEl.textContent = '이 브라우저는 위치 확인을 지원하지 않아요.'; return; }
+  useCurrentLocationBtn.disabled = true;
+  currentLocationPanelEl.hidden = false;
+  currentLocationStatusEl.textContent = '현재 위치를 확인하는 중...';
+  try {
+    const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject,
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }));
+    if (ledgerDashboardEl.style.display !== 'none') await closeLedgerDashboard();
+    currentLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy };
+    selectedLandmark = null; landmarkQueryEl.value = ''; landmarkCandidatesEl.replaceChildren(); showSelectedLandmark();
+    personalFilterEl.value = '';
+    regionEl.value = '서울'; guEl.value = '';
+    loadGuOptions('서울').catch(error => showToast(error.message, true));
+    renderCurrentLocation(); triggerSearch();
+  } catch (error) {
+    renderCurrentLocation();
+    currentLocationPanelEl.hidden = false;
+    const message = error.code === 1 ? '위치 권한이 거부됐어요. 브라우저 설정에서 허용한 뒤 다시 눌러 주세요.'
+      : error.code === 3 ? '위치 확인 시간이 초과됐어요. 다시 시도해 주세요.' : '현재 위치를 확인하지 못했어요. 기기 위치 설정을 확인해 주세요.';
+    currentLocationStatusEl.textContent = message;
+  } finally { useCurrentLocationBtn.disabled = false; }
+});
+currentLocationRadiusEl.addEventListener('change', () => { renderCurrentLocation(); if (currentLocation) triggerSearch(); });
+clearCurrentLocationBtn.addEventListener('click', () => {
+  currentLocation = null; regionEl.value = ''; guEl.value = '';
+  loadGuOptions('').catch(error => showToast(error.message, true));
+  renderCurrentLocation(); triggerSearch();
+});
+
 function showSelectedLandmark() {
   selectedLandmarkEl.hidden = !selectedLandmark;
   clearLandmarkBtn.hidden = !selectedLandmark;
@@ -156,6 +203,7 @@ async function findLandmarks(district = '') {
       address.textContent = place.address || '주소 정보 없음';
       button.appendChild(address);
       button.addEventListener('click', () => {
+        currentLocation = null; renderCurrentLocation();
         selectedLandmark = { id: place.id, query, name: place.name, district: place.district };
         landmarkCandidatesEl.replaceChildren();
         regionEl.value = '서울'; guEl.value = '';
@@ -177,6 +225,7 @@ function renderLandmarkGuide() {
     button.type = 'button';
     button.textContent = item.name;
     button.addEventListener('click', () => {
+      currentLocation = null; renderCurrentLocation();
       landmarkQueryEl.value = item.name;
       selectedLandmark = { id: item.id, query: item.name, name: item.name, district: item.district };
       landmarkCandidatesEl.replaceChildren();
@@ -240,7 +289,7 @@ document.getElementById('activeFilters').addEventListener('click', event => {
   const control = filterControls[key];
   if (control.type === 'checkbox') control.checked = false;
   else control.value = key === 'personal' && ledgerDashboardEl.style.display !== 'none' ? '내 장부 전체' : '';
-  if (key === 'region') { guEl.value = ''; loadGuOptions('').catch(error => showToast(error.message, true)); }
+  if (key === 'region') { currentLocation = null; renderCurrentLocation(); guEl.value = ''; loadGuOptions('').catch(error => showToast(error.message, true)); }
   triggerSearch();
 });
 
@@ -464,7 +513,7 @@ async function loadLedgerDashboard() {
 }
 
 function captureView() {
-  return { q: qEl.value, region: regionEl.value, gu: guEl.value, category: catEl.value, grade: gradeEl.value, gradeMin: gradeMinEl.value, badge: badgeEl.value, sort: sortEl.value, locationScope, personalFilter: personalFilterEl.value, excludeNew: excludeNewEl.checked, includeClosed: includeClosedEl.checked, selectedLandmark, landmarkQuery: landmarkQueryEl.value, nearbyRadius: nearbyRadiusEl.value };
+  return { q: qEl.value, region: regionEl.value, gu: guEl.value, category: catEl.value, grade: gradeEl.value, gradeMin: gradeMinEl.value, badge: badgeEl.value, sort: sortEl.value, locationScope, personalFilter: personalFilterEl.value, excludeNew: excludeNewEl.checked, includeClosed: includeClosedEl.checked, selectedLandmark, landmarkQuery: landmarkQueryEl.value, nearbyRadius: nearbyRadiusEl.value, currentLocation, currentLocationRadius: currentLocationRadiusEl.value };
 }
 
 function clearView(ledger = false) {
@@ -473,6 +522,7 @@ function clearView(ledger = false) {
   excludeNewEl.checked = false; includeClosedEl.checked = ledger;
   personalFilterEl.value = ledger ? '내 장부 전체' : '';
   selectedLandmark = null; landmarkQueryEl.value = ''; landmarkCandidatesEl.replaceChildren(); showSelectedLandmark();
+  currentLocation = null; renderCurrentLocation();
   loadGuOptions('').catch(error => showToast(error.message, true));
 }
 
@@ -502,6 +552,9 @@ async function closeLedgerDashboard() {
     landmarkQueryEl.value = ledgerPreviousView.landmarkQuery;
     nearbyRadiusEl.value = ledgerPreviousView.nearbyRadius;
     showSelectedLandmark();
+    currentLocation = ledgerPreviousView.currentLocation || null;
+    currentLocationRadiusEl.value = ledgerPreviousView.currentLocationRadius || '2000';
+    renderCurrentLocation();
     excludeNewEl.checked = ledgerPreviousView.excludeNew; includeClosedEl.checked = ledgerPreviousView.includeClosed;
     ledgerPreviousView = null;
   } else {
@@ -747,10 +800,13 @@ async function loadMeta() {
   searchVocabulary = meta.vocabulary || {};
   stationAreas = meta.stationAreas || {};
   nearbyPanelEl.hidden = !meta.nearby?.ready;
+  useCurrentLocationBtn.disabled = !meta.nearby?.ready;
   if (meta.nearby?.ready) {
     const covered = Number(meta.nearby.locatedRestaurants || 0);
     const total = Number(meta.nearby.totalRestaurants || 0);
-    document.getElementById('nearbyDataNote').textContent = `서울 영업 식당 ${total.toLocaleString()}곳 중 위치가 확인된 ${covered.toLocaleString()}곳만 거리 검색에 표시됩니다 (${total ? Math.round(covered / total * 100) : 0}%).`;
+    const coverageText = `서울 영업 식당 ${total.toLocaleString()}곳 중 좌표가 확인된 ${covered.toLocaleString()}곳만 거리 검색에 표시됩니다 (${total ? Math.round(covered / total * 100) : 0}%).`;
+    document.getElementById('nearbyDataNote').textContent = coverageText;
+    document.getElementById('currentLocationCoverage').textContent = coverageText + ' 내 위치는 저장하지 않습니다.';
     loadLandmarkGuide().catch(() => {});
   }
 
@@ -877,7 +933,7 @@ function renderRows(rows) {
           ${currentState === '가봄' && record.visitedAt ? `<span class="tag visited-at-tag">방문 ${record.visitedAt.replaceAll('-', '.')}</span>` : ''}
           ${visibleMapTags(record)}
         </div>
-        <div class="addr">${addrParts.join('<span class="dot">·</span>')}${Number.isFinite(d.distance_m) ? `<span class="near-distance">${selectedLandmark ? `${selectedLandmark.name}에서 ` : ''}직선거리 ${d.distance_m < 1000 ? `${d.distance_m}m` : `${(d.distance_m / 1000).toFixed(1)}km`}</span>` : ''}</div>
+        <div class="addr">${addrParts.join('<span class="dot">·</span>')}${Number.isFinite(d.distance_m) ? `<span class="near-distance">${selectedLandmark ? `${selectedLandmark.name}에서 ` : currentLocation ? '내 위치에서 ' : ''}직선거리 ${d.distance_m < 1000 ? `${d.distance_m}m` : `${(d.distance_m / 1000).toFixed(1)}km`}</span>` : ''}</div>
         ${d.price_range ? `<div class="price-range">등록 가격 ${d.price_range}원</div>` : ({ '~ 100,000': '10만 원 이하', '100,000 ~ 200,000': '10만~20만 원', '200,000 ~': '20만 원 이상' }[d.origin_sheet] ? `<div class="price-range">원본 가격 구간 ${({ '~ 100,000': '10만 원 이하', '100,000 ~ 200,000': '10만~20만 원', '200,000 ~': '20만 원 이상' })[d.origin_sheet]}</div>` : '')}
         <div class="card-actions">
           ${actions}
@@ -938,6 +994,7 @@ function buildParams() {
 function showSearchHint(smart, stationExplanation = '') {
   const parts = [];
   if (selectedLandmark) parts.push(`${selectedLandmark.name} ${nearbyRadiusEl.selectedOptions[0].textContent} 이내`);
+  if (currentLocation) parts.push(`내 위치 ${currentLocationRadiusEl.selectedOptions[0].textContent} 이내 · 직선거리`);
   if (smart) {
     [smart.region, smart.neighborhood ? `${smart.neighborhood} 일대` : smart.gu, smart.dong, smart.station ? `${smart.station}역` : ''].filter(Boolean).forEach(x => parts.push(x));
     if (smart.station && locationScope === 'exact') parts.push('해당 역으로 분류된 식당만');
@@ -981,6 +1038,7 @@ function renderEmptyState(hasRows) {
   const ledger = Boolean(personalFilterEl.value), noRecords = ledger && keysForLedger().length === 0;
   document.getElementById('emptyMessage').textContent = noRecords ? '아직 내 장부에 기록한 식당이 없어요. 식당 목록에서 가고싶음·가봄을 눌러 시작해 보세요.' : ledger ? '내 기록 중 검색 조건에 맞는 식당이 없어요.' : '검색 조건에 맞는 식당이 없어요.';
   if (selectedLandmark && !ledger) document.getElementById('emptyMessage').textContent = '이 반경에서 좌표가 확인된 식당 중에는 조건에 맞는 곳이 없어요. 반경을 넓히거나 다른 장소를 선택해 보세요.';
+  if (currentLocation && !ledger) document.getElementById('emptyMessage').textContent = '선택한 반경 안의 서울 좌표 확인 식당 중 조건에 맞는 곳이 없어요. 반경을 넓히거나 조건을 바꿔 보세요.';
   document.getElementById('emptyReset').hidden = noRecords;
   document.getElementById('emptyReset').textContent = ledger ? '내 장부 전체 보기' : '조건 지우기';
   const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
@@ -1011,18 +1069,21 @@ async function runSearch(version) {
   emptyEl.style.display = 'none';
   renderActiveFilters();
   if (personalFilterEl.value) return searchPersonal(version);
+  const fetchResults = params => currentLocation
+    ? apiFetch('/api/restaurants/nearby', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...Object.fromEntries(params), latitude: currentLocation.latitude, longitude: currentLocation.longitude, radius: Number(currentLocationRadiusEl.value) }) })
+    : apiFetch('/api/restaurants?' + params.toString());
   let params = buildParams();
-  let res = await apiFetch('/api/restaurants?' + params.toString());
+  let res = await fetchResults(params);
   let data = await res.json();
   const smart = RestaurantSearch.parse(qEl.value, searchVocabulary);
   let autoExpandedStation = false;
-  if (!selectedLandmark && smart.station && !data.total && RestaurantSearch.priceBandSelection(smart) !== null) {
+  if (!selectedLandmark && !currentLocation && smart.station && !data.total && RestaurantSearch.priceBandSelection(smart) !== null) {
     for (const scope of locationScope === 'exact' ? ['neighborhood', 'district'] : locationScope === 'neighborhood' ? ['district'] : []) {
       if (version !== searchVersion) return;
       locationScope = scope;
       autoExpandedStation = true;
       params = buildParams();
-      res = await apiFetch('/api/restaurants?' + params.toString());
+      res = await fetchResults(params);
       data = await res.json();
       if (data.total) break;
     }
@@ -1040,7 +1101,7 @@ async function runSearch(version) {
   renderRows(data.rows);
   renderEmptyState(data.rows.length);
   const nearbyMore = document.getElementById('nearbyMore');
-  nearbyMore.hidden = Boolean(selectedLandmark) || !data.total || data.total >= 5 || !(smart.station && locationScope !== 'district' || smart.neighborhood && !guEl.value);
+  nearbyMore.hidden = Boolean(selectedLandmark || currentLocation) || !data.total || data.total >= 5 || !(smart.station && locationScope !== 'district' || smart.neighborhood && !guEl.value);
   nearbyMore.textContent = smart.neighborhood ? `${smart.gu} 전체에서 더 보기` : locationScope === 'exact' ? `${smart.station}역과 같은 동네 더 보기` : '역이 속한 구까지 더 보기';
 
   const startIdx = data.rows.length ? (state.page - 1) * state.pageSize + 1 : 0;
@@ -1111,7 +1172,7 @@ function triggerSearch(resetPage = true) {
   if (resetPage) state.page = 1;
   clearTimeout(debounceTimer);
   // 한 문장으로 입력해도 장소 후보를 먼저 선택하게 한다. 동명이인 장소를 자동 확정하지 않는다.
-  if (!nearbyPanelEl.hidden && !selectedLandmark && ledgerDashboardEl.style.display === 'none') {
+  if (!nearbyPanelEl.hidden && !selectedLandmark && !currentLocation && ledgerDashboardEl.style.display === 'none') {
     const nearbyPhrase = qEl.value.trim().match(/^(.{2,80}?)\s+근처(?:에서)?(?:\s+(.+))?$/);
     if (nearbyPhrase) {
       nearbyPanelEl.open = true;
@@ -1140,6 +1201,7 @@ personalFilterEl.addEventListener('change', () => {
   triggerSearch();
 });
 regionEl.addEventListener('change', () => {
+  if (currentLocation && regionEl.value !== '서울') { currentLocation = null; renderCurrentLocation(); }
   loadGuOptions(regionEl.value);
   guEl.value = '';
   triggerSearch();

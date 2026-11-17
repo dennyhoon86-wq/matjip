@@ -172,31 +172,52 @@ app.get('/api/gu', auth.requireApproved, (req, res) => {
 
 const searchCache = new Map();
 const SEARCH_CACHE_LIMIT = 128;
-app.get('/api/restaurants', auth.requireApproved, (req, res) => {
-  const cacheKey = req.originalUrl;
-  const cached = searchCache.get(cacheKey);
-  if (cached) {
-    searchCache.delete(cacheKey);
-    searchCache.set(cacheKey, cached);
-    return res.type('json').send(cached);
+function searchRestaurants(req, res) {
+  const currentLocationSearch = req.method === 'POST';
+  const input = currentLocationSearch ? req.body : req.query;
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return res.status(400).json({ error: '검색 조건이 올바르지 않습니다.' });
+  const cacheKey = currentLocationSearch ? null : req.originalUrl;
+  if (cacheKey) {
+    const cached = searchCache.get(cacheKey);
+    if (cached) {
+      searchCache.delete(cacheKey);
+      searchCache.set(cacheKey, cached);
+      return res.type('json').send(cached);
+    }
   }
   const {
     q = '', region = '', gu = '', category = '', grade = '', gradeMin = '', badge = '', station = '', excludeNew = '',
     status = '영업', sort = 'recommended', locationScope = 'exact', page = '1', pageSize = '30',
-  } = req.query;
+  } = input;
+  if (currentLocationSearch && [q, region, gu, category, grade, gradeMin, badge, station, excludeNew, status, sort, locationScope, page, pageSize].some(value => typeof value !== 'string')) {
+    return res.status(400).json({ error: '검색 조건이 올바르지 않습니다.' });
+  }
 
   const where = [];
   const params = {};
   let inferred = null;
   let nearby = null;
-  const landmarkId = String(req.query.landmarkId || '').trim();
-  const landmarkDistrict = String(req.query.landmarkDistrict || '').trim();
-  if (landmarkId || req.query.landmarkQuery) {
+  if (currentLocationSearch) {
+    if (process.env.NEARBY_ENABLED === 'false' || !locations.size) return res.status(503).json({ error: '식당 위치자료가 아직 준비되지 않았습니다.' });
+    if (input.landmarkId || input.landmarkQuery) return res.status(400).json({ error: '장소 검색과 내 위치 검색을 동시에 사용할 수 없습니다.' });
+    const lat = Number(input.latitude), lon = Number(input.longitude), radius = Number(input.radius);
+    if (input.latitude == null || input.longitude == null || !Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      return res.status(400).json({ error: '현재 위치를 다시 확인해 주세요.' });
+    }
+    if (!Number.isInteger(radius) || radius < 1000 || radius > 10000 || radius % 1000 !== 0) return res.status(400).json({ error: '검색 반경은 1~10km로 설정해 주세요.' });
+    params.nearLat = lat; params.nearLon = lon; params.nearRadius = radius;
+    where.push("region = '서울'");
+    where.push('near_distance(address, @nearLat, @nearLon) <= @nearRadius');
+    nearby = { name: '내 위치', radius, distanceType: '직선거리', mode: 'current' };
+  }
+  const landmarkId = String(input.landmarkId || '').trim();
+  const landmarkDistrict = String(input.landmarkDistrict || '').trim();
+  if (landmarkId || input.landmarkQuery) {
     if (!nearbyReady) return res.status(503).json({ error: '장소 근처 검색이 아직 준비되지 않았습니다.' });
     if (!landmarkId || landmarkId.length > 80) return res.status(400).json({ error: '장소를 다시 선택해 주세요.' });
     if (landmarkDistrict && !curatedDistricts.has(landmarkDistrict)) return res.status(400).json({ error: '서울 자치구를 다시 선택해 주세요.' });
     if (!locations.size) return res.status(503).json({ error: '식당 위치자료가 아직 준비되지 않았습니다.' });
-    const radius = Number(req.query.radius || 1000);
+    const radius = Number(input.radius || 1000);
     if (![500, 1000, 2000, 3000].includes(radius)) return res.status(400).json({ error: '검색 반경이 올바르지 않습니다.' });
     const place = landmarkById.get(landmarkId);
     if (place && landmarkDistrict && place.district !== landmarkDistrict) return res.status(409).json({ error: '장소와 자치구가 일치하지 않습니다.' });
@@ -320,12 +341,14 @@ app.get('/api/restaurants', auth.requireApproved, (req, res) => {
 
   if (nearby) res.set('Cache-Control', 'no-store');
   const body = JSON.stringify({ total, page: pageNum, pageSize: size, rows, inferred, nearby });
-  if (Buffer.byteLength(body) <= 65536) {
+  if (cacheKey && Buffer.byteLength(body) <= 65536) {
     searchCache.set(cacheKey, body);
     if (searchCache.size > SEARCH_CACHE_LIMIT) searchCache.delete(searchCache.keys().next().value);
   }
   res.type('json').send(body);
-});
+}
+app.get('/api/restaurants', auth.requireApproved, searchRestaurants);
+app.post('/api/restaurants/nearby', auth.requireApproved, searchRestaurants);
 
 app.post('/api/personal-list', auth.requireApproved, (req, res) => {
   const keys = Array.isArray(req.body?.keys) ? req.body.keys.filter(x => typeof x === 'string').slice(0, 10000) : [];

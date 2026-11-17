@@ -162,6 +162,16 @@ body.auth-pending .auth-gate{display:flex;}
   gap:11px;
 }
 .field.wide{grid-column:span 2;}
+.search-entry-row{display:flex; gap:7px; min-width:0;}
+.search-entry-row #q{flex:1; min-width:0; width:auto;}
+.search-entry-row #useCurrentLocation{flex:none; min-height:44px; border:1px solid var(--cover); background:var(--cover); color:#fff; padding:7px 10px; font:700 12px var(--sans); cursor:pointer;}
+.search-entry-row #useCurrentLocation:disabled{opacity:.65; cursor:wait;}
+.current-location-panel{grid-column:1 / -1; border-top:1px solid #E1D6BB; padding-top:10px;}
+.current-location-controls{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.current-location-controls button,.current-location-controls select{min-height:44px; border:1px solid #C9B896; background:#FBF7EC; color:var(--ink); padding:7px 10px; font:700 12px var(--sans); cursor:pointer;}
+.current-location-controls label{display:flex; align-items:center; gap:7px; font:700 12px var(--sans); color:var(--ink-soft);}
+.current-location-panel p{margin:6px 0 0; color:var(--ink-soft); font:11px/1.5 var(--sans);}
+.current-location-panel.active #currentLocationStatus{color:var(--badge-new); font-weight:700;}
 .nearby-panel{grid-column:1 / -1; border-top:1px solid #E1D6BB;}
 .nearby-panel>summary{min-height:44px; display:flex; align-items:center; gap:5px; cursor:pointer; color:var(--cover); font:700 12px var(--sans);}
 .nearby-panel>summary small{font-weight:500; color:var(--ink-soft);}
