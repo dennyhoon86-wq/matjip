@@ -16,3 +16,13 @@ test('Sejong-ro is a legal parcel neighborhood only in the known Seoul case', ()
   assert.equal(seoulParcelKey('서울 종로구 세종로 164'), '서울 종로구 세종로 164');
   assert.equal(seoulParcelKey('서울 강남구 테헤란로 164'), null);
 });
+
+test('SGIS joined city and district names match the same Gyeonggi parcel', () => {
+  const item = { addr_type: '6', sido_nm: '경기도', sgg_nm: '수원시영통구',
+    leg_nm: '영통동', ri_nm: 'null', jibun_main_no: '1000', jibun_sub_no: '1',
+    y: '37.25', x: '127.05' };
+  assert.deepEqual(exactPoint({ matching: '0', resultdata: [item] },
+    '경기 수원시 영통구 영통동 1000-1'), { lat: 37.25, lon: 127.05 });
+  assert.equal(exactPoint({ matching: '0', resultdata: [item] },
+    '경기 수원시 팔달구 영통동 1000-1'), null);
+});

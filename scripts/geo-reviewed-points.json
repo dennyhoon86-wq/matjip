@@ -1,0 +1,135 @@
+[
+  {
+    "name": "밀란국수 개포본점",
+    "source": "서울 강남구 개포동 1215",
+    "lat": 37.4785200382,
+    "lon": 127.0491059615,
+    "evidence": "https://trip.guidejung.com/food/c1b2cfb8-e87b-5489-b24f-d06dec769aff"
+  },
+  {
+    "name": "생선구이앤오리로스",
+    "source": "서울 강남구 개포동 1231-12",
+    "lat": 37.47731178679,
+    "lon": 127.04858709144,
+    "evidence": "https://jusoga.com/b/1168010300102310012020646/서울특별시-강남구-개포로22길-26-개포동"
+  },
+  {
+    "name": "오통영 이촌점",
+    "source": "서울 용산구 이촌동 300-3",
+    "lat": 37.5178461536772,
+    "lon": 126.980329032431,
+    "evidence": "https://www.diningcode.com/profile.php?rid=A4HfIpjkOYiI"
+  },
+  {
+    "name": "퀴즈노스 숙대입구점",
+    "source": "서울 용산구 청파동3가 120-68",
+    "lat": 37.5442886038516,
+    "lon": 126.970930098479,
+    "evidence": "https://acs.purpleo.kr/article/13019"
+  },
+  {
+    "name": "우리집",
+    "source": "경기 고양시 덕양구 화전동 832-41",
+    "lat": 37.6008854,
+    "lon": 126.8715397,
+    "evidence": "https://findby.co.kr/details/10540-412813192097-st-652b0f3a8c641f9e388d0f2b"
+  },
+  {
+    "name": "55갤런",
+    "source": "경기 김포시 누산리 419-2",
+    "lat": 37.6625496,
+    "lon": 126.6575365,
+    "evidence": "https://place.clariosync.com/p/6477908/55%EA%B0%A4%EB%9F%B0-%EC%B9%B4%ED%8E%98"
+  },
+  {
+    "name": "역전집",
+    "source": "경기 남양주시 능내리 산71-19",
+    "lat": 37.519114,
+    "lon": 127.293621,
+    "evidence": "https://reo.purpleo.kr/article/120"
+  },
+  {
+    "name": "최미자1관 소머리국밥",
+    "source": "경기 광주시 삼리 41-81",
+    "lat": 37.3464353,
+    "lon": 127.3343943,
+    "evidence": "https://findby.co.kr/details/12805-416103211012-st-652b2c918c641f9e38984615"
+  },
+  {
+    "name": "홍두깨샤브칼국수",
+    "source": "경기 김포시 봉성리 214-4",
+    "lat": 37.693195,
+    "lon": 126.657529,
+    "evidence": "https://sdt.purpleo.kr/article/11565"
+  },
+  {
+    "name": "먹골함흥냉면&갈비탕",
+    "source": "경기 남양주시 진관리 47-9",
+    "lat": 37.6503913,
+    "lon": 127.173765,
+    "evidence": "https://findby.co.kr/details/12139-413604391672-st-652bb2ac8c641f9e38b07caf"
+  },
+  {
+    "name": "오뚜기곱창",
+    "source": "경기 남양주시 장현리 611",
+    "lat": 37.7167518,
+    "lon": 127.1788902,
+    "evidence": "https://findby.co.kr/details/12015-413604391613-st-652bba478c641f9e38b1549c"
+  },
+  {
+    "name": "팔당 자연애",
+    "source": "경기 남양주시 팔당리 320",
+    "lat": 37.5456605,
+    "lon": 127.2484384,
+    "evidence": "https://findby.co.kr/details/12277-413604391746-st-652ba6338c641f9e38aef8b6"
+  },
+  {
+    "name": "신정희춘천숯불닭갈비 직영점",
+    "source": "경기 부천시 상동 522-2",
+    "lat": 37.5129535,
+    "lon": 126.7505098,
+    "evidence": "https://findby.co.kr/details/14504-411923184002-st-6592effe5104b6a40c0d3b8b"
+  },
+  {
+    "name": "포스토리 본점",
+    "source": "경기 부천시 소사본동 152-9",
+    "lat": 37.4771774,
+    "lon": 126.7953181,
+    "evidence": "https://findby.co.kr/details/14707-411943012096-st-6592efdd5104b6a40c0cb718"
+  },
+  {
+    "name": "담소추어탕",
+    "source": "경기 부천시 심곡동 358",
+    "lat": 37.4871595,
+    "lon": 126.7731494,
+    "evidence": "https://findby.co.kr/details/14628-411923184010-st-6592f0025104b6a40c0d4a8e"
+  },
+  {
+    "name": "한가람",
+    "source": "경기 용인시 처인구 가실리 377",
+    "lat": 37.29051797952113,
+    "lon": 127.2011208824173,
+    "evidence": "https://triple.guide/restaurants/1d2a4bd3-21a4-4364-9142-68d6e681893b"
+  },
+  {
+    "name": "황소고집 1호점",
+    "source": "경기 용인시 처인구 능원리 171-2",
+    "lat": 37.3408386,
+    "lon": 127.1736976,
+    "evidence": "https://findby.co.kr/details/16884-414613203085-st-652c0fdbf27008be2c60a3fb"
+  },
+  {
+    "name": "공원블루스 동탄레이크꼬모점",
+    "source": "경기 화성시 동탄구 송동 694",
+    "lat": 37.1713447,
+    "lon": 127.1048678,
+    "evidence": "https://findby.co.kr/details/18497-415972348100-st-69820962a50871f495567e9a"
+  },
+  {
+    "name": "송탄구가네부대찌개",
+    "source": "서울 금천구 가산동 459-22",
+    "lat": 37.4824372,
+    "lon": 126.8774757,
+    "evidence": "https://findby.co.kr/details/08504-115453117002-st-652b70cc8c641f9e38a70a38"
+  }
+]

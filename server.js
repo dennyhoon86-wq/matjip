@@ -33,7 +33,8 @@ const landmarkById = new Map(LANDMARKS.map(place => [place.id, place]));
 const seoulActiveAddresses = db.prepare("SELECT address FROM restaurants WHERE status='영업' AND address LIKE '서울%'").all();
 const locatedSeoulRestaurants = seoulActiveAddresses.filter(row => locations.has(normalizeAddress(row.address)) || locations.has(seoulParcelKey(row.address))).length;
 const gyeonggiActiveAddresses = db.prepare("SELECT address FROM restaurants WHERE status='영업' AND address LIKE '경기 %'").all();
-const locatedGyeonggiRestaurants = gyeonggiActiveAddresses.filter(row => locations.has(gyeonggiParcelKey(row.address))).length;
+const locatedGyeonggiRestaurants = gyeonggiActiveAddresses.filter(row =>
+  locations.has(normalizeAddress(row.address)) || locations.has(gyeonggiParcelKey(row.address))).length;
 
 const GRADE_ORDER = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E'];
 const GRADE_CASE_SQL = `CASE grade ${GRADE_ORDER.map((g, i) => `WHEN '${g}' THEN ${i}`).join(' ')} ELSE 99 END`;

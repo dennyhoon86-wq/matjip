@@ -20,6 +20,8 @@ server.once('listening', async () => {
     const gyeonggi = meta.nearby.areas.find(area => area.name === '경기');
     assert(seoul.locatedRestaurants > 19000);
     assert(gyeonggi.locatedRestaurants > 7000);
+    assert.equal(seoul.locatedRestaurants, seoul.totalRestaurants, 'Seoul coordinate coverage incomplete');
+    assert.equal(gyeonggi.locatedRestaurants, gyeonggi.totalRestaurants, 'Gyeonggi coordinate coverage incomplete');
     const markers = ['강동구:이케아 강동점', '강남구:스타필드 코엑스몰', '송파구:롯데월드몰'];
     let checkedResults = 0;
     let zeroCount = 0;

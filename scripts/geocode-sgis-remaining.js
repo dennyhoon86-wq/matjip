@@ -12,17 +12,22 @@ const nullish = value => value && value !== 'null' ? String(value).trim() : '';
 function exactPoint(result, key) {
   if (!result || String(result.matching) !== '0') return null;
   const matches = [];
+  const compact = value => String(value || '').replace(/\s+/g, '');
   for (const item of result.resultdata || []) {
     if (String(item.addr_type) !== '6') continue;
     const region = String(item.sido_nm).startsWith('서울') ? '서울' : String(item.sido_nm).startsWith('경기') ? '경기' : '';
     const lot = `${nullish(item.jibun_main_no)}${Number(item.jibun_sub_no) ? `-${Number(item.jibun_sub_no)}` : ''}`;
     const address = [region, nullish(item.sgg_nm), nullish(item.leg_nm), nullish(item.ri_nm), lot].filter(Boolean).join(' ');
     const actualKey = region === '서울' ? seoulParcelKey(address) : region === '경기' ? gyeonggiParcelKey(address) : null;
-    if (actualKey !== key) continue;
+    // SGIS joins city and district names (e.g. 수원시영통구), while source
+    // addresses usually separate them (수원시 영통구).
+    if (compact(actualKey) !== compact(key)) continue;
     const lat = Number(item.y), lon = Number(item.x);
     if (lat > 36.8 && lat < 38.35 && lon > 126.35 && lon < 127.9) matches.push({ lat, lon });
   }
-  return matches.length === 1 ? matches[0] : null;
+  if (!matches.length) return null;
+  return matches.every(point => Math.abs(point.lat - matches[0].lat) < 0.0001 &&
+    Math.abs(point.lon - matches[0].lon) < 0.0001) ? matches[0] : null;
 }
 
 async function json(url) {
@@ -78,7 +83,11 @@ async function main() {
       await sleep(250);
     }
     locations.pragma('wal_checkpoint(TRUNCATE)');
-    console.log(JSON.stringify({ ...stats, unresolved: unresolved.slice(0, 40) }, null, 2));
+    const reasons = unresolved.reduce((counts, item) => {
+      counts[item.reason] = (counts[item.reason] || 0) + 1;
+      return counts;
+    }, {});
+    console.log(JSON.stringify({ ...stats, reasons, unresolved }, null, 2));
   } finally { restaurants.close(); locations.close(); }
 }
 
